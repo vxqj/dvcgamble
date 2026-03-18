@@ -551,14 +551,14 @@
               <option value="easy">Easy — 1 bomb per row</option>
               <option value="medium" selected>Medium — 2 bombs per row</option>
               <option value="hard">Hard — 3 bombs per row</option>
-              <option value="expert">Expert — 4 bombs per row</option>
+              <option value="expert">Expert — 3 bombs per row</option>
             </select>
           </div>
           <div style="font-size:0.75rem;color:var(--muted);background:var(--surface2);padding:0.75rem;border-radius:8px;line-height:1.9">
             <div>Easy: <span style="color:var(--accent)">×1.35 per floor</span></div>
             <div>Medium: <span style="color:var(--accent)">×1.75 per floor</span></div>
             <div>Hard: <span style="color:var(--accent)">×2.5 per floor</span></div>
-            <div>Expert: <span style="color:var(--gold)">×5.0 per floor</span></div>
+            <div>Expert: <span style="color:var(--gold)">×4.0 per floor</span></div>
           </div>
           <button class="play-btn" id="tw-play" onclick="startTowers()">Start</button>
           <button class="play-btn gold-btn" id="tw-cashout" onclick="cashOutTowers()" style="display:none">Cash Out <span id="tw-val"></span></button>
@@ -1153,7 +1153,7 @@ function cashOutMines() {
 ================================================================ */
 const TW_FLOORS = 8;
 const TW_COLS   = 4;
-const TW_DIFF   = { easy:{bombs:1,mult:1.35}, medium:{bombs:2,mult:1.75}, hard:{bombs:3,mult:2.5}, expert:{bombs:4,mult:5.0} };
+const TW_DIFF   = { easy:{bombs:1,mult:1.35}, medium:{bombs:2,mult:1.75}, hard:{bombs:3,mult:2.5}, expert:{bombs:3,mult:4.0} };
 
 let twActive=false, twFloor=0, twBoard=[], twBet=0, twDiff=null, twMult=1;
 
