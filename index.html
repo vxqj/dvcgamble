@@ -250,6 +250,19 @@
     .tw-row.tw-done .tw-cell:not(.tw-revealed){opacity:0.25;cursor:default;}
     .tw-row-label{font-size:0.65rem;color:var(--muted);width:28px;text-align:right;flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;font-weight:600;}
 
+    /* OWNER PANEL */
+    .owner-terminal{background:#0a0a0a;border:1px solid rgba(0,230,118,0.2);border-radius:12px;padding:1.25rem;font-family:'Courier New',monospace;}
+    .owner-log{height:280px;overflow-y:auto;margin-bottom:1rem;display:flex;flex-direction:column;gap:4px;}
+    .owner-log-line{font-size:0.8rem;line-height:1.5;}
+    .owner-log-line.system{color:var(--accent);}
+    .owner-log-line.error{color:var(--red);}
+    .owner-log-line.info{color:rgba(240,240,240,0.6);}
+    .owner-log-line.success{color:var(--gold);}
+    .owner-input-wrap{display:flex;gap:0.5rem;align-items:center;}
+    .owner-prefix{color:var(--accent);font-size:0.9rem;font-family:'Courier New',monospace;flex-shrink:0;}
+    .owner-input{flex:1;background:transparent;border:none;color:var(--fg);font-size:0.85rem;font-family:'Courier New',monospace;outline:none;}
+    .owner-input::placeholder{color:rgba(240,240,240,0.2);}
+
     /* SETTINGS */
     .colour-swatch{width:100%;aspect-ratio:1;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all 0.15s;}
     .colour-swatch:hover{transform:scale(1.1);}
@@ -375,6 +388,7 @@
     <div class="nav-item" onclick="showPanel('leaderboard')" id="nav-leaderboard"><span class="icon">🏆</span> Leaderboard</div>
     <div class="nav-item" onclick="showPanel('history')" id="nav-history"><span class="icon">📋</span> History</div>
     <div class="nav-item" onclick="showPanel('settings')" id="nav-settings"><span class="icon">⚙️</span> Settings</div>
+    <div class="nav-item" onclick="showPanel('owner')" id="nav-owner" style="color:var(--gold)"><span class="icon">👑</span> Owner</div>
   </div>
 
   <!-- CONTENT -->
@@ -577,6 +591,48 @@
     <div class="panel" id="panel-leaderboard">
       <div class="section-title">🏆 Leaderboard</div>
       <div id="lb-content"></div>
+    </div>
+
+    <!-- OWNER -->
+    <div class="panel" id="panel-owner">
+      <div class="section-title" style="color:var(--gold)">👑 Owner Panel</div>
+      <div style="max-width:600px;">
+        <div id="owner-lock" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:1rem;">
+          <div style="font-size:0.85rem;font-weight:700;margin-bottom:1rem;color:var(--gold)">🔐 Enter Owner Password</div>
+          <div style="display:flex;gap:0.5rem;">
+            <input class="form-input" id="owner-pass-input" type="password" placeholder="Owner password" style="flex:1;" />
+            <button class="play-btn" style="width:auto;padding:0 1.25rem;" onclick="unlockOwner()">Unlock</button>
+          </div>
+          <div class="auth-error" id="owner-pass-err" style="margin-top:0.75rem;"></div>
+        </div>
+
+        <div id="owner-panel-content" style="display:none;">
+          <div style="background:var(--surface);border:1px solid rgba(255,215,64,0.2);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;">
+            <div style="font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:0.75rem;">Available Commands</div>
+            <div style="font-size:0.78rem;color:var(--muted);font-family:'Courier New',monospace;line-height:2;">
+              <div><span style="color:var(--accent)">/givecash</span> [user] [amount] — add coins to a user</div>
+              <div><span style="color:var(--accent)">/setcash</span> [user] [amount] — set exact balance</div>
+              <div><span style="color:var(--accent)">/takecash</span> [user] [amount] — remove coins from a user</div>
+              <div><span style="color:var(--accent)">/resetuser</span> [user] — reset user balance to ◈1,000</div>
+              <div><span style="color:var(--accent)">/ban</span> [user] — delete a user account</div>
+              <div><span style="color:var(--accent)">/broadcast</span> [message] — send system message to chat</div>
+              <div><span style="color:var(--accent)">/listusers</span> — list all users and balances</div>
+              <div><span style="color:var(--accent)">/stats</span> [user] — view full stats for a user</div>
+              <div><span style="color:var(--accent)">/clearhistory</span> [user] — wipe bet history</div>
+              <div><span style="color:var(--accent)">/clear</span> — clear terminal</div>
+            </div>
+          </div>
+
+          <div class="owner-terminal">
+            <div class="owner-log" id="owner-log"></div>
+            <div style="height:1px;background:rgba(0,230,118,0.15);margin-bottom:0.75rem;"></div>
+            <div class="owner-input-wrap">
+              <span class="owner-prefix">root@dvcgamble ~ $</span>
+              <input class="owner-input" id="owner-cmd" type="text" placeholder="type a command..." autocomplete="off" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- SETTINGS -->
@@ -904,6 +960,14 @@ function showPanel(id) {
   if (id==='leaderboard') renderLeaderboard();
   if (id==='mines') buildMinesGrid();
   if (id==='settings') initSettings();
+  if (id==='owner') {
+    if (!ownerUnlocked) {
+      document.getElementById('owner-lock').style.display = 'block';
+      document.getElementById('owner-panel-content').style.display = 'none';
+      document.getElementById('owner-pass-err').classList.remove('show');
+      document.getElementById('owner-pass-input').value = '';
+    }
+  }
 }
 
 /* ================================================================
@@ -1218,6 +1282,168 @@ function cashOutMines() {
 }
 
 /* ================================================================
+   OWNER PANEL
+================================================================ */
+const OWNER_PASS = "asdfghjkl;'";
+let ownerUnlocked = false;
+
+function unlockOwner() {
+  const input = document.getElementById('owner-pass-input');
+  const err = document.getElementById('owner-pass-err');
+  err.classList.remove('show');
+  if (input.value !== OWNER_PASS) {
+    err.textContent = 'Wrong password.';
+    err.classList.add('show');
+    input.value = '';
+    return;
+  }
+  ownerUnlocked = true;
+  document.getElementById('owner-lock').style.display = 'none';
+  document.getElementById('owner-panel-content').style.display = 'block';
+  ownerLog('Owner panel unlocked. Welcome back. 👑', 'system');
+  ownerLog('Type /listusers to see all accounts.', 'info');
+}
+
+function ownerLog(msg, type='info') {
+  const log = document.getElementById('owner-log');
+  const line = document.createElement('div');
+  line.className = 'owner-log-line ' + type;
+  const time = new Date().toLocaleTimeString();
+  line.textContent = `[${time}] ${msg}`;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+function runOwnerCmd(raw) {
+  const parts = raw.trim().split(/\s+/);
+  const cmd = parts[0].toLowerCase();
+  ownerLog('> ' + raw, 'system');
+
+  if (cmd === '/clear') {
+    document.getElementById('owner-log').innerHTML = '';
+    return;
+  }
+
+  if (cmd === '/listusers') {
+    const users = getUsers();
+    const list = Object.values(users);
+    if (!list.length) { ownerLog('No users found.', 'error'); return; }
+    ownerLog(`--- ${list.length} users ---`, 'success');
+    list.forEach(u => ownerLog(`  ${u.username} | ◈${u.balance.toLocaleString()} | won:◈${u.won} | played:${u.played}`, 'info'));
+    return;
+  }
+
+  if (cmd === '/givecash') {
+    const [, user, amt] = parts;
+    if (!user || !amt) { ownerLog('Usage: /givecash [user] [amount]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    const n = parseInt(amt);
+    if (isNaN(n) || n <= 0) { ownerLog('Invalid amount.', 'error'); return; }
+    users[user].balance += n;
+    saveUsers(users);
+    if (CU?.username === user) { CU.balance += n; updateUI(); }
+    ownerLog(`✓ Gave ◈${n.toLocaleString()} to ${user}. New balance: ◈${users[user].balance.toLocaleString()}`, 'success');
+    return;
+  }
+
+  if (cmd === '/setcash') {
+    const [, user, amt] = parts;
+    if (!user || !amt) { ownerLog('Usage: /setcash [user] [amount]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    const n = parseInt(amt);
+    if (isNaN(n) || n < 0) { ownerLog('Invalid amount.', 'error'); return; }
+    users[user].balance = n;
+    saveUsers(users);
+    if (CU?.username === user) { CU.balance = n; updateUI(); }
+    ownerLog(`✓ Set ${user}'s balance to ◈${n.toLocaleString()}`, 'success');
+    return;
+  }
+
+  if (cmd === '/takecash') {
+    const [, user, amt] = parts;
+    if (!user || !amt) { ownerLog('Usage: /takecash [user] [amount]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    const n = parseInt(amt);
+    if (isNaN(n) || n <= 0) { ownerLog('Invalid amount.', 'error'); return; }
+    users[user].balance = Math.max(0, users[user].balance - n);
+    saveUsers(users);
+    if (CU?.username === user) { CU.balance = users[user].balance; updateUI(); }
+    ownerLog(`✓ Took ◈${n.toLocaleString()} from ${user}. New balance: ◈${users[user].balance.toLocaleString()}`, 'success');
+    return;
+  }
+
+  if (cmd === '/resetuser') {
+    const [, user] = parts;
+    if (!user) { ownerLog('Usage: /resetuser [user]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    users[user].balance = 1000; users[user].won = 0; users[user].lost = 0;
+    users[user].played = 0; users[user].streak = 0; users[user].history = [];
+    saveUsers(users);
+    if (CU?.username === user) { CU = users[user]; updateUI(); }
+    ownerLog(`✓ Reset ${user} to default state. Balance: ◈1,000`, 'success');
+    return;
+  }
+
+  if (cmd === '/ban') {
+    const [, user] = parts;
+    if (!user) { ownerLog('Usage: /ban [user]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    if (user === CU?.username) { ownerLog(`You can't ban yourself.`, 'error'); return; }
+    delete users[user];
+    saveUsers(users);
+    ownerLog(`✓ Banned and deleted account: ${user}`, 'success');
+    return;
+  }
+
+  if (cmd === '/broadcast') {
+    const message = parts.slice(1).join(' ');
+    if (!message) { ownerLog('Usage: /broadcast [message]', 'error'); return; }
+    if (chatChannel) {
+      chatChannel.publish('message', { username: '⚡ SYSTEM', text: message, ts: Date.now() });
+      ownerLog(`✓ Broadcast sent: "${message}"`, 'success');
+    } else {
+      ownerLog('Chat not connected.', 'error');
+    }
+    return;
+  }
+
+  if (cmd === '/stats') {
+    const [, user] = parts;
+    if (!user) { ownerLog('Usage: /stats [user]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    const u = users[user];
+    ownerLog(`--- Stats for ${user} ---`, 'success');
+    ownerLog(`  Balance:  ◈${u.balance.toLocaleString()}`, 'info');
+    ownerLog(`  Won:      ◈${u.won.toLocaleString()}`, 'info');
+    ownerLog(`  Lost:     ◈${u.lost.toLocaleString()}`, 'info');
+    ownerLog(`  Played:   ${u.played}`, 'info');
+    ownerLog(`  Streak:   ${u.streak || 0}🔥`, 'info');
+    ownerLog(`  Net:      ◈${(u.won - u.lost).toLocaleString()}`, 'info');
+    return;
+  }
+
+  if (cmd === '/clearhistory') {
+    const [, user] = parts;
+    if (!user) { ownerLog('Usage: /clearhistory [user]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    users[user].history = [];
+    saveUsers(users);
+    if (CU?.username === user) CU.history = [];
+    ownerLog(`✓ Cleared bet history for ${user}`, 'success');
+    return;
+  }
+
+  ownerLog(`Unknown command: ${cmd}. Commands start with /`, 'error');
+}
+
+/* ================================================================
    SETTINGS
 ================================================================ */
 const PRESET_COLOURS = ['#00e676','#7c5cfc','#448aff','#ff5252','#ffd740','#ff6d00','#e91e63','#00bcd4','#69f0ae','#ffffff'];
@@ -1488,6 +1714,13 @@ document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key===
 document.getElementById('signup-pass2').addEventListener('keydown',e=>{if(e.key==='Enter')doSignup();});
 document.getElementById('profile-modal').addEventListener('click',e=>{if(e.target===document.getElementById('profile-modal'))closeProfile();});
 document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendMessage();});
+document.getElementById('owner-cmd').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const val=document.getElementById('owner-cmd').value.trim();
+    if(val){runOwnerCmd(val);document.getElementById('owner-cmd').value='';}
+  }
+});
+document.getElementById('owner-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')unlockOwner();});
 </script>
 
 <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
