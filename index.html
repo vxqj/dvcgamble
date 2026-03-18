@@ -619,6 +619,7 @@
               <div><span style="color:var(--accent)">/listusers</span> — list all users and balances</div>
               <div><span style="color:var(--accent)">/stats</span> [user] — view full stats for a user</div>
               <div><span style="color:var(--accent)">/clearhistory</span> [user] — wipe bet history</div>
+              <div><span style="color:var(--accent)">/resetstats</span> [user] — reset all stats & balance to default</div>
               <div><span style="color:var(--accent)">/clear</span> — clear terminal</div>
             </div>
           </div>
@@ -1486,7 +1487,23 @@ function runOwnerCmd(raw) {
     return;
   }
 
-  if (cmd === '/clearhistory') {
+  if (cmd === '/resetstats') {
+    const [, user] = parts;
+    if (!user) { ownerLog('Usage: /resetstats [user]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    users[user].balance = 1000;
+    users[user].won = 0;
+    users[user].lost = 0;
+    users[user].played = 0;
+    users[user].streak = 0;
+    users[user].bestStreak = 0;
+    users[user].history = [];
+    saveUsers(users);
+    if (CU?.username === user) { CU = users[user]; updateUI(); }
+    ownerLog(`✓ Reset all stats for ${user} — balance ◈1,000, won/lost/played/streak all zeroed.`, 'success');
+    return;
+  }
     const [, user] = parts;
     if (!user) { ownerLog('Usage: /clearhistory [user]', 'error'); return; }
     const users = getUsers();
