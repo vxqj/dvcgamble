@@ -250,6 +250,11 @@
     .tw-row.tw-done .tw-cell:not(.tw-revealed){opacity:0.25;cursor:default;}
     .tw-row-label{font-size:0.65rem;color:var(--muted);width:28px;text-align:right;flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;font-weight:600;}
 
+    /* SETTINGS */
+    .colour-swatch{width:100%;aspect-ratio:1;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all 0.15s;}
+    .colour-swatch:hover{transform:scale(1.1);}
+    .colour-swatch.active{border-color:#fff;transform:scale(1.1);}
+
     /* HISTORY */
     .history-list{display:flex;flex-direction:column;gap:0.4rem;}
     .history-item{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:var(--surface2);border-radius:8px;font-size:0.82rem;gap:0.5rem;}
@@ -369,6 +374,7 @@
     <div class="sidebar-label">Community</div>
     <div class="nav-item" onclick="showPanel('leaderboard')" id="nav-leaderboard"><span class="icon">🏆</span> Leaderboard</div>
     <div class="nav-item" onclick="showPanel('history')" id="nav-history"><span class="icon">📋</span> History</div>
+    <div class="nav-item" onclick="showPanel('settings')" id="nav-settings"><span class="icon">⚙️</span> Settings</div>
   </div>
 
   <!-- CONTENT -->
@@ -573,6 +579,67 @@
       <div id="lb-content"></div>
     </div>
 
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="section-title">⚙️ Settings</div>
+
+      <div style="max-width:520px;display:flex;flex-direction:column;gap:1rem;">
+
+        <!-- USERNAME -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;">
+          <div style="font-size:0.85rem;font-weight:700;margin-bottom:1rem;">👤 Change Username</div>
+          <div class="form-group" style="margin-bottom:0.75rem;">
+            <div class="form-label">New username</div>
+            <input class="form-input" id="set-username" type="text" placeholder="Enter new username" />
+          </div>
+          <div class="form-group" style="margin-bottom:0.75rem;">
+            <div class="form-label">Confirm password</div>
+            <input class="form-input" id="set-username-pass" type="password" placeholder="Enter your password" />
+          </div>
+          <div class="auth-error" id="set-username-err"></div>
+          <button class="play-btn" style="margin-top:0.5rem" onclick="changeUsername()">Save Username</button>
+        </div>
+
+        <!-- PASSWORD -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;">
+          <div style="font-size:0.85rem;font-weight:700;margin-bottom:1rem;">🔒 Change Password</div>
+          <div class="form-group" style="margin-bottom:0.75rem;">
+            <div class="form-label">Current password</div>
+            <input class="form-input" id="set-old-pass" type="password" placeholder="Current password" />
+          </div>
+          <div class="form-group" style="margin-bottom:0.75rem;">
+            <div class="form-label">New password</div>
+            <input class="form-input" id="set-new-pass" type="password" placeholder="New password" />
+          </div>
+          <div class="form-group" style="margin-bottom:0.75rem;">
+            <div class="form-label">Confirm new password</div>
+            <input class="form-input" id="set-new-pass2" type="password" placeholder="Confirm new password" />
+          </div>
+          <div class="auth-error" id="set-pass-err"></div>
+          <button class="play-btn" style="margin-top:0.5rem" onclick="changePassword()">Save Password</button>
+        </div>
+
+        <!-- COLOURS -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;">
+          <div style="font-size:0.85rem;font-weight:700;margin-bottom:1rem;">🎨 Accent Colour</div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:0.6rem;margin-bottom:1rem;" id="colour-swatches"></div>
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <div class="form-label">Custom colour</div>
+            <input type="color" id="set-custom-colour" value="#00e676" style="width:44px;height:36px;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);cursor:pointer;padding:2px;" />
+            <button class="bet-quick-btn" onclick="applyCustomColour()">Apply</button>
+          </div>
+        </div>
+
+        <!-- DANGER -->
+        <div style="background:var(--surface);border:1px solid rgba(255,82,82,0.2);border-radius:var(--r);padding:1.5rem;">
+          <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.5rem;color:var(--red);">⚠️ Danger Zone</div>
+          <div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem;">Reset your balance back to ◈1,000. This cannot be undone.</div>
+          <button class="play-btn red-btn" onclick="resetBalance()">Reset Balance to ◈1,000</button>
+        </div>
+
+      </div>
+    </div>
+
     <!-- HISTORY -->
     <div class="panel" id="panel-history">
       <div class="section-title">📋 Bet History</div>
@@ -695,6 +762,7 @@ function loginUser(username) {
   CU = users[username];
   saveSession(username);
   document.getElementById('auth-overlay').classList.add('hidden');
+  if (CU.accentColor) applyAccent(CU.accentColor);
   updateUI();
 }
 
@@ -835,6 +903,7 @@ function showPanel(id) {
   if (id==='history') renderHistory();
   if (id==='leaderboard') renderLeaderboard();
   if (id==='mines') buildMinesGrid();
+  if (id==='settings') initSettings();
 }
 
 /* ================================================================
@@ -1146,6 +1215,97 @@ function cashOutMines() {
       if (c) { c.textContent = '💣'; c.className = 'mine-cell bomb revealed'; }
     }
   });
+}
+
+/* ================================================================
+   SETTINGS
+================================================================ */
+const PRESET_COLOURS = ['#00e676','#7c5cfc','#448aff','#ff5252','#ffd740','#ff6d00','#e91e63','#00bcd4','#69f0ae','#ffffff'];
+
+function initSettings() {
+  const swatches = document.getElementById('colour-swatches');
+  swatches.innerHTML = '';
+  const current = CU?.accentColor || '#00e676';
+  PRESET_COLOURS.forEach(col => {
+    const s = document.createElement('div');
+    s.className = 'colour-swatch' + (col === current ? ' active' : '');
+    s.style.background = col;
+    s.title = col;
+    s.onclick = () => applyAccent(col);
+    swatches.appendChild(s);
+  });
+  document.getElementById('set-custom-colour').value = current;
+  document.getElementById('set-username').value = '';
+  document.getElementById('set-username-pass').value = '';
+  document.getElementById('set-old-pass').value = '';
+  document.getElementById('set-new-pass').value = '';
+  document.getElementById('set-new-pass2').value = '';
+  document.getElementById('set-username-err').classList.remove('show');
+  document.getElementById('set-pass-err').classList.remove('show');
+}
+
+function applyAccent(colour) {
+  document.documentElement.style.setProperty('--accent', colour);
+  document.documentElement.style.setProperty('--accent-dim', colour+'22');
+  if (CU) { CU.accentColor = colour; saveCurrentUser(); }
+  // update all accent-coloured elements
+  document.querySelectorAll('.play-btn:not(.gold-btn):not(.red-btn)').forEach(b => b.style.background = colour);
+  document.querySelectorAll('.auth-submit').forEach(b => b.style.background = colour);
+  document.querySelectorAll('.chat-send').forEach(b => b.style.background = colour);
+  document.querySelectorAll('.bust-btn').forEach(b => b.style.background = colour);
+  document.querySelectorAll('.colour-swatch').forEach(s => s.classList.toggle('active', s.style.background === colour || s.title === colour));
+  document.getElementById('set-custom-colour').value = colour.startsWith('#') ? colour : '#00e676';
+  showToast('Accent colour updated!', 'info');
+}
+
+function applyCustomColour() {
+  const col = document.getElementById('set-custom-colour').value;
+  applyAccent(col);
+}
+
+function changeUsername() {
+  const newName = document.getElementById('set-username').value.trim();
+  const pass = document.getElementById('set-username-pass').value;
+  const err = document.getElementById('set-username-err');
+  err.classList.remove('show');
+  if (!newName || newName.length < 3) { err.textContent = 'Username must be 3+ chars'; err.classList.add('show'); return; }
+  if (CU.password !== pass) { err.textContent = 'Wrong password'; err.classList.add('show'); return; }
+  const users = getUsers();
+  if (users[newName] && newName !== CU.username) { err.textContent = 'Username already taken'; err.classList.add('show'); return; }
+  // rename
+  delete users[CU.username];
+  CU.username = newName;
+  users[newName] = CU;
+  saveUsers(users);
+  saveSession(newName);
+  updateUI();
+  showToast('Username updated to ' + newName + '!', 'win');
+  document.getElementById('set-username').value = '';
+  document.getElementById('set-username-pass').value = '';
+}
+
+function changePassword() {
+  const oldPass = document.getElementById('set-old-pass').value;
+  const newPass = document.getElementById('set-new-pass').value;
+  const newPass2 = document.getElementById('set-new-pass2').value;
+  const err = document.getElementById('set-pass-err');
+  err.classList.remove('show');
+  if (CU.password !== oldPass) { err.textContent = 'Current password is wrong'; err.classList.add('show'); return; }
+  if (!newPass || newPass.length < 4) { err.textContent = 'New password must be 4+ chars'; err.classList.add('show'); return; }
+  if (newPass !== newPass2) { err.textContent = 'Passwords do not match'; err.classList.add('show'); return; }
+  CU.password = newPass;
+  saveCurrentUser();
+  showToast('Password updated!', 'win');
+  document.getElementById('set-old-pass').value = '';
+  document.getElementById('set-new-pass').value = '';
+  document.getElementById('set-new-pass2').value = '';
+}
+
+function resetBalance() {
+  if (!confirm('Reset your balance to ◈1,000? This cannot be undone.')) return;
+  CU.balance = 1000;
+  saveCurrentUser(); updateUI();
+  showToast('Balance reset to ◈1,000!', 'info');
 }
 
 /* ================================================================
