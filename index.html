@@ -802,16 +802,6 @@
 
 
 <script>
-const BADGE_MAP   = { owner:'👑', cool:'😎', vip:'💎', og:'🔥', pro:'⚡', goat:'🐐' };
-const BADGE_LABEL = { owner:'Owner', cool:'Cool', vip:'VIP', og:'OG', pro:'Pro', goat:'GOAT' };
-const BADGE_COLOR = { owner:'rgba(255,215,64,0.18)', cool:'rgba(0,210,255,0.15)', vip:'rgba(147,51,234,0.2)', og:'rgba(255,82,82,0.15)', pro:'rgba(0,230,118,0.15)', goat:'rgba(255,165,0,0.15)' };
-const BADGE_TEXT  = { owner:'#ffd740', cool:'#00d2ff', vip:'#c084fc', og:'#ff5252', pro:'#00e676', goat:'#ffa500' };
-
-function renderBadges(badges) {
-  if (!badges || !badges.length) return '';
-  return badges.map(b => `<span title="${BADGE_LABEL[b]||b}" style="display:inline-flex;align-items:center;gap:3px;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:5px;background:${BADGE_COLOR[b]||'rgba(255,255,255,0.1)'};color:${BADGE_TEXT[b]||'#fff'};">${BADGE_MAP[b]||'🏷️'} ${BADGE_LABEL[b]||b}</span>`).join('');
-}
-
 const getUsers = () => JSON.parse(localStorage.getItem('dvc_users')||'{}');
 const saveUsers = u => localStorage.setItem('dvc_users', JSON.stringify(u));
 const getSession = () => localStorage.getItem('dvc_session');
@@ -855,6 +845,7 @@ function getRankBadge(rank) {
   return `<span class="rank-badge">${rank}</span>`;
 }
 
+function updateUI() {
 /* ================================================================
    AUTH
 ================================================================ */
@@ -929,7 +920,7 @@ function updateUI() {
   document.getElementById('nav-user').innerHTML = CU.username + getBadgeHTML(CU);
   document.getElementById('nav-balance').textContent = CU.balance.toLocaleString();
   document.getElementById('home-user').innerHTML = CU.username + getBadgeHTML(CU);
-  document.getElementById('home-rank-tag').innerHTML = getRankTag(rank) + ' ' + renderBadges(CU.badges);
+  document.getElementById('home-rank-tag').innerHTML = getRankTag(rank);
   document.getElementById('home-balance').textContent = '◈ '+CU.balance.toLocaleString();
   document.getElementById('home-won').textContent = '◈ '+CU.won.toLocaleString();
   document.getElementById('home-lost').textContent = '◈ '+CU.lost.toLocaleString();
@@ -974,7 +965,7 @@ function renderLeaderboard() {
           <span style="font-weight:600">${u.username}</span>
           ${u.username===CU?.username?'<span class="you-badge">you</span>':''}
           ${getRankTag(u.rank)}
-          ${renderBadges(u.badges)}
+         
         </td>
         <td style="color:var(--accent);font-weight:600">◈${u.won.toLocaleString()}</td>
         <td style="color:var(--gold)">◈${u.balance.toLocaleString()}</td>
@@ -999,7 +990,7 @@ function handleSearch(q) {
   if (!results.length) { dd.innerHTML = '<div style="padding:0.75rem 1rem;font-size:0.82rem;color:var(--muted)">No players found</div>'; dd.classList.add('show'); return; }
   dd.innerHTML = results.map(u => `
     <div class="search-result" onclick="openProfile('${u.username}')">
-      <span class="sr-name">${u.username}${u.rank&&u.rank<=100?` <span style="font-size:0.65rem;color:var(--gold)">#${u.rank}</span>`:''} ${renderBadges(u.badges)}</span>
+      <span class="sr-name">${u.username}${u.rank&&u.rank<=100?` <span style="font-size:0.65rem;color:var(--gold)">#${u.rank}</span>`:''}</span>
       <span class="sr-bal">◈${u.balance.toLocaleString()}</span>
     </div>`).join('');
   dd.classList.add('show');
@@ -1015,7 +1006,7 @@ function openProfile(username) {
   const users = getUsers();
   const u = users[username]; if (!u) return;
   const rank = getRankOfUser(username);
-  document.getElementById('pm-name').innerHTML = username + (rank&&rank<=100?` <span style="font-size:0.8rem;color:var(--gold)">#${rank}</span>`:'') + ' ' + renderBadges(u.badges);
+  document.getElementById('pm-name').innerHTML = username + (rank&&rank<=100?` <span style="font-size:0.8rem;color:var(--gold)">#${rank}</span>`:'');
   document.getElementById('pm-rank').innerHTML = getRankTag(rank) || '<span style="color:var(--muted)">Unranked</span>';
   document.getElementById('pm-bal').textContent = '◈ '+u.balance.toLocaleString();
   document.getElementById('pm-won').textContent = '◈ '+u.won.toLocaleString();
