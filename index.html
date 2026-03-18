@@ -551,129 +551,8 @@
   </div>
 </div>
 
-<script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+
 <script>
-/* ================================================================
-   LIVE CHAT — ABLY
-================================================================ */
-const ABLY_KEY = 'CgdhUw.ohwAHA:HzGDZhLNxZcP-6k3xr98CdPBERavi7P1sTDdCpbWCoU';
-let ablyClient = null, chatChannel = null, chatOpen = false, onlineCount = 0;
-
-function toggleChat() {
-  chatOpen = !chatOpen;
-  document.getElementById('chat-sidebar').classList.toggle('open', chatOpen);
-  document.getElementById('chat-dot').classList.remove('show');
-  if (chatOpen) {
-    document.getElementById('chat-input').focus();
-    scrollChat();
-  }
-}
-
-function scrollChat() {
-  const msgs = document.getElementById('chat-messages');
-  setTimeout(() => msgs.scrollTop = msgs.scrollHeight, 50);
-}
-
-function fmtTime(ts) {
-  const d = new Date(ts);
-  return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
-}
-
-function appendMsg(data, isSystem=false) {
-  const msgs = document.getElementById('chat-messages');
-  const connecting = document.getElementById('chat-connecting');
-  if (connecting) connecting.remove();
-
-  const isMe = data.username === CU?.username;
-  const div = document.createElement('div');
-
-  if (isSystem) {
-    div.className = 'chat-msg system';
-    div.innerHTML = `<div class="chat-msg-text">${data.text}</div>`;
-  } else {
-    div.className = 'chat-msg' + (isMe ? ' me' : '');
-    div.innerHTML = `
-      <div class="chat-msg-header">
-        <span class="chat-msg-user${isMe?'':' other'}">${data.username}</span>
-        <span class="chat-msg-time">${fmtTime(data.ts)}</span>
-      </div>
-      <div class="chat-msg-text">${escapeHtml(data.text)}</div>`;
-  }
-
-  msgs.appendChild(div);
-  if (msgs.children.length > 100) msgs.removeChild(msgs.children[0]);
-  scrollChat();
-
-  if (!chatOpen && !isMe) {
-    document.getElementById('chat-dot').classList.add('show');
-  }
-}
-
-function escapeHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function sendMessage() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text || !chatChannel || !CU) return;
-  if (!CU) { showToast('Log in to chat!', 'info'); return; }
-  chatChannel.publish('message', { username: CU.username, text, ts: Date.now() });
-  input.value = '';
-}
-
-function initChat() {
-  if (!CU || ablyClient) return;
-  try {
-    ablyClient = new Ably.Realtime({ key: ABLY_KEY, clientId: CU.username });
-    chatChannel = ablyClient.channels.get('dvcgamble-chat');
-
-    ablyClient.connection.on('connected', () => {
-      appendMsg({ text: 'Connected to live chat 🟢' }, true);
-    });
-
-    ablyClient.connection.on('failed', () => {
-      appendMsg({ text: 'Connection failed ❌' }, true);
-    });
-
-    chatChannel.subscribe('message', msg => {
-      appendMsg(msg.data);
-    });
-
-    // presence for online count
-    chatChannel.presence.enter({ username: CU.username });
-    chatChannel.presence.subscribe(() => {
-      chatChannel.presence.get((err, members) => {
-        if (!err) {
-          onlineCount = members.length;
-          document.getElementById('online-count').textContent = onlineCount + ' online';
-        }
-      });
-    });
-
-    appendMsg({ text: CU.username + ' joined the chat 👋' }, true);
-
-  } catch(e) {
-    console.error('Ably init failed:', e);
-    document.getElementById('chat-connecting').textContent = 'Chat unavailable';
-  }
-}
-
-// send on enter
-document.getElementById('chat-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') sendMessage();
-});
-
-// init chat once logged in (called after loginUser)
-const _origLoginUser = loginUser;
-window.loginUser = function(username) {
-  _origLoginUser(username);
-  setTimeout(initChat, 300);
-};
-
-// if already logged in on page load
-if (getSession()) setTimeout(initChat, 500);
-</script>
 const getUsers = () => JSON.parse(localStorage.getItem('dvc_users')||'{}');
 const saveUsers = u => localStorage.setItem('dvc_users', JSON.stringify(u));
 const getSession = () => localStorage.getItem('dvc_session');
@@ -1194,6 +1073,97 @@ if(session){
 document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 document.getElementById('signup-pass2').addEventListener('keydown',e=>{if(e.key==='Enter')doSignup();});
 document.getElementById('profile-modal').addEventListener('click',e=>{if(e.target===document.getElementById('profile-modal'))closeProfile();});
+document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendMessage();});
+</script>
+
+<script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+<script>
+/* ================================================================
+   LIVE CHAT — ABLY
+================================================================ */
+const ABLY_KEY = 'CgdhUw.ohwAHA:HzGDZhLNxZcP-6k3xr98CdPBERavi7P1sTDdCpbWCoU';
+let ablyClient = null, chatChannel = null, chatOpen = false;
+
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chat-sidebar').classList.toggle('open', chatOpen);
+  document.getElementById('chat-dot').classList.remove('show');
+  if (chatOpen) { document.getElementById('chat-input').focus(); scrollChat(); }
+}
+
+function scrollChat() {
+  const msgs = document.getElementById('chat-messages');
+  setTimeout(() => msgs.scrollTop = msgs.scrollHeight, 50);
+}
+
+function fmtTime(ts) {
+  const d = new Date(ts);
+  return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function appendMsg(data, isSystem=false) {
+  const msgs = document.getElementById('chat-messages');
+  const conn = document.getElementById('chat-connecting');
+  if (conn) conn.remove();
+  const isMe = data.username === CU?.username;
+  const div = document.createElement('div');
+  if (isSystem) {
+    div.className = 'chat-msg system';
+    div.innerHTML = `<div class="chat-msg-text">${data.text}</div>`;
+  } else {
+    div.className = 'chat-msg'+(isMe?' me':'');
+    div.innerHTML = `
+      <div class="chat-msg-header">
+        <span class="chat-msg-user${isMe?'':' other'}">${escapeHtml(data.username)}</span>
+        <span class="chat-msg-time">${fmtTime(data.ts)}</span>
+      </div>
+      <div class="chat-msg-text">${escapeHtml(data.text)}</div>`;
+  }
+  msgs.appendChild(div);
+  if (msgs.children.length > 150) msgs.removeChild(msgs.children[0]);
+  scrollChat();
+  if (!chatOpen && !isMe && !isSystem) document.getElementById('chat-dot').classList.add('show');
+}
+
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || !chatChannel || !CU) return;
+  chatChannel.publish('message', { username: CU.username, text, ts: Date.now() });
+  input.value = '';
+}
+
+function initChat() {
+  if (!CU || ablyClient) return;
+  try {
+    ablyClient = new Ably.Realtime({ key: ABLY_KEY, clientId: CU.username });
+    chatChannel = ablyClient.channels.get('dvcgamble-chat');
+    ablyClient.connection.on('connected', () => appendMsg({ text: 'Connected to live chat 🟢' }, true));
+    ablyClient.connection.on('failed', () => appendMsg({ text: 'Connection failed ❌' }, true));
+    chatChannel.subscribe('message', msg => appendMsg(msg.data));
+    chatChannel.presence.enter({ username: CU.username });
+    chatChannel.presence.subscribe(() => {
+      chatChannel.presence.get((err, members) => {
+        if (!err) document.getElementById('online-count').textContent = members.length + ' online';
+      });
+    });
+  } catch(e) {
+    console.error('Ably error:', e);
+    const conn = document.getElementById('chat-connecting');
+    if (conn) conn.textContent = 'Chat unavailable';
+  }
+}
+
+// hook into loginUser
+const _origLogin = loginUser;
+window.loginUser = function(username) { _origLogin(username); setTimeout(initChat, 400); };
+
+// auto-init if already logged in
+if (getSession() && CU) setTimeout(initChat, 600);
 </script>
 </body>
 </html>
