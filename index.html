@@ -979,82 +979,117 @@ function spinSlots() {
 ================================================================ */
 let mActive=false, mBoard=[], mRevealed=0, mBet=0, mCount=0;
 
-function buildMinesGrid() {
-  const g=document.getElementById('mines-grid'); g.innerHTML='';
-  for(let i=0;i<25;i++){
-    const c=document.createElement('div');
-    c.className='mine-cell'; c.dataset.i=i; c.textContent='?';
-    c.onclick=()=>revealCell(i); g.appendChild(c);
-  }
-}
-
 function calcMult(revealed, mines) {
-  if(!revealed) return 1;
-  let m=1;
-  for(let i=0;i<revealed;i++) m*=(25-mines-i)>0?(25-i)/(25-mines-i):1;
-  return Math.max(1,+Math.min(m,1000).toFixed(2));
+  if (!revealed) return 1;
+  // house edge multiplier: each safe pick increases mult
+  let m = 1;
+  for (let i = 0; i < revealed; i++) {
+    const safeRemaining = 25 - mines - i;
+    const totalRemaining = 25 - i;
+    if (safeRemaining > 0) m *= totalRemaining / safeRemaining;
+  }
+  return Math.max(1, +Math.min(m * 0.97, 1000).toFixed(2)); // 0.97 house edge
 }
 
 function startMines() {
-  const bet=getBet('mn-bet');
-  mCount=Math.min(20,Math.max(1,parseInt(document.getElementById('mn-mines').value)||3));
-  if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
-  mBet=bet; mRevealed=0; mActive=true;
-  CU.balance-=bet; saveCurrentUser(); updateUI();
-  mBoard=Array(25).fill('gem');
-  let p=0; while(p<mCount){const r=Math.floor(Math.random()*25);if(mBoard[r]==='gem'){mBoard[r]='bomb';p++;}}
-  document.getElementById('mn-play').style.display='none';
-  document.getElementById('mn-cashout').style.display='block';
-  document.getElementById('mn-result').className='result-banner';
-  document.getElementById('mines-mult').textContent='1.00×';
-  document.getElementById('mines-found').textContent=`0 / ${25-mCount}`;
-  document.getElementById('mines-status').textContent='Find the gems! Avoid the bombs.';
-  document.getElementById('mn-val').textContent='◈'+mBet;
-  buildMinesGrid();
+  const bet = getBet('mn-bet');
+  mCount = Math.min(20, Math.max(1, parseInt(document.getElementById('mn-mines').value) || 3));
+  if (bet > CU.balance) { showToast('Not enough balance!', 'lose'); return; }
+  mBet = bet; mRevealed = 0; mActive = true;
+  CU.balance -= bet; saveCurrentUser(); updateUI();
+
+  // place mines
+  mBoard = Array(25).fill('gem');
+  let p = 0;
+  while (p < mCount) {
+    const r = Math.floor(Math.random() * 25);
+    if (mBoard[r] === 'gem') { mBoard[r] = 'bomb'; p++; }
+  }
+
+  document.getElementById('mn-play').style.display = 'none';
+  document.getElementById('mn-cashout').style.display = 'block';
+  document.getElementById('mn-result').className = 'result-banner';
+  document.getElementById('mines-mult').textContent = '1.00×';
+  document.getElementById('mines-found').textContent = `0 / ${25 - mCount}`;
+  document.getElementById('mines-status').textContent = 'Find the gems! Avoid the bombs.';
+  document.getElementById('mn-val').textContent = '◈' + mBet;
+
+  buildMinesGrid(); // rebuild fresh grid
+}
+
+function buildMinesGrid() {
+  const g = document.getElementById('mines-grid');
+  g.innerHTML = '';
+  for (let i = 0; i < 25; i++) {
+    const c = document.createElement('div');
+    c.className = 'mine-cell';
+    c.textContent = '?';
+    c.dataset.index = i;
+    c.addEventListener('click', function() {
+      revealCell(parseInt(this.dataset.index));
+    });
+    g.appendChild(c);
+  }
 }
 
 function revealCell(i) {
-  if(!mActive) return;
-  const cells=document.querySelectorAll('.mine-cell');
-  const cell=cells[i];
-  if(cell.classList.contains('revealed')) return;
+  if (!mActive) return;
+  const cell = document.querySelector(`.mine-cell[data-index="${i}"]`);
+  if (!cell || cell.classList.contains('revealed') || cell.classList.contains('gem') || cell.classList.contains('bomb')) return;
 
-  if(mBoard[i]==='bomb'){
-    cell.textContent='💣'; cell.className='mine-cell bomb revealed';
-    mBoard.forEach((v,j)=>{if(v==='bomb'){const c=cells[j];c.textContent='💣';c.className='mine-cell bomb revealed';}});
-    mActive=false;
-    document.getElementById('mn-play').style.display='block';
-    document.getElementById('mn-cashout').style.display='none';
-    setResult('mn-result',`✗ Boom! -◈${mBet}`,'lose');
-    showToast(`💥 Bomb! -◈${mBet}`,'lose');
+  if (mBoard[i] === 'bomb') {
+    // reveal clicked bomb immediately
+    cell.textContent = '💣';
+    cell.className = 'mine-cell bomb revealed';
+    // reveal all other bombs
+    mBoard.forEach((v, j) => {
+      if (v === 'bomb' && j !== i) {
+        const c = document.querySelector(`.mine-cell[data-index="${j}"]`);
+        if (c) { c.textContent = '💣'; c.className = 'mine-cell bomb revealed'; }
+      }
+    });
+    mActive = false;
+    document.getElementById('mn-play').style.display = 'block';
+    document.getElementById('mn-cashout').style.display = 'none';
+    setResult('mn-result', `✗ Boom! -◈${mBet}`, 'lose');
+    showToast(`💥 Bomb! -◈${mBet}`, 'lose');
     addResult('Mines', mBet, 'Bomb 💣', -mBet);
-    document.getElementById('mines-status').textContent='Boom! Better luck next time.';
-    document.getElementById('mines-mult').textContent='0×';
+    document.getElementById('mines-status').textContent = 'Boom! Better luck next time.';
+    document.getElementById('mines-mult').textContent = '0×';
   } else {
-    cell.textContent='💎'; cell.className='mine-cell gem revealed';
+    cell.textContent = '💎';
+    cell.className = 'mine-cell gem revealed';
     mRevealed++;
-    const mult=calcMult(mRevealed,mCount);
-    const val=Math.floor(mBet*mult);
-    document.getElementById('mines-mult').textContent=mult.toFixed(2)+'×';
-    document.getElementById('mines-found').textContent=`${mRevealed} / ${25-mCount}`;
-    document.getElementById('mines-status').textContent=`${mRevealed} gem${mRevealed>1?'s':''} found! Cash out for ◈${val}`;
-    document.getElementById('mn-val').textContent='◈'+val;
-    if(mRevealed===25-mCount) cashOutMines();
+    const mult = calcMult(mRevealed, mCount);
+    const val = Math.floor(mBet * mult);
+    document.getElementById('mines-mult').textContent = mult.toFixed(2) + '×';
+    document.getElementById('mines-found').textContent = `${mRevealed} / ${25 - mCount}`;
+    document.getElementById('mines-status').textContent = `${mRevealed} gem${mRevealed > 1 ? 's' : ''} found! Cash out for ◈${val}`;
+    document.getElementById('mn-val').textContent = '◈' + val;
+    if (mRevealed === 25 - mCount) cashOutMines();
   }
 }
 
 function cashOutMines() {
-  if(!mActive) return; mActive=false;
-  const mult=calcMult(mRevealed,mCount);
-  const win=Math.floor(mBet*mult), profit=win-mBet;
-  CU.balance+=win; saveCurrentUser(); updateUI();
-  setResult('mn-result',`✓ ${mult.toFixed(2)}× Cash out! +◈${profit}`,'win');
-  showToast(`+◈${profit} at ${mult.toFixed(2)}× 🎉`,'win');
+  if (!mActive) return;
+  mActive = false;
+  const mult = calcMult(mRevealed, mCount);
+  const win = Math.floor(mBet * mult);
+  const profit = win - mBet;
+  CU.balance += win; saveCurrentUser(); updateUI();
+  setResult('mn-result', `✓ ${mult.toFixed(2)}× Cash out! +◈${profit}`, 'win');
+  showToast(`+◈${profit} at ${mult.toFixed(2)}× 🎉`, 'win');
   addResult('Mines', mBet, `${mRevealed} gems ${mult.toFixed(2)}×`, profit);
-  document.getElementById('mn-play').style.display='block';
-  document.getElementById('mn-cashout').style.display='none';
-  document.getElementById('mines-status').textContent=`Cashed out at ${mult.toFixed(2)}×`;
-  mBoard.forEach((v,j)=>{if(v==='bomb'){const c=document.querySelectorAll('.mine-cell')[j];c.textContent='💣';c.className='mine-cell bomb revealed';}});
+  document.getElementById('mn-play').style.display = 'block';
+  document.getElementById('mn-cashout').style.display = 'none';
+  document.getElementById('mines-status').textContent = `Cashed out at ${mult.toFixed(2)}×`;
+  // reveal all bombs
+  mBoard.forEach((v, j) => {
+    if (v === 'bomb') {
+      const c = document.querySelector(`.mine-cell[data-index="${j}"]`);
+      if (c) { c.textContent = '💣'; c.className = 'mine-cell bomb revealed'; }
+    }
+  });
 }
 
 /* ================================================================
