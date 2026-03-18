@@ -620,6 +620,15 @@
               <div><span style="color:var(--accent)">/stats</span> [user] — view full stats for a user</div>
               <div><span style="color:var(--accent)">/clearhistory</span> [user] — wipe bet history</div>
               <div><span style="color:var(--accent)">/resetstats</span> [user] — reset all stats & balance to default</div>
+              <div><span style="color:var(--accent)">/addmultiply</span> [user] [x] — multiply a user's balance by x</div>
+              <div><span style="color:var(--accent)">/top5</span> — show top 5 richest players</div>
+              <div><span style="color:var(--accent)">/rename</span> [user] [newname] — rename a user</div>
+              <div><span style="color:var(--accent)">/wipeall</span> — wipe ALL user data (nuclear)</div>
+              <div><span style="color:var(--accent)">/richest</span> — show the player with most balance</div>
+              <div><span style="color:var(--accent)">/broke</span> — show all players with ◈0</div>
+              <div><span style="color:var(--accent)">/givecashall</span> [amount] — give coins to every user</div>
+              <div><span style="color:var(--accent)">/totalstats</span> — show total stats across all users</div>
+              <div><span style="color:var(--accent)">/announce</span> [message] — big announcement in chat</div>
               <div><span style="color:var(--accent)">/clear</span> — clear terminal</div>
             </div>
           </div>
@@ -877,8 +886,9 @@ function loginUser(username) {
   CU = users[username];
   saveSession(username);
   document.getElementById('auth-overlay').classList.add('hidden');
-  if (CU.accentColor) applyAccent(CU.accentColor);
+  try { if (CU.accentColor) applyAccent(CU.accentColor); } catch(e) {}
   updateUI();
+  setTimeout(() => { try { initChat(); } catch(e) {} }, 400);
 }
 
 function logout() {
@@ -1504,6 +1514,8 @@ function runOwnerCmd(raw) {
     ownerLog(`✓ Reset all stats for ${user} — balance ◈1,000, won/lost/played/streak all zeroed.`, 'success');
     return;
   }
+
+  if (cmd === '/clearhistory') {
     const [, user] = parts;
     if (!user) { ownerLog('Usage: /clearhistory [user]', 'error'); return; }
     const users = getUsers();
@@ -1512,6 +1524,107 @@ function runOwnerCmd(raw) {
     saveUsers(users);
     if (CU?.username === user) CU.history = [];
     ownerLog(`✓ Cleared bet history for ${user}`, 'success');
+    return;
+  }
+
+  if (cmd === '/addmultiply') {
+    const [, user, mult] = parts;
+    if (!user || !mult) { ownerLog('Usage: /addmultiply [user] [multiplier]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    const m = parseFloat(mult);
+    if (isNaN(m) || m <= 0) { ownerLog('Invalid multiplier.', 'error'); return; }
+    const old = users[user].balance;
+    users[user].balance = Math.floor(users[user].balance * m);
+    saveUsers(users);
+    if (CU?.username === user) { CU.balance = users[user].balance; updateUI(); }
+    ownerLog(`✓ Multiplied ${user}'s balance by ${m}× — ◈${old.toLocaleString()} → ◈${users[user].balance.toLocaleString()}`, 'success');
+    return;
+  }
+
+  if (cmd === '/top5') {
+    const lb = getLeaderboard().slice(0, 5);
+    ownerLog('--- Top 5 Players (by total won) ---', 'success');
+    lb.forEach((u, i) => ownerLog(`  ${i+1}. ${u.username} | won: ◈${u.won.toLocaleString()} | balance: ◈${u.balance.toLocaleString()}`, 'info'));
+    return;
+  }
+
+  if (cmd === '/rename') {
+    const [, user, newname] = parts;
+    if (!user || !newname) { ownerLog('Usage: /rename [user] [newname]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    if (users[newname]) { ownerLog(`Username "${newname}" already taken.`, 'error'); return; }
+    users[newname] = { ...users[user], username: newname };
+    delete users[user];
+    saveUsers(users);
+    if (CU?.username === user) { CU.username = newname; saveSession(newname); updateUI(); }
+    ownerLog(`✓ Renamed ${user} → ${newname}`, 'success');
+    return;
+  }
+
+  if (cmd === '/wipeall') {
+    const confirm = parts[1];
+    if (confirm !== 'CONFIRM') { ownerLog('⚠️ This will delete ALL users. Type /wipeall CONFIRM to proceed.', 'error'); return; }
+    saveUsers({});
+    ownerLog('💥 All user data wiped.', 'success');
+    logout();
+    return;
+  }
+
+  if (cmd === '/richest') {
+    const users = Object.values(getUsers());
+    if (!users.length) { ownerLog('No users.', 'error'); return; }
+    const richest = users.sort((a,b) => b.balance - a.balance)[0];
+    ownerLog(`💰 Richest player: ${richest.username} with ◈${richest.balance.toLocaleString()}`, 'success');
+    return;
+  }
+
+  if (cmd === '/broke') {
+    const users = Object.values(getUsers()).filter(u => u.balance <= 0);
+    if (!users.length) { ownerLog('No broke players right now.', 'info'); return; }
+    ownerLog(`--- ${users.length} broke player(s) ---`, 'success');
+    users.forEach(u => ownerLog(`  ${u.username} | ◈${u.balance}`, 'info'));
+    return;
+  }
+
+  if (cmd === '/givecashall') {
+    const [, amt] = parts;
+    if (!amt) { ownerLog('Usage: /givecashall [amount]', 'error'); return; }
+    const n = parseInt(amt);
+    if (isNaN(n) || n <= 0) { ownerLog('Invalid amount.', 'error'); return; }
+    const users = getUsers();
+    let count = 0;
+    Object.keys(users).forEach(u => { users[u].balance += n; count++; });
+    saveUsers(users);
+    if (CU) { CU.balance += n; updateUI(); }
+    ownerLog(`✓ Gave ◈${n.toLocaleString()} to all ${count} users.`, 'success');
+    return;
+  }
+
+  if (cmd === '/totalstats') {
+    const users = Object.values(getUsers());
+    const totalBal = users.reduce((a,u)=>a+u.balance,0);
+    const totalWon = users.reduce((a,u)=>a+(u.won||0),0);
+    const totalLost = users.reduce((a,u)=>a+(u.lost||0),0);
+    const totalPlayed = users.reduce((a,u)=>a+(u.played||0),0);
+    ownerLog(`--- Server Stats (${users.length} users) ---`, 'success');
+    ownerLog(`  Total balance in circulation: ◈${totalBal.toLocaleString()}`, 'info');
+    ownerLog(`  Total won across all users:   ◈${totalWon.toLocaleString()}`, 'info');
+    ownerLog(`  Total lost across all users:  ◈${totalLost.toLocaleString()}`, 'info');
+    ownerLog(`  Total games played:           ${totalPlayed.toLocaleString()}`, 'info');
+    return;
+  }
+
+  if (cmd === '/announce') {
+    const message = parts.slice(1).join(' ');
+    if (!message) { ownerLog('Usage: /announce [message]', 'error'); return; }
+    if (chatChannel) {
+      chatChannel.publish('message', { username: '📢 ANNOUNCEMENT', text: '🔔 ' + message, ts: Date.now() });
+      ownerLog(`✓ Announced: "${message}"`, 'success');
+    } else {
+      ownerLog('Chat not connected.', 'error');
+    }
     return;
   }
 
@@ -1933,10 +2046,6 @@ function initChat() {
     if (conn) conn.textContent = 'Chat unavailable';
   }
 }
-
-// hook into loginUser
-const _origLogin = loginUser;
-window.loginUser = function(username) { _origLogin(username); setTimeout(initChat, 400); };
 
 // auto-init if already logged in
 if (getSession() && CU) setTimeout(initChat, 600);
