@@ -628,7 +628,9 @@
               <div><span style="color:var(--accent)">/broke</span> — show all players with ◈0</div>
               <div><span style="color:var(--accent)">/givecashall</span> [amount] — give coins to every user</div>
               <div><span style="color:var(--accent)">/totalstats</span> — show total stats across all users</div>
-              <div><span style="color:var(--accent)">/announce</span> [message] — big announcement in chat</div>
+              <div><span style="color:var(--accent)">/badgegive</span> [user] [badge] — give a badge (owner, cool, vip, og, pro, goat)</div>
+              <div><span style="color:var(--accent)">/badgeremove</span> [user] [badge] — remove a badge from a user</div>
+              <div><span style="color:var(--accent)">/badges</span> [user] — list a user's badges</div>
               <div><span style="color:var(--accent)">/clear</span> — clear terminal</div>
             </div>
           </div>
@@ -800,6 +802,16 @@
 
 
 <script>
+const BADGE_MAP   = { owner:'👑', cool:'😎', vip:'💎', og:'🔥', pro:'⚡', goat:'🐐' };
+const BADGE_LABEL = { owner:'Owner', cool:'Cool', vip:'VIP', og:'OG', pro:'Pro', goat:'GOAT' };
+const BADGE_COLOR = { owner:'rgba(255,215,64,0.18)', cool:'rgba(0,210,255,0.15)', vip:'rgba(147,51,234,0.2)', og:'rgba(255,82,82,0.15)', pro:'rgba(0,230,118,0.15)', goat:'rgba(255,165,0,0.15)' };
+const BADGE_TEXT  = { owner:'#ffd740', cool:'#00d2ff', vip:'#c084fc', og:'#ff5252', pro:'#00e676', goat:'#ffa500' };
+
+function renderBadges(badges) {
+  if (!badges || !badges.length) return '';
+  return badges.map(b => `<span title="${BADGE_LABEL[b]||b}" style="display:inline-flex;align-items:center;gap:3px;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:5px;background:${BADGE_COLOR[b]||'rgba(255,255,255,0.1)'};color:${BADGE_TEXT[b]||'#fff'};">${BADGE_MAP[b]||'🏷️'} ${BADGE_LABEL[b]||b}</span>`).join('');
+}
+
 const getUsers = () => JSON.parse(localStorage.getItem('dvc_users')||'{}');
 const saveUsers = u => localStorage.setItem('dvc_users', JSON.stringify(u));
 const getSession = () => localStorage.getItem('dvc_session');
@@ -899,13 +911,25 @@ function logout() {
 /* ================================================================
    UI
 ================================================================ */
+const BADGES = {
+  owner: { emoji: '👑', label: 'Owner',  color: '#ffd740' },
+  cool:  { emoji: '😎', label: 'Cool',   color: '#06b6d4' },
+};
+
+function getBadgeHTML(user) {
+  if (!user?.badge) return '';
+  const b = BADGES[user.badge];
+  if (!b) return '';
+  return `<span title="${b.label}" style="font-size:0.9rem;margin-left:4px;">${b.emoji}</span>`;
+}
+
 function updateUI() {
   if (!CU) return;
   const rank = getRankOfUser(CU.username);
-  document.getElementById('nav-user').textContent = CU.username;
+  document.getElementById('nav-user').innerHTML = CU.username + getBadgeHTML(CU);
   document.getElementById('nav-balance').textContent = CU.balance.toLocaleString();
-  document.getElementById('home-user').textContent = CU.username;
-  document.getElementById('home-rank-tag').innerHTML = getRankTag(rank);
+  document.getElementById('home-user').innerHTML = CU.username + getBadgeHTML(CU);
+  document.getElementById('home-rank-tag').innerHTML = getRankTag(rank) + ' ' + renderBadges(CU.badges);
   document.getElementById('home-balance').textContent = '◈ '+CU.balance.toLocaleString();
   document.getElementById('home-won').textContent = '◈ '+CU.won.toLocaleString();
   document.getElementById('home-lost').textContent = '◈ '+CU.lost.toLocaleString();
@@ -950,6 +974,7 @@ function renderLeaderboard() {
           <span style="font-weight:600">${u.username}</span>
           ${u.username===CU?.username?'<span class="you-badge">you</span>':''}
           ${getRankTag(u.rank)}
+          ${renderBadges(u.badges)}
         </td>
         <td style="color:var(--accent);font-weight:600">◈${u.won.toLocaleString()}</td>
         <td style="color:var(--gold)">◈${u.balance.toLocaleString()}</td>
@@ -974,7 +999,7 @@ function handleSearch(q) {
   if (!results.length) { dd.innerHTML = '<div style="padding:0.75rem 1rem;font-size:0.82rem;color:var(--muted)">No players found</div>'; dd.classList.add('show'); return; }
   dd.innerHTML = results.map(u => `
     <div class="search-result" onclick="openProfile('${u.username}')">
-      <span class="sr-name">${u.username}${u.rank&&u.rank<=100?` <span style="font-size:0.65rem;color:var(--gold)">#${u.rank}</span>`:''}</span>
+      <span class="sr-name">${u.username}${u.rank&&u.rank<=100?` <span style="font-size:0.65rem;color:var(--gold)">#${u.rank}</span>`:''} ${renderBadges(u.badges)}</span>
       <span class="sr-bal">◈${u.balance.toLocaleString()}</span>
     </div>`).join('');
   dd.classList.add('show');
@@ -990,7 +1015,7 @@ function openProfile(username) {
   const users = getUsers();
   const u = users[username]; if (!u) return;
   const rank = getRankOfUser(username);
-  document.getElementById('pm-name').innerHTML = username + (rank&&rank<=100?` <span style="font-size:0.8rem;color:var(--gold)">#${rank}</span>`:'');
+  document.getElementById('pm-name').innerHTML = username + (rank&&rank<=100?` <span style="font-size:0.8rem;color:var(--gold)">#${rank}</span>`:'') + ' ' + renderBadges(u.badges);
   document.getElementById('pm-rank').innerHTML = getRankTag(rank) || '<span style="color:var(--muted)">Unranked</span>';
   document.getElementById('pm-bal').textContent = '◈ '+u.balance.toLocaleString();
   document.getElementById('pm-won').textContent = '◈ '+u.won.toLocaleString();
@@ -1616,7 +1641,47 @@ function runOwnerCmd(raw) {
     return;
   }
 
-  if (cmd === '/announce') {
+  if (cmd === '/badgegive') {
+    const [, user, badge] = parts;
+    if (!user || !badge) { ownerLog('Usage: /badgegive [user] [badge]', 'error'); return; }
+    const BADGES = { owner:'👑 Owner', cool:'😎 Cool', vip:'💎 VIP', og:'🔥 OG', pro:'⚡ Pro', goat:'🐐 GOAT' };
+    const key = badge.toLowerCase();
+    if (!BADGES[key]) { ownerLog(`Unknown badge. Available: ${Object.keys(BADGES).join(', ')}`, 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    if (!users[user].badges) users[user].badges = [];
+    if (users[user].badges.includes(key)) { ownerLog(`${user} already has the ${BADGES[key]} badge.`, 'error'); return; }
+    users[user].badges.push(key);
+    saveUsers(users);
+    if (CU?.username === user) { CU.badges = users[user].badges; }
+    ownerLog(`✓ Gave ${BADGES[key]} badge to ${user}`, 'success');
+    return;
+  }
+
+  if (cmd === '/badgeremove') {
+    const [, user, badge] = parts;
+    if (!user || !badge) { ownerLog('Usage: /badgeremove [user] [badge]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    if (!users[user].badges?.length) { ownerLog(`${user} has no badges.`, 'error'); return; }
+    users[user].badges = users[user].badges.filter(b => b !== badge.toLowerCase());
+    saveUsers(users);
+    if (CU?.username === user) { CU.badges = users[user].badges; }
+    ownerLog(`✓ Removed "${badge}" badge from ${user}`, 'success');
+    return;
+  }
+
+  if (cmd === '/badges') {
+    const [, user] = parts;
+    if (!user) { ownerLog('Usage: /badges [user]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    const badges = users[user].badges || [];
+    if (!badges.length) { ownerLog(`${user} has no badges.`, 'info'); return; }
+    const BADGES = { owner:'👑 Owner', cool:'😎 Cool', vip:'💎 VIP', og:'🔥 OG', pro:'⚡ Pro', goat:'🐐 GOAT' };
+    ownerLog(`${user}'s badges: ${badges.map(b=>BADGES[b]||b).join(', ')}`, 'success');
+    return;
+  }
     const message = parts.slice(1).join(' ');
     if (!message) { ownerLog('Usage: /announce [message]', 'error'); return; }
     if (chatChannel) {
@@ -1625,6 +1690,56 @@ function runOwnerCmd(raw) {
     } else {
       ownerLog('Chat not connected.', 'error');
     }
+    return;
+  }
+
+  if (cmd === '/badgegive') {
+    const [, user, badge] = parts;
+    if (!user || !badge) { ownerLog('Usage: /badgegive [user] [badge]', 'error'); return; }
+    const BADGES = {
+      owner: { label: 'Owner', emoji: '👑', color: '#ffd740' },
+      cool:  { label: 'Cool',  emoji: '😎', color: '#06b6d4' },
+      vip:   { label: 'VIP',   emoji: '💎', color: '#a855f7' },
+      og:    { label: 'OG',    emoji: '🔥', color: '#f97316' },
+      pro:   { label: 'Pro',   emoji: '⚡', color: '#00e676' },
+      goat:  { label: 'GOAT',  emoji: '🐐', color: '#ec4899' },
+    };
+    const b = BADGES[badge.toLowerCase()];
+    if (!b) { ownerLog(`Unknown badge. Options: owner, cool, vip, og, pro, goat`, 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    if (!users[user].badges) users[user].badges = [];
+    if (users[user].badges.find(x => x.id === badge.toLowerCase())) { ownerLog(`${user} already has the ${badge} badge.`, 'error'); return; }
+    users[user].badges.push({ id: badge.toLowerCase(), ...b });
+    saveUsers(users);
+    if (CU?.username === user) CU.badges = users[user].badges;
+    ownerLog(`✓ Gave ${b.emoji} ${b.label} badge to ${user}`, 'success');
+    return;
+  }
+
+  if (cmd === '/badgeremove') {
+    const [, user, badge] = parts;
+    if (!user || !badge) { ownerLog('Usage: /badgeremove [user] [badge]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    if (!users[user].badges) { ownerLog(`${user} has no badges.`, 'error'); return; }
+    const before = users[user].badges.length;
+    users[user].badges = users[user].badges.filter(b => b.id !== badge.toLowerCase());
+    if (users[user].badges.length === before) { ownerLog(`${user} doesn't have the ${badge} badge.`, 'error'); return; }
+    saveUsers(users);
+    if (CU?.username === user) CU.badges = users[user].badges;
+    ownerLog(`✓ Removed ${badge} badge from ${user}`, 'success');
+    return;
+  }
+
+  if (cmd === '/badges') {
+    const [, user] = parts;
+    if (!user) { ownerLog('Usage: /badges [user]', 'error'); return; }
+    const users = getUsers();
+    if (!users[user]) { ownerLog(`User "${user}" not found.`, 'error'); return; }
+    const badges = users[user].badges || [];
+    if (!badges.length) { ownerLog(`${user} has no badges.`, 'info'); return; }
+    ownerLog(`${user}'s badges: ${badges.map(b => b.emoji+' '+b.label).join(', ')}`, 'success');
     return;
   }
 
