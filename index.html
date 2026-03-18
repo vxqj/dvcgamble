@@ -238,6 +238,18 @@
     .bust-btn{background:var(--accent);color:#0d0d0d;border-radius:10px;padding:0.8rem 2rem;font-size:0.95rem;font-weight:700;transition:opacity 0.2s;}
     .bust-btn:hover{opacity:0.88;}
 
+    /* TOWERS */
+    .tw-row{display:flex;gap:0.4rem;width:100%;}
+    .tw-cell{flex:1;height:48px;border-radius:8px;font-size:1.2rem;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:all 0.15s;cursor:pointer;user-select:none;}
+    .tw-cell:hover:not(.tw-revealed){background:var(--surface3);border-color:rgba(255,255,255,0.2);transform:scale(1.04);}
+    .tw-cell.tw-safe{background:rgba(0,230,118,0.12);border-color:rgba(0,230,118,0.4);animation:gemPop 0.25s cubic-bezier(0.34,1.56,0.64,1);}
+    .tw-cell.tw-bomb{background:rgba(255,82,82,0.15);border-color:rgba(255,82,82,0.4);animation:shake 0.3s ease;}
+    .tw-cell.tw-revealed{cursor:default;}
+    .tw-cell.tw-locked{cursor:default;opacity:0.4;}
+    .tw-cell.tw-active{border-color:rgba(255,215,64,0.5);box-shadow:0 0 8px rgba(255,215,64,0.15);}
+    .tw-row.tw-done .tw-cell:not(.tw-revealed){opacity:0.25;cursor:default;}
+    .tw-row-label{font-size:0.65rem;color:var(--muted);width:28px;text-align:right;flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;font-weight:600;}
+
     /* HISTORY */
     .history-list{display:flex;flex-direction:column;gap:0.4rem;}
     .history-item{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.85rem;background:var(--surface2);border-radius:8px;font-size:0.82rem;gap:0.5rem;}
@@ -353,6 +365,7 @@
     <div class="nav-item" onclick="showPanel('crash')" id="nav-crash"><span class="icon">📈</span> Crash</div>
     <div class="nav-item" onclick="showPanel('slots')" id="nav-slots"><span class="icon">🎰</span> Slots</div>
     <div class="nav-item" onclick="showPanel('mines')" id="nav-mines"><span class="icon">💣</span> Mines</div>
+    <div class="nav-item" onclick="showPanel('towers')" id="nav-towers"><span class="icon">🗼</span> Towers</div>
     <div class="sidebar-label">Community</div>
     <div class="nav-item" onclick="showPanel('leaderboard')" id="nav-leaderboard"><span class="icon">🏆</span> Leaderboard</div>
     <div class="nav-item" onclick="showPanel('history')" id="nav-history"><span class="icon">📋</span> History</div>
@@ -378,6 +391,7 @@
         <div class="game-card" onclick="showPanel('crash')"><div class="game-emoji">📈</div><h3>Crash</h3><p>Cash out before it crashes.</p></div>
         <div class="game-card" onclick="showPanel('slots')"><div class="game-emoji">🎰</div><h3>Slots</h3><p>Spin. Match. Win big.</p></div>
         <div class="game-card" onclick="showPanel('mines')"><div class="game-emoji">💣</div><h3>Mines</h3><p>Gems vs bombs. Your call.</p></div>
+        <div class="game-card" onclick="showPanel('towers')"><div class="game-emoji">🗼</div><h3>Towers</h3><p>Climb floors. Cash out or bust.</p></div>
       </div>
     </div>
 
@@ -508,6 +522,47 @@
           <button class="play-btn" id="mn-play" onclick="startMines()">Start</button>
           <button class="play-btn gold-btn" id="mn-cashout" onclick="cashOutMines()" style="display:none">Cash Out <span id="mn-val"></span></button>
           <div class="result-banner" id="mn-result"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOWERS -->
+    <div class="panel" id="panel-towers">
+      <button class="back-btn" onclick="showPanel('home')">← Back</button>
+      <div class="section-title">🗼 Towers</div>
+      <div class="game-layout">
+        <div class="game-area" style="gap:0.75rem;padding:1.25rem;">
+          <div style="display:flex;gap:1.5rem;align-items:center;flex-shrink:0;">
+            <div><div style="font-size:0.7rem;color:var(--muted);margin-bottom:2px;letter-spacing:1px;text-transform:uppercase">Multiplier</div><div class="mines-mult" id="tw-mult">1.00×</div></div>
+            <div><div style="font-size:0.7rem;color:var(--muted);margin-bottom:2px;letter-spacing:1px;text-transform:uppercase">Floor</div><div class="mines-mult" id="tw-floor" style="color:var(--fg)">0 / 0</div></div>
+          </div>
+          <div id="tw-grid" style="display:flex;flex-direction:column;gap:0.4rem;width:100%;max-width:340px;"></div>
+          <div id="tw-status" style="font-size:0.82rem;color:var(--muted)">Configure and start</div>
+        </div>
+        <div class="bet-panel">
+          <div><div class="bet-label">Bet amount</div><input class="bet-input" id="tw-bet" type="number" value="100" min="1" /></div>
+          <div class="bet-quick">
+            <button class="bet-quick-btn" onclick="setBet('tw-bet',0.5)">½</button>
+            <button class="bet-quick-btn" onclick="setBet('tw-bet',2)">2×</button>
+            <button class="bet-quick-btn" onclick="setBet('tw-bet','max')">Max</button>
+          </div>
+          <div><div class="bet-label">Difficulty</div>
+            <select class="bet-input" id="tw-diff" style="cursor:pointer;">
+              <option value="easy">Easy — 1 bomb per row</option>
+              <option value="medium" selected>Medium — 2 bombs per row</option>
+              <option value="hard">Hard — 3 bombs per row</option>
+              <option value="expert">Expert — 4 bombs per row</option>
+            </select>
+          </div>
+          <div style="font-size:0.75rem;color:var(--muted);background:var(--surface2);padding:0.75rem;border-radius:8px;line-height:1.9">
+            <div>Easy: <span style="color:var(--accent)">×1.35 per floor</span></div>
+            <div>Medium: <span style="color:var(--accent)">×1.75 per floor</span></div>
+            <div>Hard: <span style="color:var(--accent)">×2.5 per floor</span></div>
+            <div>Expert: <span style="color:var(--gold)">×5.0 per floor</span></div>
+          </div>
+          <button class="play-btn" id="tw-play" onclick="startTowers()">Start</button>
+          <button class="play-btn gold-btn" id="tw-cashout" onclick="cashOutTowers()" style="display:none">Cash Out <span id="tw-val"></span></button>
+          <div class="result-banner" id="tw-result"></div>
         </div>
       </div>
     </div>
@@ -1094,11 +1149,174 @@ function cashOutMines() {
 }
 
 /* ================================================================
+   TOWERS
+================================================================ */
+const TW_FLOORS = 8;
+const TW_COLS   = 4;
+const TW_DIFF   = { easy:{bombs:1,mult:1.35}, medium:{bombs:2,mult:1.75}, hard:{bombs:3,mult:2.5}, expert:{bombs:4,mult:5.0} };
+
+let twActive=false, twFloor=0, twBoard=[], twBet=0, twDiff=null, twMult=1;
+
+function buildTowersGrid() {
+  const g = document.getElementById('tw-grid');
+  g.innerHTML = '';
+  // render from top (highest floor) to bottom (floor 1)
+  for (let row = TW_FLOORS - 1; row >= 0; row--) {
+    const rowWrap = document.createElement('div');
+    rowWrap.style.cssText = 'display:flex;gap:0.4rem;width:100%;align-items:center;';
+    rowWrap.id = 'tw-row-'+row;
+
+    const label = document.createElement('div');
+    label.className = 'tw-row-label';
+    label.textContent = (row+1)+'';
+    rowWrap.appendChild(label);
+
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'tw-row';
+    rowDiv.style.flex = '1';
+
+    for (let col = 0; col < TW_COLS; col++) {
+      const cell = document.createElement('div');
+      cell.className = 'tw-cell tw-locked';
+      cell.textContent = '?';
+      cell.dataset.row = row;
+      cell.dataset.col = col;
+      cell.addEventListener('click', () => twPick(row, col));
+      rowDiv.appendChild(cell);
+    }
+    rowWrap.appendChild(rowDiv);
+    g.appendChild(rowWrap);
+  }
+}
+
+function twGetCells(row) {
+  return document.querySelectorAll(`.tw-cell[data-row="${row}"]`);
+}
+
+function startTowers() {
+  const bet = getBet('tw-bet');
+  if (bet > CU.balance) { showToast('Not enough balance!', 'lose'); return; }
+  const diffKey = document.getElementById('tw-diff').value;
+  twDiff = TW_DIFF[diffKey];
+  twBet = bet; twFloor = 0; twMult = 1; twActive = true;
+  CU.balance -= bet; saveCurrentUser(); updateUI();
+
+  // generate board: each row has TW_COLS cells, twDiff.bombs are bombs
+  twBoard = [];
+  for (let r = 0; r < TW_FLOORS; r++) {
+    const row = Array(TW_COLS).fill('safe');
+    let placed = 0;
+    while (placed < twDiff.bombs) {
+      const c = Math.floor(Math.random() * TW_COLS);
+      if (row[c] === 'safe') { row[c] = 'bomb'; placed++; }
+    }
+    twBoard.push(row);
+  }
+
+  document.getElementById('tw-play').style.display = 'none';
+  document.getElementById('tw-cashout').style.display = 'block';
+  document.getElementById('tw-result').className = 'result-banner';
+  document.getElementById('tw-mult').textContent = '1.00×';
+  document.getElementById('tw-floor').textContent = `0 / ${TW_FLOORS}`;
+  document.getElementById('tw-status').textContent = 'Pick a safe tile on floor 1!';
+  document.getElementById('tw-val').textContent = '◈'+twBet;
+
+  buildTowersGrid();
+  twActivateRow(0);
+}
+
+function twActivateRow(row) {
+  const cells = twGetCells(row);
+  cells.forEach(c => {
+    c.classList.remove('tw-locked');
+    c.classList.add('tw-active');
+    c.textContent = '?';
+  });
+}
+
+function twPick(row, col) {
+  if (!twActive || row !== twFloor) return;
+  const cells = twGetCells(row);
+  const cell = cells[col];
+  if (!cell || cell.classList.contains('tw-revealed')) return;
+
+  // lock all cells in this row
+  cells.forEach(c => { c.classList.remove('tw-active'); c.classList.add('tw-revealed'); });
+
+  if (twBoard[row][col] === 'bomb') {
+    // reveal all cells in this row
+    cells.forEach((c, i) => {
+      c.textContent = twBoard[row][i] === 'bomb' ? '💣' : '✓';
+      c.className = 'tw-cell tw-revealed ' + (twBoard[row][i] === 'bomb' ? 'tw-bomb' : 'tw-safe');
+    });
+    twActive = false;
+    document.getElementById('tw-play').style.display = 'block';
+    document.getElementById('tw-cashout').style.display = 'none';
+    setResult('tw-result', `✗ Bomb on floor ${row+1}! -◈${twBet}`, 'lose');
+    showToast(`💥 Bomb on floor ${row+1}! -◈${twBet}`, 'lose');
+    addResult('Towers', twBet, `Floor ${row+1} bomb`, -twBet);
+    document.getElementById('tw-status').textContent = `Busted on floor ${row+1}!`;
+    document.getElementById('tw-mult').textContent = '0×';
+    // lock all remaining rows
+    for (let r = row+1; r < TW_FLOORS; r++) {
+      twGetCells(r).forEach(c => { c.classList.add('tw-locked'); c.textContent = '?'; });
+    }
+  } else {
+    // safe pick
+    cell.textContent = '✓';
+    cell.className = 'tw-cell tw-revealed tw-safe';
+    // reveal other cells in row dimly
+    cells.forEach((c, i) => {
+      if (i !== col) {
+        c.textContent = twBoard[row][i] === 'bomb' ? '💣' : '·';
+        c.className = 'tw-cell tw-revealed ' + (twBoard[row][i] === 'bomb' ? 'tw-bomb' : '');
+        c.style.opacity = '0.3';
+      }
+    });
+
+    twFloor++;
+    twMult = +(twMult * twDiff.mult).toFixed(2);
+    const val = Math.floor(twBet * twMult);
+    document.getElementById('tw-mult').textContent = twMult.toFixed(2) + '×';
+    document.getElementById('tw-floor').textContent = `${twFloor} / ${TW_FLOORS}`;
+    document.getElementById('tw-val').textContent = '◈' + val;
+
+    if (twFloor === TW_FLOORS) {
+      // topped out!
+      cashOutTowers(true);
+    } else {
+      document.getElementById('tw-status').textContent = `Floor ${twFloor} cleared! Pick floor ${twFloor+1}. Cash out: ◈${val}`;
+      twActivateRow(twFloor);
+    }
+  }
+}
+
+function cashOutTowers(topped=false) {
+  if (!twActive) return;
+  twActive = false;
+  const win = Math.floor(twBet * twMult);
+  const profit = win - twBet;
+  CU.balance += win; saveCurrentUser(); updateUI();
+  const msg = topped ? `🏆 TOPPED OUT! ${twMult.toFixed(2)}×` : `✓ Floor ${twFloor} cash out! ${twMult.toFixed(2)}×`;
+  setResult('tw-result', `${msg} +◈${profit}`, 'win');
+  showToast(`+◈${profit} at ${twMult.toFixed(2)}× 🎉`, 'win');
+  addResult('Towers', twBet, `${twFloor} floors ${twMult.toFixed(2)}×`, profit);
+  document.getElementById('tw-play').style.display = 'block';
+  document.getElementById('tw-cashout').style.display = 'none';
+  document.getElementById('tw-status').textContent = topped ? `TOPPED OUT at ${twMult.toFixed(2)}×! 🏆` : `Cashed out at floor ${twFloor}!`;
+  // lock remaining rows
+  for (let r = twFloor; r < TW_FLOORS; r++) {
+    twGetCells(r).forEach(c => { c.classList.add('tw-locked'); });
+  }
+}
+
+/* ================================================================
    INIT
 ================================================================ */
 window.addEventListener('resize', resizeCrash);
 setTimeout(resizeCrash, 100);
 buildMinesGrid();
+buildTowersGrid();
 
 const session=getSession();
 if(session){
