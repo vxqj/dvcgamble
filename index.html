@@ -1418,7 +1418,7 @@ function drawPlinkoBoard() {
     const y = topMargin + r * rowGap + rowGap * 0.5;
     for (let p = 0; p < numPins; p++) {
       const x = startX + p * bucketW;
-      pkPins.push({x, y, r: 5});
+      pkPins.push({x, y, r: 5, id: pkPins.length});
       pkCtx.beginPath();
       pkCtx.arc(x, y, 5, 0, Math.PI * 2);
       pkCtx.fillStyle = 'rgba(255,255,255,0.25)';
@@ -1468,22 +1468,22 @@ function dropPlinko() {
   document.getElementById('pk-play').disabled = true;
   document.getElementById('pk-result').className = 'result-banner';
 
-  const rows = parseInt(document.getElementById('pk-rows').value);
-  const W = pkCanvas.width, H = pkCanvas.height;
-  const topMargin = 40;
+  const W = pkCanvas.width;
+  const topMargin = 30;
 
   const ball = {
-    x: W / 2 + (Math.random() - 0.5) * 2,
-    y: topMargin - 20,
-    vx: (Math.random() - 0.5) * 0.5,
-    vy: 0,
-    r: 8,
+    x: W / 2 + (Math.random() - 0.5) * 4,
+    y: topMargin - 10,
+    vx: (Math.random() - 0.5) * 1.5,
+    vy: 2,
+    r: 7,
     bet,
     landed: false,
+    landedTimer: 0,
+    hitCooldown: {},
     trail: []
   };
   pkBalls.push(ball);
-
   if (!pkAnimFrame) pkAnimLoop();
 }
 
@@ -1491,100 +1491,142 @@ function pkAnimLoop() {
   const rows = parseInt(document.getElementById('pk-rows').value);
   const W = pkCanvas.width, H = pkCanvas.height;
   const bottomMargin = 60;
-  const gravity = 0.35;
-  const bounce = 0.4;
-  const friction = 0.98;
+
+  const GRAVITY   = 0.55;
+  const BOUNCE    = 0.52;
+  const FRICTION  = 0.997;
+  const PIN_RAND  = 2.0;
+  const MIN_VY    = 1.8;
+  const STEPS     = 4;
 
   drawPlinkoBoard();
 
+  const now = performance.now();
+
   pkBalls.forEach(ball => {
     if (ball.landed) {
-      // draw landed ball
+      ball.landedTimer++;
+      const alpha = Math.max(0, 1 - ball.landedTimer / 35);
       pkCtx.beginPath();
       pkCtx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
-      pkCtx.fillStyle = '#fff';
+      pkCtx.fillStyle = 'rgba(255,200,50,' + alpha + ')';
       pkCtx.fill();
       return;
     }
 
-    ball.vy += gravity;
-    ball.vx *= friction;
-    ball.x += ball.vx;
-    ball.y += ball.vy;
+    let didLand = false;
 
-    // pin collisions
-    pkPins.forEach(pin => {
-      const dx = ball.x - pin.x, dy = ball.y - pin.y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      const minDist = ball.r + pin.r;
-      if (dist < minDist && dist > 0) {
-        const nx = dx/dist, ny = dy/dist;
-        ball.x = pin.x + nx * minDist;
-        ball.y = pin.y + ny * minDist;
-        const dot = ball.vx*nx + ball.vy*ny;
-        ball.vx = (ball.vx - 2*dot*nx) * bounce + (Math.random()-0.5)*0.8;
-        ball.vy = (ball.vy - 2*dot*ny) * bounce;
-        if (ball.vy < 0) ball.vy = Math.abs(ball.vy);
-      }
-    });
+    for (let step = 0; step < STEPS; step++) {
+      ball.vy += GRAVITY / STEPS;
+      ball.vx *= Math.pow(FRICTION, 1 / STEPS);
+      ball.x += ball.vx / STEPS;
+      ball.y += ball.vy / STEPS;
 
-    // wall bounce
-    if (ball.x < ball.r) { ball.x = ball.r; ball.vx = Math.abs(ball.vx); }
-    if (ball.x > W - ball.r) { ball.x = W - ball.r; ball.vx = -Math.abs(ball.vx); }
-
-    // landed in bucket
-    if (ball.y >= H - bottomMargin - ball.r) {
-      ball.y = H - bottomMargin - ball.r;
-      ball.landed = true;
-
-      // find which bucket
-      const bucketI = Math.floor(ball.x / (W / (rows+1)));
-      const bucket = pkBucketRects[Math.max(0, Math.min(bucketI, pkBucketRects.length-1))];
-      const payout = bucket ? bucket.payout : 1;
-      const win = Math.floor(ball.bet * payout);
-      const profit = win - ball.bet;
-      CU.balance += win;
-
-      const won = profit >= 0;
-      setResult('pk-result', won ? `✓ ${payout}× +◈${profit}` : `✗ ${payout}× -◈${Math.abs(profit)}`, won ? 'win' : 'lose');
-      showToast(won ? `${payout}× +◈${profit} 🎉` : `${payout}× -◈${Math.abs(profit)}`, won ? 'win' : 'lose');
-      addResult('Plinko', ball.bet, `${payout}×`, profit);
-      document.getElementById('pk-play').disabled = false;
-
-      // highlight bucket
-      if (bucket) {
-        pkCtx.fillStyle = bucket.col + '66';
-        pkCtx.strokeStyle = bucket.col;
-        pkCtx.lineWidth = 2;
-        pkCtx.beginPath();
-        pkCtx.roundRect(bucket.x+2, bucket.y+2, bucket.w-4, bucket.h-4, 6);
-        pkCtx.fill(); pkCtx.stroke();
+      // Pin collisions
+      for (const pin of pkPins) {
+        if (ball.hitCooldown[pin.id] && now - ball.hitCooldown[pin.id] < 100) continue;
+        const dx = ball.x - pin.x;
+        const dy = ball.y - pin.y;
+        const distSq = dx * dx + dy * dy;
+        const minDist = ball.r + pin.r;
+        if (distSq < minDist * minDist && distSq > 0.001) {
+          const dist = Math.sqrt(distSq);
+          const nx = dx / dist, ny = dy / dist;
+          // Fully separate
+          ball.x = pin.x + nx * (minDist + 1);
+          ball.y = pin.y + ny * (minDist + 1);
+          // Reflect
+          const dot = ball.vx * nx + ball.vy * ny;
+          ball.vx -= 2 * dot * nx;
+          ball.vy -= 2 * dot * ny;
+          // Dampen
+          ball.vx *= BOUNCE;
+          ball.vy *= BOUNCE;
+          // Randomise direction
+          ball.vx += (Math.random() - 0.5) * PIN_RAND;
+          // Always keep moving downward
+          if (ball.vy < MIN_VY) ball.vy = MIN_VY + Math.random() * 0.5;
+          ball.hitCooldown[pin.id] = now;
+        }
       }
 
-      setTimeout(() => {
-        pkBalls = pkBalls.filter(b => b !== ball);
-        drawPlinkoBoard();
-      }, 1500);
+      // Walls
+      if (ball.x < ball.r + 2) { ball.x = ball.r + 2; ball.vx = Math.abs(ball.vx) * 0.7; }
+      if (ball.x > W - ball.r - 2) { ball.x = W - ball.r - 2; ball.vx = -Math.abs(ball.vx) * 0.7; }
+
+      // Landing
+      if (ball.y >= H - bottomMargin - ball.r) {
+        ball.y = H - bottomMargin - ball.r;
+        ball.landed = true;
+        ball.landedTimer = 0;
+        didLand = true;
+
+        const numBuckets = rows + 1;
+        const bucketW = W / numBuckets;
+        const bucketI = Math.max(0, Math.min(numBuckets - 1, Math.floor(ball.x / bucketW)));
+        const bucket = pkBucketRects[bucketI];
+        const payout = bucket ? bucket.payout : 1;
+        const win = Math.floor(ball.bet * payout);
+        const profit = win - ball.bet;
+        CU.balance += win;
+
+        const won = profit >= 0;
+        setResult('pk-result', won ? `✓ ${payout}× +◈${profit}` : `✗ ${payout}× -◈${Math.abs(profit)}`, won ? 'win' : 'lose');
+        showToast(won ? `${payout}× +◈${profit} 🎉` : `${payout}× -◈${Math.abs(profit)}`, won ? 'win' : 'lose');
+        addResult('Plinko', ball.bet, `${payout}×`, profit);
+        document.getElementById('pk-play').disabled = false;
+
+        if (bucket) {
+          pkCtx.fillStyle = bucket.col + 'bb';
+          pkCtx.strokeStyle = bucket.col;
+          pkCtx.lineWidth = 3;
+          pkCtx.beginPath();
+          pkCtx.roundRect(bucket.x + 2, bucket.y + 2, bucket.w - 4, bucket.h - 4, 6);
+          pkCtx.fill(); pkCtx.stroke();
+          pkCtx.fillStyle = '#fff';
+          pkCtx.font = 'bold 12px Inter,sans-serif';
+          pkCtx.textAlign = 'center';
+          pkCtx.fillText(payout + 'x', bucket.x + bucket.w / 2, bucket.y + bucket.h / 2 + 4);
+        }
+
+        setTimeout(() => {
+          pkBalls = pkBalls.filter(b => b !== ball);
+          if (pkBalls.length === 0) drawPlinkoBoard();
+        }, 700);
+
+        break;
+      }
     }
 
-    // draw trail
-    ball.trail.push({x: ball.x, y: ball.y});
-    if (ball.trail.length > 8) ball.trail.shift();
+    if (didLand) return;
+
+    // Trail
+    ball.trail.push({ x: ball.x, y: ball.y });
+    if (ball.trail.length > 5) ball.trail.shift();
     ball.trail.forEach((pt, i) => {
+      const a = (i / ball.trail.length) * 0.15;
+      const r = ball.r * 0.45 * (i / ball.trail.length);
       pkCtx.beginPath();
-      pkCtx.arc(pt.x, pt.y, ball.r * (i/ball.trail.length), 0, Math.PI*2);
-      pkCtx.fillStyle = `rgba(255,255,255,${0.05 * i/ball.trail.length})`;
+      pkCtx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+      pkCtx.fillStyle = 'rgba(255,210,80,' + a + ')';
       pkCtx.fill();
     });
 
-    // draw ball
+    // Ball with gold shine
+    const grad = pkCtx.createRadialGradient(
+      ball.x - ball.r * 0.35, ball.y - ball.r * 0.35, ball.r * 0.1,
+      ball.x, ball.y, ball.r
+    );
+    grad.addColorStop(0, '#ffffff');
+    grad.addColorStop(0.35, '#ffe566');
+    grad.addColorStop(1, '#f59e0b');
     pkCtx.beginPath();
     pkCtx.arc(ball.x, ball.y, ball.r, 0, Math.PI * 2);
-    const grad = pkCtx.createRadialGradient(ball.x-2, ball.y-2, 1, ball.x, ball.y, ball.r);
-    grad.addColorStop(0, '#fff');
-    grad.addColorStop(1, '#aaa');
     pkCtx.fillStyle = grad;
+    pkCtx.shadowColor = 'rgba(255,180,0,0.7)';
+    pkCtx.shadowBlur = 12;
     pkCtx.fill();
+    pkCtx.shadowBlur = 0;
   });
 
   if (pkBalls.length > 0) {
@@ -1593,7 +1635,6 @@ function pkAnimLoop() {
     pkAnimFrame = null;
   }
 }
-
 /* ================================================================
    SETTINGS
 ================================================================ */
