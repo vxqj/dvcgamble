@@ -784,17 +784,16 @@ async function saveUsers(users) {
 
 async function saveCurrentUser() {
   if (!CU) return;
-  // check if still exists (ban check)
-  const users = await getUsers();
-  if (!users[CU.username]) { showToast('Your account has been removed.','lose'); setTimeout(()=>logout(),1500); return; }
+  const users = dbCache?.users || await getUsers();
   users[CU.username] = CU;
-  await saveUsers(users);
+  dbCache = {users};
+  await saveDB({users});
 }
 
 async function saveUser(user) {
   const users = await getUsers();
   users[user.username] = user;
-  await saveUsers(users);
+  dbCache={users};await saveDB({users});
 }
 
 const getSession  = () => localStorage.getItem('dvc_session');
@@ -865,7 +864,7 @@ async function doSignup() {
     const users=await getUsers();
     if(users[u]){err.textContent='Username already taken';err.classList.add('show');hideAuthLoading(btn,'Create account');return;}
     users[u]={username:u,password:p,balance:1000,won:0,lost:0,played:0,streak:0,bestStreak:0,history:[]};
-    await saveUsers(users);
+    dbCache={users};await saveDB({users});
     dbCache.users=users;
     await loginUser(u);
     showToast('Welcome! You start with ◈1,000 🎉','info');
@@ -1399,7 +1398,7 @@ async function changeUsername(){
   if(!newName||newName.length<3){err.textContent='Username must be 3+ chars';err.classList.add('show');return;}
   if(CU.password!==pass){err.textContent='Wrong password';err.classList.add('show');return;}
   const users=await getUsers();if(users[newName]&&newName!==CU.username){err.textContent='Username already taken';err.classList.add('show');return;}
-  delete users[CU.username];CU.username=newName;users[newName]=CU;await saveUsers(users);saveSession(newName);updateUI();
+  delete users[CU.username];CU.username=newName;users[newName]=CU;dbCache={users};await saveDB({users});saveSession(newName);updateUI();
   showToast('Username updated to '+newName+'!','win');document.getElementById('set-username').value='';document.getElementById('set-username-pass').value='';
 }
 async function changePassword(){
@@ -1441,25 +1440,27 @@ async function runOwnerCmd(raw){
 
   if(cmd==='/listusers'){const users=Object.values(getUsers());if(!users.length){ownerLog('No users.','error');return;}ownerLog(`--- ${users.length} users ---`,'success');users.forEach(u=>ownerLog(`  ${u.username} | ◈${(u.balance||0).toLocaleString()} | won:◈${u.won||0} | played:${u.played||0}`,'info'));return;}
 
-  if(cmd==='/givecash'){const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /givecash [user] [amount]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}users[user].balance+=n;await saveUsers(users);if(CU?.username===user){CU.balance+=n;updateUI();}ownerLog(`✓ Gave ◈${n.toLocaleString()} to ${user}. New balance: ◈${users[user].balance.toLocaleString()}`,'success');return;}
+  if(cmd==='/givecash'){const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /givecash [user] [amount]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}users[user].balance+=n;dbCache={users};await saveDB({users});if(CU?.username===user){CU.balance+=n;updateUI();}ownerLog(`✓ Gave ◈${n.toLocaleString()} to ${user}. New balance: ◈${users[user].balance.toLocaleString()}`,'success');return;}
 
-  if(cmd==='/setcash'){const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /setcash [user] [amount]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const n=parseInt(amt);if(isNaN(n)||n<0){ownerLog('Invalid amount.','error');return;}users[user].balance=n;await saveUsers(users);if(CU?.username===user){CU.balance=n;updateUI();}ownerLog(`✓ Set ${user} balance to ◈${n.toLocaleString()}`,'success');return;}
+  if(cmd==='/setcash'){const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /setcash [user] [amount]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const n=parseInt(amt);if(isNaN(n)||n<0){ownerLog('Invalid amount.','error');return;}users[user].balance=n;dbCache={users};await saveDB({users});if(CU?.username===user){CU.balance=n;updateUI();}ownerLog(`✓ Set ${user} balance to ◈${n.toLocaleString()}`,'success');return;}
 
-  if(cmd==='/takecash'){const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /takecash [user] [amount]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}users[user].balance=Math.max(0,users[user].balance-n);await saveUsers(users);if(CU?.username===user){CU.balance=users[user].balance;updateUI();}ownerLog(`✓ Took ◈${n.toLocaleString()} from ${user}`,'success');return;}
+  if(cmd==='/takecash'){const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /takecash [user] [amount]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}users[user].balance=Math.max(0,users[user].balance-n);dbCache={users};await saveDB({users});if(CU?.username===user){CU.balance=users[user].balance;updateUI();}ownerLog(`✓ Took ◈${n.toLocaleString()} from ${user}`,'success');return;}
 
-  if(cmd==='/resetuser'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /resetuser [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}users[user]={...users[user],balance:1000,won:0,lost:0,played:0,streak:0,bestStreak:0,history:[]};await saveUsers(users);if(CU?.username===user){CU=users[user];updateUI();}ownerLog(`✓ Reset ${user} to defaults.`,'success');return;}
+  if(cmd==='/resetuser'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /resetuser [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}users[user]={...users[user],balance:1000,won:0,lost:0,played:0,streak:0,bestStreak:0,history:[]};dbCache={users};await saveDB({users});if(CU?.username===user){CU=users[user];updateUI();}ownerLog(`✓ Reset ${user} to defaults.`,'success');return;}
 
-  if(cmd==='/resetstats'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /resetstats [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}users[user]={...users[user],balance:1000,won:0,lost:0,played:0,streak:0,bestStreak:0,history:[]};await saveUsers(users);if(CU?.username===user){CU=users[user];updateUI();}ownerLog(`✓ Reset all stats for ${user}.`,'success');return;}
+  if(cmd==='/resetstats'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /resetstats [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}users[user]={...users[user],balance:1000,won:0,lost:0,played:0,streak:0,bestStreak:0,history:[]};dbCache={users};await saveDB({users});if(CU?.username===user){CU=users[user];updateUI();}ownerLog(`✓ Reset all stats for ${user}.`,'success');return;}
 
   if(cmd==='/ban'){
     const user=parseUser(raw,cmd);
     if(!user){ownerLog('Usage: /ban [user]','error');return;}
     if(user===CU?.username){ownerLog("Can't ban yourself.",'error');return;}
+    ownerLog(`Banning ${user}...`,'info');
     const users=await getUsers();
     if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}
     delete users[user];
-    await saveUsers(users);
-    // force logout the banned user via Ably
+    dbCache={users};
+    await saveDB({users});
+    // force logout via Ably
     if(chatChannel){chatChannel.publish('force-logout',{username:user});}
     ownerLog(`✓ Banned and deleted: ${user}`,'success');
     return;
@@ -1470,13 +1471,14 @@ async function runOwnerCmd(raw){
     if(!user||!newname){ownerLog('Usage: /rename [user] [newname]','error');return;}
     const nameErr=validateUsername(newname);
     if(nameErr){ownerLog('Invalid new name: '+nameErr,'error');return;}
+    ownerLog(`Renaming ${user} to ${newname}...`,'info');
     const users=await getUsers();
     if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}
     if(users[newname]){ownerLog(`"${newname}" already taken.`,'error');return;}
     users[newname]={...users[user],username:newname};
     delete users[user];
-    await saveUsers(users);
-    // notify renamed user to re-login
+    dbCache={users};
+    await saveDB({users});
     if(chatChannel){chatChannel.publish('force-logout',{username:user});}
     if(CU?.username===user){CU.username=newname;saveSession(newname);updateUI();}
     ownerLog(`✓ Renamed ${user} → ${newname}`,'success');
@@ -1493,15 +1495,15 @@ async function runOwnerCmd(raw){
 
   if(cmd==='/broke'){const users=Object.values(getUsers()).filter(u=>u.balance<=0);if(!users.length){ownerLog('No broke players.','info');return;}ownerLog(`--- ${users.length} broke ---`,'success');users.forEach(u=>ownerLog(`  ${u.username}`,'info'));return;}
 
-  if(cmd==='/givecashall'){const amt=raw.slice(cmd.length).trim();if(!amt){ownerLog('Usage: /givecashall [amount]','error');return;}const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}const users=await getUsers();let count=0;Object.keys(users).forEach(u=>{users[u].balance+=n;count++;});await saveUsers(users);if(CU){CU.balance+=n;updateUI();}ownerLog(`✓ Gave ◈${n.toLocaleString()} to all ${count} users.`,'success');return;}
+  if(cmd==='/givecashall'){const amt=raw.slice(cmd.length).trim();if(!amt){ownerLog('Usage: /givecashall [amount]','error');return;}const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}const users=await getUsers();let count=0;Object.keys(users).forEach(u=>{users[u].balance+=n;count++;});dbCache={users};await saveDB({users});if(CU){CU.balance+=n;updateUI();}ownerLog(`✓ Gave ◈${n.toLocaleString()} to all ${count} users.`,'success');return;}
 
   if(cmd==='/totalstats'){const users=Object.values(getUsers());ownerLog(`--- Server Stats (${users.length} users) ---`,'success');ownerLog(`  Balance in circulation: ◈${users.reduce((a,u)=>a+(u.balance||0),0).toLocaleString()}`,'info');ownerLog(`  Total won: ◈${users.reduce((a,u)=>a+(u.won||0),0).toLocaleString()}`,'info');ownerLog(`  Total lost: ◈${users.reduce((a,u)=>a+(u.lost||0),0).toLocaleString()}`,'info');ownerLog(`  Games played: ${users.reduce((a,u)=>a+(u.played||0),0).toLocaleString()}`,'info');return;}
 
-  if(cmd==='/addmultiply'){const[user,mult]=parseUserAmt(raw,cmd);if(!user||!mult){ownerLog('Usage: /addmultiply [user] [multiplier]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const m=parseFloat(mult);if(isNaN(m)||m<=0){ownerLog('Invalid multiplier.','error');return;}const old=users[user].balance;users[user].balance=Math.floor(users[user].balance*m);await saveUsers(users);if(CU?.username===user){CU.balance=users[user].balance;updateUI();}ownerLog(`✓ Multiplied ${user} by ${m}× → ◈${users[user].balance.toLocaleString()}`,'success');return;}
+  if(cmd==='/addmultiply'){const[user,mult]=parseUserAmt(raw,cmd);if(!user||!mult){ownerLog('Usage: /addmultiply [user] [multiplier]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const m=parseFloat(mult);if(isNaN(m)||m<=0){ownerLog('Invalid multiplier.','error');return;}const old=users[user].balance;users[user].balance=Math.floor(users[user].balance*m);dbCache={users};await saveDB({users});if(CU?.username===user){CU.balance=users[user].balance;updateUI();}ownerLog(`✓ Multiplied ${user} by ${m}× → ◈${users[user].balance.toLocaleString()}`,'success');return;}
 
   if(cmd==='/stats'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /stats [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const u=users[user];ownerLog(`--- ${user} ---`,'success');ownerLog(`  Balance: ◈${(u.balance||0).toLocaleString()}`,'info');ownerLog(`  Won: ◈${(u.won||0).toLocaleString()}`,'info');ownerLog(`  Lost: ◈${(u.lost||0).toLocaleString()}`,'info');ownerLog(`  Played: ${u.played||0}`,'info');ownerLog(`  Streak: ${u.streak||0} 🔥`,'info');return;}
 
-  if(cmd==='/clearhistory'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /clearhistory [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}users[user].history=[];await saveUsers(users);if(CU?.username===user)CU.history=[];ownerLog(`✓ Cleared history for ${user}`,'success');return;}
+  if(cmd==='/clearhistory'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /clearhistory [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}users[user].history=[];dbCache={users};await saveDB({users});if(CU?.username===user)CU.history=[];ownerLog(`✓ Cleared history for ${user}`,'success');return;}
 
   if(cmd==='/wipeall'){if(!raw.includes('CONFIRM')){ownerLog('⚠️ Type /wipeall CONFIRM to proceed.','error');return;}await saveUsers({});ownerLog('💥 All user data wiped.','success');logout();return;}
 
@@ -1513,7 +1515,7 @@ async function runOwnerCmd(raw){
     if(!users[user].badges)users[user].badges=[];
     if(users[user].badges.includes('owner')){ownerLog(`${user} already has the owner badge.`,'error');return;}
     users[user].badges.push('owner');
-    await saveUsers(users);
+    dbCache={users};await saveDB({users});
     ownerLog(`✓ Gave 👑 Owner badge to ${user}`,'success');
     return;
   }
@@ -1524,7 +1526,7 @@ async function runOwnerCmd(raw){
     const users=await getUsers();
     if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}
     users[user].badges=(users[user].badges||[]).filter(b=>b!=='owner');
-    await saveUsers(users);
+    dbCache={users};await saveDB({users});
     ownerLog(`✓ Removed owner badge from ${user}`,'success');
     return;
   }
