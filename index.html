@@ -751,13 +751,12 @@
 /* ================================================================
    JSONBIN DATABASE — public bin, shared across all devices
 ================================================================ */
-const DB_URL = 'https://api.jsonbin.io/v3/b/69c075e2c3097a1dd54d0948';
+const DB_URL = 'https://jsonblob.com/api/jsonBlob/019d17f0-a432-7cf3-9a37-1fae70c4a615';
 let dbCache = null;
 
 async function fetchDB() {
-  const res = await fetch(DB_URL + '/latest');
-  const json = await res.json();
-  dbCache = json.record;
+  const res = await fetch(DB_URL, {headers:{'Accept':'application/json'}});
+  dbCache = await res.json();
   return dbCache;
 }
 
@@ -765,7 +764,7 @@ async function saveDB(data) {
   dbCache = data;
   await fetch(DB_URL, {
     method: 'PUT',
-    headers: {'Content-Type': 'application/json'},
+    headers: {'Content-Type':'application/json','Accept':'application/json'},
     body: JSON.stringify(data)
   });
 }
