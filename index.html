@@ -52,15 +52,10 @@
     .bust-box p{color:var(--muted);margin-bottom:1.5rem;font-size:0.9rem;}
     .bust-btn{background:var(--accent);color:#0d0d0d;border-radius:10px;padding:0.8rem 2rem;font-size:0.95rem;font-weight:700;transition:opacity 0.2s;}
     .bust-btn:hover{opacity:0.88;}
-    .profile-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:2rem;width:100%;max-width:420px;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);}
-    .profile-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
-    .profile-name{font-size:1.2rem;font-weight:800;letter-spacing:-0.3px;}
-    .profile-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.3rem 0.75rem;font-size:0.8rem;color:var(--muted);transition:all 0.2s;}
-    .profile-close:hover{color:var(--fg);}
-    .profile-stats{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;}
-    .profile-stat{background:var(--surface2);border-radius:10px;padding:1rem;}
-    .ps-label{font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
-    .ps-val{font-size:1.2rem;font-weight:700;}
+    .profile-box{width:100%;max-width:440px;animation:slideUp 0.3s cubic-bezier(0.16,1,0.3,1);}
+    .profile-close{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:0.3rem 0.75rem;font-size:0.8rem;color:rgba(255,255,255,0.5);transition:all 0.2s;cursor:pointer;flex-shrink:0;}
+    .profile-close:hover{color:#fff;}
+    .ps-val{font-size:1.1rem;font-weight:700;}
 
     /* NAV */
     nav{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
@@ -315,18 +310,62 @@
 
 <!-- PROFILE MODAL -->
 <div id="profile-modal">
-  <div class="profile-box">
-    <div class="profile-header">
-      <div><div class="profile-name" id="pm-name"></div><div id="pm-rank" style="font-size:0.78rem;color:var(--muted);margin-top:2px"></div></div>
-      <button class="profile-close" onclick="closeProfile()">Close</button>
-    </div>
-    <div class="profile-stats">
-      <div class="profile-stat"><div class="ps-label">Balance</div><div class="ps-val" style="color:var(--gold)" id="pm-bal"></div></div>
-      <div class="profile-stat"><div class="ps-label">Most Won</div><div class="ps-val" style="color:var(--accent)" id="pm-won"></div></div>
-      <div class="profile-stat"><div class="ps-label">Total Lost</div><div class="ps-val" style="color:var(--red)" id="pm-lost"></div></div>
-      <div class="profile-stat"><div class="ps-label">Win Streak</div><div class="ps-val" id="pm-streak"></div></div>
-      <div class="profile-stat"><div class="ps-label">Games Played</div><div class="ps-val" id="pm-played"></div></div>
-      <div class="profile-stat"><div class="ps-label">Net Profit</div><div class="ps-val" id="pm-net"></div></div>
+  <div class="profile-box" id="profile-card-wrap">
+    <div id="profile-card" style="border-radius:20px;padding:2rem;position:relative;overflow:hidden;background:linear-gradient(145deg,#1a1a2e,#0f0f1f);border:1px solid rgba(255,255,255,0.1);transform-style:preserve-3d;transition:transform 0.08s ease,box-shadow 0.08s ease;cursor:default;">
+      <div id="pc-shine" style="position:absolute;inset:0;border-radius:20px;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:1;"></div>
+      <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 75% 25%,rgba(100,100,255,0.07),transparent 55%);z-index:0;"></div>
+      <div id="pc-topline" style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;z-index:2;background:linear-gradient(90deg,#7c5cfc,transparent);"></div>
+
+      <div style="position:relative;z-index:2;">
+        <!-- header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+          <div style="display:flex;align-items:center;gap:0.85rem;">
+            <div id="pc-avatar" style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;flex-shrink:0;border:2px solid rgba(255,255,255,0.15);background:rgba(124,92,252,0.2);color:#7c5cfc;"></div>
+            <div>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px;">
+                <span id="pm-name" style="font-size:1.05rem;font-weight:800;letter-spacing:-0.3px;"></span>
+              </div>
+              <div id="pm-rank" style="font-size:0.75rem;color:rgba(255,255,255,0.4);"></div>
+            </div>
+          </div>
+          <button class="profile-close" onclick="closeProfile()">✕</button>
+        </div>
+
+        <!-- badges -->
+        <div id="pm-badges" style="margin-bottom:1.25rem;min-height:0;"></div>
+
+        <!-- stats -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;">
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
+            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Balance</div>
+            <div class="ps-val" style="color:var(--gold)" id="pm-bal"></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
+            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Total Won</div>
+            <div class="ps-val" style="color:var(--accent)" id="pm-won"></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
+            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Total Lost</div>
+            <div class="ps-val" style="color:var(--red)" id="pm-lost"></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
+            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Best Streak</div>
+            <div class="ps-val" id="pm-streak"></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
+            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Games Played</div>
+            <div class="ps-val" id="pm-played"></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
+            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Net Profit</div>
+            <div class="ps-val" id="pm-net"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:1rem;padding-top:0.85rem;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;font-size:0.65rem;color:rgba(255,255,255,0.2);">
+          <span>dvcgamble.lol</span><span>Player Card</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -640,6 +679,8 @@
               <div><span style="color:var(--accent)">/stats</span> [user]</div>
               <div><span style="color:var(--accent)">/clearhistory</span> [user]</div>
               <div><span style="color:var(--accent)">/wipeall</span> CONFIRM</div>
+              <div><span style="color:var(--accent)">/givebadge</span> [user] — give 👑 Owner badge</div>
+              <div><span style="color:var(--accent)">/removebadge</span> [user] — remove owner badge</div>
               <div><span style="color:var(--accent)">/clear</span></div>
             </div>
           </div>
@@ -824,6 +865,45 @@ async function loginUser(username) {
 function logout() { clearSession();CU=null;document.getElementById('auth-overlay').classList.remove('hidden'); }
 
 /* ================================================================
+   BADGES
+================================================================ */
+const BADGE_DEFS = [
+  { id:'owner',    emoji:'👑', label:'Owner',           check:u=>u.badges?.includes('owner') },
+  { id:'newcomer', emoji:'🎮', label:'Newcomer',        check:u=>true },
+  { id:'getting',  emoji:'🎯', label:'Getting Started', check:u=>(u.played||0)>=10 },
+  { id:'regular',  emoji:'🔥', label:'Regular',         check:u=>(u.played||0)>=50 },
+  { id:'century',  emoji:'💯', label:'Century',         check:u=>(u.played||0)>=100 },
+  { id:'veteran',  emoji:'🎰', label:'Veteran',         check:u=>(u.played||0)>=500 },
+  { id:'loaded',   emoji:'💰', label:'Loaded',          check:u=>(u.balance||0)>=10000 },
+  { id:'highroll', emoji:'🤑', label:'High Roller',     check:u=>(u.balance||0)>=50000 },
+  { id:'diamond',  emoji:'💎', label:'Diamond',         check:u=>(u.balance||0)>=100000 },
+  { id:'onroll',   emoji:'📈', label:'On a Roll',       check:u=>(u.bestStreak||0)>=5 },
+  { id:'hotstreak',emoji:'⚡', label:'Hot Streak',      check:u=>(u.bestStreak||0)>=10 },
+  { id:'master',   emoji:'🏆', label:'Master Gambler',  check:u=>(u.won||0)>=100000 },
+];
+
+function getEarnedBadges(user) {
+  return BADGE_DEFS.filter(b => b.id==='owner' ? (user.badges?.includes('owner')) : b.check(user));
+}
+
+function renderBadges(user, limit=null) {
+  const earned = getEarnedBadges(user);
+  const show = limit ? earned.slice(0, limit) : earned;
+  return show.map(b => `<span title="${b.label}" style="font-size:1.1rem;cursor:default" class="badge-icon">${b.emoji}</span>`).join('');
+}
+
+function renderBadgeFull(user) {
+  const earned = getEarnedBadges(user);
+  if (!earned.length) return '';
+  return `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:0.5rem;">${earned.map(b=>`<span title="${b.label}" style="display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:700;padding:3px 9px;border-radius:6px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);cursor:default;">${b.emoji} ${b.label}</span>`).join('')}</div>`;
+}
+
+function checkAndAwardBadges() {
+  if (!CU) return;
+  if (!CU.badges) CU.badges = [];
+}
+
+/* ================================================================
    UI
 ================================================================ */
 async function updateUI() {
@@ -848,6 +928,7 @@ async function addResult(game,bet,result,profit) {
   else{CU.lost+=Math.abs(profit);CU.streak=0;}
   CU.history.unshift({game,bet,result,profit,ts:Date.now()});
   if(CU.history.length>100)CU.history.pop();
+  checkAndAwardBadges();
   await saveCurrentUser();
   updateUI();
 }
@@ -887,19 +968,43 @@ async function openProfile(username) {
     const users=await getUsers();
     const u=users[username];if(!u)return;
     const rank=await getRankOfUser(username);
-    document.getElementById('pm-name').innerHTML=username+(rank&&rank<=100?` <span style="font-size:0.8rem;color:var(--gold)">#${rank}</span>`:'');
-    document.getElementById('pm-rank').innerHTML=getRankTag(rank)||'<span style="color:var(--muted)">Unranked</span>';
-    document.getElementById('pm-bal').textContent='◈ '+(u.balance||0).toLocaleString();
-    document.getElementById('pm-won').textContent='◈ '+(u.won||0).toLocaleString();
-    document.getElementById('pm-lost').textContent='◈ '+(u.lost||0).toLocaleString();
-    document.getElementById('pm-streak').textContent=(u.streak||0)+' 🔥';
+    const accent=u.accentColor||'#7c5cfc';
+
+    // populate card
+    document.getElementById('pc-avatar').textContent=username.slice(0,2).toUpperCase();
+    document.getElementById('pc-avatar').style.background=accent+'33';
+    document.getElementById('pc-avatar').style.color=accent;
+    document.getElementById('pc-avatar').style.borderColor=accent+'55';
+    document.getElementById('pc-topline').style.background=`linear-gradient(90deg,${accent},transparent)`;
+    document.getElementById('pm-name').innerHTML=username+(rank&&rank<=100?` <span style="font-size:0.75rem;color:var(--gold)">#${rank}</span>`:'')+' '+renderBadges(u,4);
+    document.getElementById('pm-rank').innerHTML=getRankTag(rank)||'<span style="color:rgba(255,255,255,0.35)">Unranked</span>';
+    document.getElementById('pm-badges').innerHTML=renderBadgeFull(u);
+    document.getElementById('pm-bal').textContent='◈'+(u.balance||0).toLocaleString();
+    document.getElementById('pm-won').textContent='◈'+(u.won||0).toLocaleString();
+    document.getElementById('pm-lost').textContent='◈'+(u.lost||0).toLocaleString();
+    document.getElementById('pm-streak').textContent=(u.bestStreak||u.streak||0)+' 🔥';
     document.getElementById('pm-played').textContent=u.played||0;
     const net=(u.won||0)-(u.lost||0);
     const netEl=document.getElementById('pm-net');
-    netEl.textContent=(net>=0?'+ ':'')+' ◈'+net.toLocaleString();
+    netEl.textContent=(net>=0?'+':'')+' ◈'+net.toLocaleString();
     netEl.style.color=net>=0?'var(--accent)':'var(--red)';
+
     document.getElementById('profile-modal').classList.add('show');
-  } catch(e){}
+
+    // parallax
+    const card=document.getElementById('profile-card');
+    const shine=document.getElementById('pc-shine');
+    card.onmousemove=e=>{
+      const r=card.getBoundingClientRect();
+      const dx=(e.clientX-r.left-r.width/2)/(r.width/2);
+      const dy=(e.clientY-r.top-r.height/2)/(r.height/2);
+      card.style.transform=`perspective(800px) rotateY(${dx*12}deg) rotateX(${-dy*12}deg) scale(1.02)`;
+      card.style.boxShadow=`${-dx*18}px ${dy*18}px 40px rgba(0,0,0,0.5)`;
+      shine.style.opacity='1';
+      shine.style.background=`radial-gradient(circle at ${(dx+1)/2*100}% ${(dy+1)/2*100}%, rgba(255,255,255,0.09) 0%, transparent 55%)`;
+    };
+    card.onmouseleave=()=>{card.style.transform='';card.style.boxShadow='';shine.style.opacity='0';};
+  } catch(e){console.error(e);}
 }
 function closeSearch(){document.getElementById('search-dropdown').classList.remove('show');document.getElementById('search-input').value='';}
 function closeProfile(){document.getElementById('profile-modal').classList.remove('show');}
@@ -1170,6 +1275,10 @@ function initSettings(){
   document.getElementById('sc-streak').textContent=(CU.bestStreak||0)+' 🔥';
   document.getElementById('sc-played').textContent=CU.played||0;
   const net=(CU.won||0)-(CU.lost||0);document.getElementById('sc-net').textContent=(net>=0?'+':'')+' ◈'+net.toLocaleString();document.getElementById('sc-net').style.color=net>=0?'var(--accent)':'var(--red)';
+  // badges
+  let scb=document.getElementById('sc-badges');
+  if(!scb){scb=document.createElement('div');scb.id='sc-badges';scb.style.cssText='position:relative;z-index:2;';document.getElementById('sc-balance').parentElement.insertAdjacentElement('afterend',scb);}
+  scb.innerHTML=renderBadgeFull(CU);
   const rankTag=document.getElementById('sc-rank-tag');const rankLabel=document.getElementById('sc-rank-label');
   if(rank&&rank<=100){rankTag.style.display='inline-block';if(rank<=10){rankTag.textContent='Top 10';rankTag.style.background='rgba(255,215,64,0.15)';rankTag.style.color='var(--gold)';}else if(rank<=50){rankTag.textContent='Top 50';rankTag.style.background='rgba(0,230,118,0.1)';rankTag.style.color='var(--accent)';}else{rankTag.textContent='Top 100';rankTag.style.background='rgba(68,138,255,0.1)';rankTag.style.color='var(--blue)';}rankLabel.textContent='Leaderboard #'+rank;}
   else{rankTag.style.display='none';rankLabel.textContent=rank?'Rank #'+rank:'Unranked';}
@@ -1271,7 +1380,31 @@ async function runOwnerCmd(raw){
 
   if(cmd==='/clearhistory'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /clearhistory [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}users[user].history=[];await saveUsers(users);if(CU?.username===user)CU.history=[];ownerLog(`✓ Cleared history for ${user}`,'success');return;}
 
-  if(cmd==='/wipeall'){if(!raw.includes('CONFIRM')){ownerLog('⚠️ Type /wipeall CONFIRM to proceed.','error');return;}saveUsers({});ownerLog('💥 All user data wiped.','success');logout();return;}
+  if(cmd==='/wipeall'){if(!raw.includes('CONFIRM')){ownerLog('⚠️ Type /wipeall CONFIRM to proceed.','error');return;}await saveUsers({});ownerLog('💥 All user data wiped.','success');logout();return;}
+
+  if(cmd==='/givebadge'){
+    const user=raw.slice(cmd.length).trim().split(' ')[0];
+    if(!user){ownerLog('Usage: /givebadge [user]','error');return;}
+    const users=await getUsers();
+    if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}
+    if(!users[user].badges)users[user].badges=[];
+    if(users[user].badges.includes('owner')){ownerLog(`${user} already has the owner badge.`,'error');return;}
+    users[user].badges.push('owner');
+    await saveUsers(users);
+    ownerLog(`✓ Gave 👑 Owner badge to ${user}`,'success');
+    return;
+  }
+
+  if(cmd==='/removebadge'){
+    const user=raw.slice(cmd.length).trim().split(' ')[0];
+    if(!user){ownerLog('Usage: /removebadge [user]','error');return;}
+    const users=await getUsers();
+    if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}
+    users[user].badges=(users[user].badges||[]).filter(b=>b!=='owner');
+    await saveUsers(users);
+    ownerLog(`✓ Removed owner badge from ${user}`,'success');
+    return;
+  }
 
   ownerLog(`Unknown command: ${cmd}`,'error');
 }
@@ -1289,7 +1422,13 @@ function appendMsg(data,isSystem=false){
   const msgs=document.getElementById('chat-messages');const conn=document.getElementById('chat-connecting');if(conn)conn.remove();
   const isMe=data.username===CU?.username;const div=document.createElement('div');
   if(isSystem){div.className='chat-msg system';div.innerHTML=`<div class="chat-msg-text">${data.text}</div>`;}
-  else{div.className='chat-msg'+(isMe?' me':'');div.innerHTML=`<div class="chat-msg-header"><span class="chat-msg-user${isMe?'':' other'}">${escapeHtml(data.username)}</span><span class="chat-msg-time">${fmtTime(data.ts)}</span></div><div class="chat-msg-text">${escapeHtml(data.text)}</div>`;}
+  else{
+    const users=JSON.parse(localStorage.getItem('dvc_users')||'{}');
+    const u=users[data.username];
+    const badgeHtml=u?renderBadges(u,3):'';
+    div.className='chat-msg'+(isMe?' me':'');
+    div.innerHTML=`<div class="chat-msg-header"><span class="chat-msg-user${isMe?'':' other'}">${escapeHtml(data.username)}</span><span style="font-size:0.85rem">${badgeHtml}</span><span class="chat-msg-time">${fmtTime(data.ts)}</span></div><div class="chat-msg-text">${escapeHtml(data.text)}</div>`;
+  }
   msgs.appendChild(div);if(msgs.children.length>150)msgs.removeChild(msgs.children[0]);scrollChat();
   if(!chatOpen&&!isMe&&!isSystem)document.getElementById('chat-dot').classList.add('show');
 }
