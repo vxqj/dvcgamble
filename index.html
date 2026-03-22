@@ -213,6 +213,19 @@
     .colour-swatch:hover{transform:scale(1.1);}
     .colour-swatch.active{border-color:#fff;transform:scale(1.1);}
 
+    /* BADGES PAGE */
+    .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-top:0.5rem;}
+    .badge-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;display:flex;align-items:center;gap:1rem;transition:all 0.2s;position:relative;overflow:hidden;}
+    .badge-card.earned{border-color:var(--border2);background:var(--surface2);}
+    .badge-card.locked{opacity:0.45;filter:grayscale(0.6);}
+    .badge-card .badge-emoji{font-size:2.2rem;flex-shrink:0;width:48px;text-align:center;}
+    .badge-card .badge-info{flex:1;min-width:0;}
+    .badge-card .badge-name{font-size:0.9rem;font-weight:700;margin-bottom:3px;}
+    .badge-card .badge-desc{font-size:0.75rem;color:var(--muted);line-height:1.4;}
+    .badge-card .badge-check{position:absolute;top:0.75rem;right:0.75rem;width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:#000;}
+    .badge-section-label{font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;margin-top:1.5rem;}
+    .badge-section-label:first-child{margin-top:0;}
+
     /* OWNER PANEL */
     .owner-terminal{background:#0a0a0a;border:1px solid rgba(0,230,118,0.2);border-radius:12px;padding:1.25rem;font-family:'Courier New',monospace;}
     .owner-log{height:280px;overflow-y:auto;margin-bottom:1rem;display:flex;flex-direction:column;gap:4px;}
@@ -401,6 +414,7 @@
     <div class="nav-item" onclick="showPanel('towers')" id="nav-towers"><span class="icon">🗼</span> Towers</div>
     <div class="sidebar-label">Community</div>
     <div class="nav-item" onclick="showPanel('leaderboard')" id="nav-leaderboard"><span class="icon">🏆</span> Leaderboard</div>
+    <div class="nav-item" onclick="showPanel('badges')" id="nav-badges"><span class="icon">🎖️</span> Badges</div>
     <div class="nav-item" onclick="showPanel('history')" id="nav-history"><span class="icon">📋</span> History</div>
     <div class="nav-item" onclick="showPanel('settings')" id="nav-settings"><span class="icon">⚙️</span> Settings</div>
     <div class="nav-item" onclick="showPanel('owner')" id="nav-owner" style="color:var(--gold)"><span class="icon">👑</span> Owner</div>
@@ -563,6 +577,12 @@
     <div class="panel" id="panel-leaderboard">
       <div class="section-title">🏆 Leaderboard</div>
       <div id="lb-content"></div>
+    </div>
+
+    <!-- BADGES -->
+    <div class="panel" id="panel-badges">
+      <div class="section-title">🎖️ Badges</div>
+      <div id="badges-content"></div>
     </div>
 
     <!-- HISTORY -->
@@ -764,7 +784,9 @@ async function saveUsers(users) {
 
 async function saveCurrentUser() {
   if (!CU) return;
+  // check if still exists (ban check)
   const users = await getUsers();
+  if (!users[CU.username]) { showToast('Your account has been removed.','lose'); setTimeout(()=>logout(),1500); return; }
   users[CU.username] = CU;
   await saveUsers(users);
 }
@@ -805,6 +827,18 @@ function getRankBadge(rank) {
 /* ================================================================
    AUTH
 ================================================================ */
+const BAD_WORDS = ['nigger','nigga','niger','n1gger','faggot','fag','chink','spic','kike','retard','cunt','kacey','squirt','idrink','willy','wilis','willis','whore','slut','rape','rapist','pedophile','pedo','nonce'];
+
+function validateUsername(u) {
+  if (!u || u.length < 3) return 'Username must be 3+ characters.';
+  if (u.length > 20) return 'Username must be 20 characters or less.';
+  if (/\s/.test(u)) return 'Username cannot contain spaces.';
+  if (!/^[a-zA-Z0-9_\-\.]+$/.test(u)) return 'Only letters, numbers, _ - . allowed.';
+  const lower = u.toLowerCase().replace(/[^a-z0-9]/g,'');
+  if (BAD_WORDS.some(w => lower.includes(w))) return 'That username is not allowed.';
+  return null;
+}
+
 function switchAuthTab(tab) {
   document.getElementById('tab-login').classList.toggle('active',tab==='login');
   document.getElementById('tab-signup').classList.toggle('active',tab==='signup');
@@ -822,7 +856,8 @@ async function doSignup() {
   const err=document.getElementById('signup-error');
   const btn=document.querySelector('#form-signup .auth-submit');
   err.classList.remove('show');
-  if(!u||u.length<3){err.textContent='Username must be 3+ chars';err.classList.add('show');return;}
+  const nameErr = validateUsername(u);
+  if(nameErr){err.textContent=nameErr;err.classList.add('show');return;}
   if(!p||p.length<4){err.textContent='Password must be 4+ chars';err.classList.add('show');return;}
   if(p!==p2){err.textContent='Passwords do not match';err.classList.add('show');return;}
   showAuthLoading(btn,'Creating account...');
@@ -868,22 +903,80 @@ function logout() { clearSession();CU=null;document.getElementById('auth-overlay
    BADGES
 ================================================================ */
 const BADGE_DEFS = [
-  { id:'owner',    emoji:'👑', label:'Owner',           check:u=>u.badges?.includes('owner') },
-  { id:'newcomer', emoji:'🎮', label:'Newcomer',        check:u=>true },
-  { id:'getting',  emoji:'🎯', label:'Getting Started', check:u=>(u.played||0)>=10 },
-  { id:'regular',  emoji:'🔥', label:'Regular',         check:u=>(u.played||0)>=50 },
-  { id:'century',  emoji:'💯', label:'Century',         check:u=>(u.played||0)>=100 },
-  { id:'veteran',  emoji:'🎰', label:'Veteran',         check:u=>(u.played||0)>=500 },
-  { id:'loaded',   emoji:'💰', label:'Loaded',          check:u=>(u.balance||0)>=10000 },
-  { id:'highroll', emoji:'🤑', label:'High Roller',     check:u=>(u.balance||0)>=50000 },
-  { id:'diamond',  emoji:'💎', label:'Diamond',         check:u=>(u.balance||0)>=100000 },
-  { id:'onroll',   emoji:'📈', label:'On a Roll',       check:u=>(u.bestStreak||0)>=5 },
-  { id:'hotstreak',emoji:'⚡', label:'Hot Streak',      check:u=>(u.bestStreak||0)>=10 },
-  { id:'master',   emoji:'🏆', label:'Master Gambler',  check:u=>(u.won||0)>=100000 },
+  { id:'owner',    emoji:'👑', label:'Owner',           desc:'Granted by the casino owner only.',        check:u=>(u.badges||[]).includes('owner') },
+  { id:'newcomer', emoji:'🎮', label:'Newcomer',        desc:'Welcome to DVCGamble!',                    check:u=>true },
+  { id:'getting',  emoji:'🎯', label:'Getting Started', desc:'Play 10 games.',                           check:u=>(u.played||0)>=10 },
+  { id:'regular',  emoji:'🔥', label:'Regular',         desc:'Play 50 games.',                           check:u=>(u.played||0)>=50 },
+  { id:'century',  emoji:'💯', label:'Century',         desc:'Play 100 games.',                          check:u=>(u.played||0)>=100 },
+  { id:'veteran',  emoji:'🎰', label:'Veteran',         desc:'Play 500 games.',                          check:u=>(u.played||0)>=500 },
+  { id:'loaded',   emoji:'💰', label:'Loaded',          desc:'Reach a balance of ◈10,000.',              check:u=>(u.balance||0)>=10000 },
+  { id:'highroll', emoji:'🤑', label:'High Roller',     desc:'Reach a balance of ◈50,000.',              check:u=>(u.balance||0)>=50000 },
+  { id:'diamond',  emoji:'💎', label:'Diamond',         desc:'Reach a balance of ◈100,000.',             check:u=>(u.balance||0)>=100000 },
+  { id:'onroll',   emoji:'📈', label:'On a Roll',       desc:'Achieve a 5 win streak.',                  check:u=>(u.bestStreak||0)>=5 },
+  { id:'hotstreak',emoji:'⚡', label:'Hot Streak',      desc:'Achieve a 10 win streak.',                 check:u=>(u.bestStreak||0)>=10 },
+  { id:'master',   emoji:'🏆', label:'Master Gambler',  desc:'Win a total of ◈100,000.',                 check:u=>(u.won||0)>=100000 },
 ];
 
 function getEarnedBadges(user) {
-  return BADGE_DEFS.filter(b => b.id==='owner' ? (user.badges?.includes('owner')) : b.check(user));
+  // owner badge is ONLY from user.badges array — never auto-granted, never auto-removed
+  return BADGE_DEFS.filter(b => {
+    if(b.id==='owner') return (user.badges||[]).includes('owner');
+    return b.check(user);
+  });
+}
+
+function renderBadgesPage() {
+  const el = document.getElementById('badges-content');
+  const earned = getEarnedBadges(CU);
+  const earnedIds = new Set(earned.map(b=>b.id));
+
+  const rows = BADGE_DEFS.map(b => {
+    const have = earnedIds.has(b.id);
+    const isOwner = b.id === 'owner';
+    let progress = '';
+    if (!have && !isOwner) {
+      if(b.id==='getting')  progress = `${Math.min(CU.played||0,10)}/10 games`;
+      if(b.id==='regular')  progress = `${Math.min(CU.played||0,50)}/50 games`;
+      if(b.id==='century')  progress = `${Math.min(CU.played||0,100)}/100 games`;
+      if(b.id==='veteran')  progress = `${Math.min(CU.played||0,500)}/500 games`;
+      if(b.id==='loaded')   progress = `◈${(CU.balance||0).toLocaleString()} / ◈10,000`;
+      if(b.id==='highroll') progress = `◈${(CU.balance||0).toLocaleString()} / ◈50,000`;
+      if(b.id==='diamond')  progress = `◈${(CU.balance||0).toLocaleString()} / ◈100,000`;
+      if(b.id==='onroll')   progress = `${Math.min(CU.bestStreak||0,5)}/5 win streak`;
+      if(b.id==='hotstreak')progress = `${Math.min(CU.bestStreak||0,10)}/10 win streak`;
+      if(b.id==='master')   progress = `◈${(CU.won||0).toLocaleString()} / ◈100,000 won`;
+    }
+
+    return `
+      <div style="display:flex;align-items:center;gap:1.25rem;padding:1.25rem;background:${have?'rgba(0,230,118,0.05)':'var(--surface)'};border:1px solid ${have?'rgba(0,230,118,0.2)':'var(--border)'};border-radius:14px;transition:all 0.2s;${have?'':'opacity:0.6'}">
+        <div style="font-size:2.5rem;width:52px;text-align:center;flex-shrink:0;${have?'':'filter:grayscale(1)'}">${b.emoji}</div>
+        <div style="flex:1;">
+          <div style="font-size:0.95rem;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:8px;">
+            ${b.label}
+            ${have?`<span style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(0,230,118,0.15);color:var(--accent);">EARNED</span>`:''}
+            ${isOwner&&!have?`<span style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(255,215,64,0.1);color:var(--gold);">Owner only</span>`:''}
+          </div>
+          <div style="font-size:0.8rem;color:var(--muted);">${b.desc}</div>
+          ${progress?`<div style="font-size:0.75rem;color:var(--accent);margin-top:4px;">${progress}</div>`:''}
+        </div>
+        <div style="font-size:1.5rem;">${have?'✅':'🔒'}</div>
+      </div>`;
+  }).join('');
+
+  const earnedCount = earned.length;
+  const total = BADGE_DEFS.length;
+  el.innerHTML = `
+    <div style="margin-bottom:1.5rem;padding:1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;gap:1rem;">
+      <div style="font-size:2rem;">🎖️</div>
+      <div>
+        <div style="font-size:1rem;font-weight:700;">Your Progress</div>
+        <div style="font-size:0.82rem;color:var(--muted);margin-top:2px;">${earnedCount} / ${total} badges earned</div>
+        <div style="margin-top:8px;height:6px;background:var(--surface2);border-radius:3px;width:240px;overflow:hidden;">
+          <div style="height:100%;width:${Math.round(earnedCount/total*100)}%;background:var(--accent);border-radius:3px;transition:width 0.5s;"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">${rows}</div>`;
 }
 
 function renderBadges(user, limit=null) {
@@ -891,6 +984,7 @@ function renderBadges(user, limit=null) {
   const show = limit ? earned.slice(0, limit) : earned;
   return show.map(b => `<span title="${b.label}" style="font-size:1.1rem;cursor:default" class="badge-icon">${b.emoji}</span>`).join('');
 }
+
 
 function renderBadgeFull(user) {
   const earned = getEarnedBadges(user);
@@ -1018,6 +1112,7 @@ function showPanel(id) {
   const n=document.getElementById('nav-'+id);if(n)n.classList.add('active');
   if(id==='history')renderHistory();
   if(id==='leaderboard')renderLeaderboard();
+  if(id==='badges')renderBadgesPage();
   if(id==='mines')buildMinesGrid();
   if(id==='towers')buildTowersGrid();
   if(id==='settings')initSettings();
@@ -1356,9 +1451,37 @@ async function runOwnerCmd(raw){
 
   if(cmd==='/resetstats'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /resetstats [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}users[user]={...users[user],balance:1000,won:0,lost:0,played:0,streak:0,bestStreak:0,history:[]};await saveUsers(users);if(CU?.username===user){CU=users[user];updateUI();}ownerLog(`✓ Reset all stats for ${user}.`,'success');return;}
 
-  if(cmd==='/ban'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /ban [user]','error');return;}if(user===CU?.username){ownerLog("Can't ban yourself.",'error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}delete users[user];await saveUsers(users);ownerLog(`✓ Banned and deleted: ${user}`,'success');return;}
+  if(cmd==='/ban'){
+    const user=parseUser(raw,cmd);
+    if(!user){ownerLog('Usage: /ban [user]','error');return;}
+    if(user===CU?.username){ownerLog("Can't ban yourself.",'error');return;}
+    const users=await getUsers();
+    if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}
+    delete users[user];
+    await saveUsers(users);
+    // force logout the banned user via Ably
+    if(chatChannel){chatChannel.publish('force-logout',{username:user});}
+    ownerLog(`✓ Banned and deleted: ${user}`,'success');
+    return;
+  }
 
-  if(cmd==='/rename'){const[user,newname]=parseUserUser(raw,cmd);if(!user||!newname){ownerLog('Usage: /rename [user] [newname]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}if(users[newname]){ownerLog(`"${newname}" already taken.`,'error');return;}users[newname]={...users[user],username:newname};delete users[user];await saveUsers(users);if(CU?.username===user){CU.username=newname;saveSession(newname);updateUI();}ownerLog(`✓ Renamed ${user} → ${newname}`,'success');return;}
+  if(cmd==='/rename'){
+    const[user,newname]=parseUserUser(raw,cmd);
+    if(!user||!newname){ownerLog('Usage: /rename [user] [newname]','error');return;}
+    const nameErr=validateUsername(newname);
+    if(nameErr){ownerLog('Invalid new name: '+nameErr,'error');return;}
+    const users=await getUsers();
+    if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}
+    if(users[newname]){ownerLog(`"${newname}" already taken.`,'error');return;}
+    users[newname]={...users[user],username:newname};
+    delete users[user];
+    await saveUsers(users);
+    // notify renamed user to re-login
+    if(chatChannel){chatChannel.publish('force-logout',{username:user});}
+    if(CU?.username===user){CU.username=newname;saveSession(newname);updateUI();}
+    ownerLog(`✓ Renamed ${user} → ${newname}`,'success');
+    return;
+  }
 
   if(cmd==='/broadcast'){const message=raw.slice(cmd.length).trim();if(!message){ownerLog('Usage: /broadcast [message]','error');return;}if(chatChannel){chatChannel.publish('message',{username:'⚡ SYSTEM',text:message,ts:Date.now()});ownerLog(`✓ Broadcast: "${message}"`,'success');}else{ownerLog('Chat not connected.','error');}return;}
 
@@ -1441,6 +1564,12 @@ function initChat(){
     ablyClient.connection.on('connected',()=>appendMsg({text:'Connected to live chat 🟢'},true));
     ablyClient.connection.on('failed',()=>appendMsg({text:'Connection failed ❌'},true));
     chatChannel.subscribe('message',msg=>appendMsg(msg.data));
+    chatChannel.subscribe('force-logout',msg=>{
+      if(msg.data.username===CU?.username){
+        showToast('Your account has been removed.','lose');
+        setTimeout(()=>logout(),1500);
+      }
+    });
     chatChannel.presence.enter({username:CU.username});
     chatChannel.presence.subscribe(()=>{chatChannel.presence.get((err,members)=>{if(!err)document.getElementById('online-count').textContent=members.length+' online';});});
   }catch(e){console.error('Ably error:',e);const conn=document.getElementById('chat-connecting');if(conn)conn.textContent='Chat unavailable';}
