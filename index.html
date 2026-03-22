@@ -854,7 +854,7 @@ async function doSignup() {
   const err=document.getElementById('signup-error');
   const btn=document.querySelector('#form-signup .auth-submit');
   err.classList.remove('show');
-  const nameErr = validateUsername(u);
+  const nameErr=validateUsername(u);
   if(nameErr){err.textContent=nameErr;err.classList.add('show');return;}
   if(!p||p.length<4){err.textContent='Password must be 4+ chars';err.classList.add('show');return;}
   if(p!==p2){err.textContent='Passwords do not match';err.classList.add('show');return;}
@@ -862,12 +862,18 @@ async function doSignup() {
   try {
     const users=await getUsers();
     if(users[u]){err.textContent='Username already taken';err.classList.add('show');hideAuthLoading(btn,'Create account');return;}
-    users[u]={username:u,password:p,balance:1000,won:0,lost:0,played:0,streak:0,bestStreak:0,history:[]};
-    dbCache={users};await saveDB({users});
-    dbCache.users=users;
+    const newUser={username:u,password:p,balance:1000,won:0,lost:0,played:0,streak:0,bestStreak:0,history:[],badges:[]};
+    users[u]=newUser;
+    dbCache={users};
+    try { await saveDB({users}); } catch(e){ console.warn('Save failed, will retry on next action'); }
     await loginUser(u);
     showToast('Welcome! You start with ◈1,000 🎉','info');
-  } catch(e){err.textContent='Error: '+e.message;err.classList.add('show');hideAuthLoading(btn,'Create account');}
+  } catch(e){
+    console.error('Signup error:',e);
+    err.textContent='Could not connect. Try again.';
+    err.classList.add('show');
+    hideAuthLoading(btn,'Create account');
+  }
 }
 
 async function doLogin() {
@@ -882,7 +888,12 @@ async function doLogin() {
     if(!users[u]||users[u].password!==p){err.textContent='Invalid username or password';err.classList.add('show');hideAuthLoading(btn,'Log in');return;}
     await loginUser(u);
     showToast('Welcome back, '+u+'!','info');
-  } catch(e){err.textContent='Error: '+e.message;err.classList.add('show');hideAuthLoading(btn,'Log in');}
+  } catch(e){
+    console.error('Login error:',e);
+    err.textContent='Could not connect. Try again.';
+    err.classList.add('show');
+    hideAuthLoading(btn,'Log in');
+  }
 }
 
 async function loginUser(username) {
@@ -1593,12 +1604,18 @@ document.getElementById('owner-pass-input').addEventListener('keydown',e=>{if(e.
 
 const session=getSession();
 if(session){
-  fetchDB().then(()=>{
-    getUsers().then(users=>{
-      if(users[session])loginUser(session);
-      else clearSession();
-    });
-  }).catch(()=>clearSession());
+  fetchDB().then(db=>{
+    const users=db?.users||{};
+    if(users[session]){
+      loginUser(session);
+    } else {
+      // user not found in DB - could be new DB, don't wipe session, just show login
+      clearSession();
+    }
+  }).catch(e=>{
+    console.warn('Could not reach DB on load, staying logged out for safety');
+    // Don't clear session so they can try refreshing
+  });
 }
 </script>
 <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
