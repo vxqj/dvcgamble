@@ -1084,7 +1084,7 @@ function logout() {
   clearSession(); CU = null;
   if(ablyClient){try{ablyClient.close();}catch(e){} ablyClient=null; chatChannel=null;}
   plAutoRunning=false; plInFlight=0; if(plAutoInterval){clearInterval(plAutoInterval);plAutoInterval=null;}
-  if(ocfPollInterval){clearInterval(ocfPollInterval);ocfPollInterval=null;} ocfMyGameId=null; ocfMyRole=null;
+  if(ocfPollInterval){clearInterval(ocfPollInterval);ocfPollInterval=null;} if(ocfLobbyInterval){clearInterval(ocfLobbyInterval);ocfLobbyInterval=null;} ocfMyGameId=null; ocfMyRole=null;
   if(plAnimId){cancelAnimationFrame(plAnimId);plAnimId=null;}
   document.getElementById('auth-overlay').classList.remove('hidden');
   document.getElementById('chat-messages').innerHTML='<div style="text-align:center;padding:1rem;font-size:0.8rem;color:var(--muted)" id="chat-connecting">Connecting...</div>';
@@ -1297,6 +1297,10 @@ async function showPanel(id) {
   if(id==='towers') buildTowersGrid();
   if(id==='plinko') initPlinko();
   if(id==='ocf') ocfInit();
+  else {
+    if(ocfLobbyInterval){ clearInterval(ocfLobbyInterval); ocfLobbyInterval=null; }
+    if(ocfPollInterval && !ocfMyGameId){ clearInterval(ocfPollInterval); ocfPollInterval=null; }
+  }
   if(id==='settings') await initSettings();
   if(id==='owner'&&!ownerUnlocked) { document.getElementById('owner-lock').style.display='block'; document.getElementById('owner-panel-content').style.display='none'; document.getElementById('owner-pass-err').classList.remove('show'); document.getElementById('owner-pass-input').value=''; }
 }
@@ -1305,7 +1309,7 @@ async function showPanel(id) {
    UTILS
 ================================================================ */
 const getBet = id => Math.max(1, parseInt(document.getElementById(id).value)||1);
-function setBet(id, mult) { const el=document.getElementById(id); const cur=parseInt(el.value)||100; el.value=mult==='max'?CU.balance:Math.max(1,Math.floor(cur*mult)); }
+function setBet(id, mult) { const el=document.getElementById(id); const cur=parseInt(el.value)||100; const maxBal=id==='pl-bet'?Math.max(0,CU.balance-plInFlight):CU.balance; el.value=mult==='max'?maxBal:Math.max(1,Math.floor(cur*mult)); }
 function showToast(msg, type='info') { const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+type+' show'; clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000); }
 function setResult(id, msg, type) { const el=document.getElementById(id); el.textContent=msg; el.className='result-banner '+type; }
 
@@ -1375,11 +1379,18 @@ function startCrash(){
 }
 function cashOut(){
   if(!crashRunning||crashedOut)return;crashedOut=true;
+  clearInterval(crashInterval); // stop the loop immediately so endCrash can't fire after
   const profit=Math.floor(crashBet*crashMult)-crashBet;
   CU.balance+=crashBet+profit;
   showToast(`Cashed out ${crashMult.toFixed(2)}× +◈${profit}`,'win');
   setResult('cr-result',`✓ ${crashMult.toFixed(2)}× +◈${profit}`,'win');
   addResult('Crash',crashBet,crashMult.toFixed(2)+'×',profit);
+  // Re-start the interval so the graph keeps animating until crash point
+  crashInterval=setInterval(()=>{
+    crashMult=+(crashMult*1.04).toFixed(2);cHistory.push(crashMult);
+    document.getElementById('crash-multi').textContent=crashMult.toFixed(2)+'×';drawCrash();
+    if(crashMult>=crashPoint)endCrash();
+  },80);
 }
 function endCrash(){
   clearInterval(crashInterval);crashRunning=false;
@@ -1562,6 +1573,7 @@ const PLINKO_COLORS = {
 };
 
 let plCanvas, plCtx, plBalls=[], plPins=[], plAnimId=null, plAutoInterval=null, plAutoRunning=false;
+let plInFlight = 0;
 const PL_RADIUS=6, PL_PIN_R=4;
 
 function initPlinko(){
@@ -1656,15 +1668,18 @@ function plAnimLoop(){
       const bucketIdx=Math.min(Math.floor((b.x-padX)/bucketW),mults.length-1);
       const safeIdx=Math.max(0,bucketIdx);
       const mult=mults[safeIdx]||1;
-      const profit=Math.floor(b.bet*mult)-b.bet;
-      CU.balance+=Math.floor(b.bet*mult);
+      const win=Math.floor(b.bet*mult);
+      const profit=win-b.bet;
+      CU.balance+=win;
       plInFlight=Math.max(0,plInFlight-b.bet);
-      addResult('Plinko',b.bet,mult+'×',profit);
-      setResult('pl-result',profit>=0?`✓ ${mult}× +◈${profit}`:`✗ ${mult}× -◈${Math.abs(profit)}`,profit>=0?'win':'lose');
-      showToast(profit>=0?`+◈${profit} at ${mult}×`:`-◈${Math.abs(profit)} at ${mult}×`,profit>=0?'win':'lose');
+      updateUI();
       // flash bucket
       const bEl=document.getElementById('plb-'+safeIdx);
       if(bEl){bEl.classList.remove('hit');void bEl.offsetWidth;bEl.classList.add('hit');}
+      setResult('pl-result',profit>=0?`✓ ${mult}× +◈${profit}`:`✗ ${mult}× -◈${Math.abs(profit)}`,profit>=0?'win':'lose');
+      showToast(profit>=0?`+◈${profit} at ${mult}×`:`-◈${Math.abs(profit)} at ${mult}×`,profit>=0?'win':'lose');
+      // Save async without blocking animation
+      addResult('Plinko',b.bet,mult+'×',profit).catch(()=>{});
     }
   }
 }
@@ -1696,7 +1711,6 @@ function drawPlinko(){
   }
 }
 
-let plInFlight = 0; // total coins in currently-dropping balls
 function dropPlinko(){
   if(!CU)return;
   const bet=getBet('pl-bet');
@@ -1767,6 +1781,7 @@ document.addEventListener('DOMContentLoaded',()=>{
 ================================================================ */
 let ocfMyGameId = null;
 let ocfPollInterval = null;
+let ocfLobbyInterval = null; // separate interval just for refreshing the lobby
 let ocfCurrentGame = null;
 let ocfMyRole = null; // 'host' or 'joiner'
 let ocfChosenSide = null;
@@ -1796,7 +1811,10 @@ async function ocfDeleteGame(id) {
 async function ocfGetOpenGames() {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/coinflip_games?select=*`, { headers: sbHeaders });
   const rows = await res.json();
-  return rows.map(r => { const g = r.data||{}; if(!g.id) g.id=r.id; return g; }).filter(g => g.status === 'waiting');
+  if (!Array.isArray(rows)) return [];
+  return rows
+    .map(r => { const g = r.data||{}; if(!g.id) g.id=r.id; return g; })
+    .filter(g => g.status === 'waiting' && g.host); // only real waiting games
 }
 
 function ocfShowView(view) {
@@ -1808,13 +1826,16 @@ function ocfShowView(view) {
 function ocfInit() {
   ocfChosenSide = null;
   if (ocfMyGameId) {
-    // resume active game
     ocfPollGame();
   } else {
     ocfShowView('ocf-create-view');
     ocfLoadLobby();
   }
   if (!ocfPollInterval) ocfPollInterval = setInterval(ocfPollGame, 5000);
+  // Auto-refresh lobby every 4 seconds so players see new games instantly
+  if (!ocfLobbyInterval) ocfLobbyInterval = setInterval(() => {
+    if (!ocfMyGameId) ocfLoadLobby(); // only refresh lobby if not in a game
+  }, 4000);
 }
 
 async function ocfLoadLobby() {
@@ -1823,17 +1844,20 @@ async function ocfLoadLobby() {
   try {
     const games = await ocfGetOpenGames();
     if (!games.length) { el.innerHTML = '<div class="ocf-waiting">No open games right now. Create one!</div>'; return; }
-    el.innerHTML = games.map(g => `
-      <div class="ocf-game-card">
-        <div>
-          <div class="ocf-host">${g.host} <span class="ocf-tag ocf-tag-waiting">Waiting</span></div>
+    el.innerHTML = games.map(g => {
+      const isMe = g.host === CU?.username;
+      return `
+      <div class="ocf-game-card" style="${isMe?'border-color:rgba(0,230,118,0.3);background:rgba(0,230,118,0.04);':''}">
+        <div style="flex:1;">
+          <div class="ocf-host">${g.host}${isMe?' <span style="font-size:0.65rem;color:var(--accent);font-weight:700;">(you)</span>':''} <span class="ocf-tag ocf-tag-waiting">Waiting</span></div>
           <div style="font-size:0.75rem;color:var(--muted);margin-top:3px;">Created ${timeAgo(g.createdAt)}</div>
         </div>
         <div class="ocf-amt">◈${(g.bet||0).toLocaleString()}</div>
-        <button class="ocf-join" ${g.host===CU?.username?'disabled title="Your own game"':''} onclick="ocfJoinGame('${g.id}')">
-          ${g.host===CU?.username ? 'Your game' : 'Join'}
+        <button class="ocf-join" ${isMe?'disabled':''} onclick="ocfJoinGame('${g.id}')">
+          ${isMe ? '⏳ Waiting' : 'Join →'}
         </button>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } catch(e) { el.innerHTML = '<div class="ocf-waiting">Error loading games.</div>'; }
 }
 
@@ -1869,14 +1893,18 @@ async function ocfCreateGame() {
 
 async function ocfJoinGame(id) {
   const game = await ocfGetGame(id);
-  if (!game || game.status !== 'waiting') { showToast('Game no longer available!', 'lose'); ocfLoadLobby(); return; }
+  if (!game || game.status !== 'waiting') { showToast('Game already taken!', 'lose'); ocfLoadLobby(); return; }
   if (game.host === CU.username) { showToast("You can't join your own game!", 'info'); return; }
   if (game.bet > CU.balance) { showToast('Not enough balance!', 'lose'); return; }
 
-  // Mark as active so no one else can join
-  game.status = 'picking';
-  game.joiner = CU.username;
-  await ocfSaveGame(game);
+  // Atomically claim spot — only update if status is STILL 'waiting'
+  const claimRes = await fetch(`${SUPABASE_URL}/rest/v1/coinflip_games?id=eq.${encodeURIComponent(id)}&data->>status=eq.waiting`, {
+    method: 'PATCH',
+    headers: { ...sbHeaders, 'Prefer': 'return=representation' },
+    body: JSON.stringify({ data: { ...game, status: 'picking', joiner: CU.username } })
+  });
+  const claimed = await claimRes.json();
+  if (!claimed || !claimed.length) { showToast('Someone else just joined!', 'lose'); ocfLoadLobby(); return; }
 
   CU.balance -= game.bet;
   await saveCurrentUser();
@@ -2021,9 +2049,16 @@ async function ocfShowResult(game) {
 async function ocfCancelGame() {
   if (!ocfMyGameId) return;
   const game = await ocfGetGame(ocfMyGameId);
-  if (game && game.status === 'waiting') {
-    // Refund
-    CU.balance += game.bet;
+  if (game && (game.status === 'waiting' || game.status === 'picking')) {
+    // Refund the host always; also refund joiner if they'd already paid
+    if (ocfMyRole === 'host') {
+      CU.balance += game.bet;
+      // If joiner already joined, refund them too by updating their record
+      if (game.joiner && game.status === 'picking') {
+        const joinerData = await sbGetUser(game.joiner);
+        if (joinerData) { joinerData.balance += game.bet; await sbSaveUser(joinerData); }
+      }
+    }
     await saveCurrentUser();
     updateUI();
     await ocfDeleteGame(ocfMyGameId);
@@ -2054,9 +2089,18 @@ async function initSettings(){
   ['set-username','set-username-pass','set-old-pass','set-new-pass','set-new-pass2'].forEach(id=>document.getElementById(id).value='');
   ['set-username-err','set-pass-err'].forEach(id=>document.getElementById(id).classList.remove('show'));
   if(!CU)return;
-  // Re-fetch fresh data from Supabase so stats are always up to date
+  // Re-fetch fresh data but preserve in-memory balance/streak (active game state)
   const fresh=await sbGetUser(CU.username);
-  if(fresh) CU=fresh;
+  if(fresh){
+    // Only update display fields, not balance/streak which may be mid-game
+    CU.won=fresh.won||0;
+    CU.lost=fresh.lost||0;
+    CU.played=fresh.played||0;
+    CU.bestStreak=fresh.bestStreak||0;
+    CU.history=fresh.history||[];
+    CU.badges=fresh.badges||[];
+    CU.accentColor=fresh.accentColor||CU.accentColor;
+  }
   const accent=CU.accentColor||'#00e676';
   document.getElementById('sc-avatar').textContent=CU.username.slice(0,2).toUpperCase();
   document.getElementById('sc-avatar').style.background=accent+'33';document.getElementById('sc-avatar').style.color=accent;
@@ -2373,6 +2417,7 @@ function initChat(){
 ================================================================ */
 let currentVersion = null;
 let updateCheckInterval = null;
+let updateBannerShown = false;
 
 async function getServerVersion() {
   try {
@@ -2391,6 +2436,8 @@ async function setServerVersion(v) {
 }
 
 function triggerUpdateBanner(seconds=10) {
+  if (updateBannerShown) return; // prevent double trigger
+  updateBannerShown = true;
   const banner = document.getElementById('update-banner');
   const countEl = document.getElementById('ub-count');
   const fill = document.getElementById('ub-fill');
@@ -2427,12 +2474,13 @@ async function startVersionCheck() {
 /* ================================================================
    INIT
 ================================================================ */
-window.addEventListener('resize',resizeCrash);
-setTimeout(resizeCrash,100);
+window.addEventListener('resize',()=>{try{resizeCrash();}catch(e){}});
+setTimeout(()=>{try{resizeCrash();}catch(e){}},200);
 buildMinesGrid();
 buildTowersGrid();
 
 document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('login-user').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 document.getElementById('signup-pass2').addEventListener('keydown',e=>{if(e.key==='Enter')doSignup();});
 document.getElementById('profile-modal').addEventListener('click',e=>{if(e.target===document.getElementById('profile-modal'))closeProfile();});
 document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendMessage();});
