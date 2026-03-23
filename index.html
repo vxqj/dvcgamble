@@ -83,7 +83,7 @@
     .app{display:flex;height:calc(100vh - 56px);overflow:hidden;}
     .sidebar{width:200px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;height:calc(100vh - 56px);}
     .sidebar-top{flex-shrink:0;padding:1rem 0 0;}
-    .sidebar-games-scroll{max-height:calc(100vh - 56px - 280px);overflow-y:auto;padding:0;flex-shrink:0;}
+    .sidebar-games-scroll{max-height:38vh;overflow-y:auto;padding:0;flex-shrink:0;}
     .sidebar-games-scroll::-webkit-scrollbar{width:3px;}
     .sidebar-games-scroll::-webkit-scrollbar-track{background:transparent;}
     .sidebar-games-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:2px;}
@@ -731,7 +731,7 @@
       <div class="section-title">🎯 Plinko</div>
       <div class="game-layout">
         <div class="game-area" style="padding:1rem;gap:0.5rem;">
-          <canvas id="plinko-canvas" width="420" height="420"></canvas>
+          <canvas id="plinko-canvas" width="480" height="500"></canvas>
           <div class="plinko-bucket" id="plinko-buckets"></div>
         </div>
         <div class="bet-panel">
@@ -2109,7 +2109,11 @@ function getPlinkoBucketColors(risk, rows) {
 
 let plCanvas, plCtx, plBalls=[], plPins=[], plAnimId=null, plAutoInterval=null, plAutoRunning=false;
 let plInFlight = 0;
-const PL_RADIUS=6, PL_PIN_R=4;
+function plGetSizes(rows){
+  if(rows>=32) return {ballR:4, pinR:2.5};
+  if(rows>=16) return {ballR:5, pinR:3};
+  return {ballR:6, pinR:4};
+}
 
 function initPlinko(){
   plCanvas=document.getElementById('plinko-canvas');
@@ -2125,15 +2129,22 @@ function buildPlinkoBoard(){
   const W=plCanvas.width, H=plCanvas.height;
   plPins=[];
   const mults=PLINKO_MULTIPLIERS[risk][rows];
-  const cols=rows+1; // number of buckets
-  const padX=rows>=32?15:40, padY=rows>=32?15:40;
-  const spacingX=(W-padX*2)/rows;
-  const spacingY=(H-padY*2-50)/rows;
+  const cols=rows+1;
+  const {ballR,pinR}=plGetSizes(rows);
+  const minSpacing=(ballR+pinR)*2.8; // ensure pins are never too close for ball to pass
+  const padX=20, padY=20;
+  const availW=W-padX*2;
+  const availH=H-padY*2-40;
+  const spacingX=Math.max(minSpacing, availW/rows);
+  const spacingY=Math.max(minSpacing*0.9, availH/rows);
+  // If pins are wider than canvas, scale canvas up dynamically
+  const neededW=spacingX*rows+padX*2;
+  if(neededW>W) plCanvas.width=Math.ceil(neededW);
 
   for(let r=0;r<rows;r++){
     const count=r+2;
     const rowW=(count-1)*spacingX;
-    const startX=(W-rowW)/2;
+    const startX=(plCanvas.width-rowW)/2;
     for(let c=0;c<count;c++){
       plPins.push({x:startX+c*spacingX, y:padY+r*spacingY});
     }
@@ -2164,44 +2175,41 @@ function plAnimLoop(){
   drawPlinko();
   const rows=parseInt(document.getElementById('pl-rows').value)||12;
   const W=plCanvas.width,H=plCanvas.height;
-  const padX=rows>=32?15:40,padY=rows>=32?15:40;
-  const spacingX=(W-padX*2)/rows;
-  const spacingY=(H-padY*2-50)/rows;
+  const {ballR,pinR}=plGetSizes(rows);
   const risk=document.getElementById('pl-risk').value||'medium';
   const mults=PLINKO_MULTIPLIERS[risk][rows];
+  const padX=20;
 
   for(let i=plBalls.length-1;i>=0;i--){
     const b=plBalls[i];
-    b.vy+=0.4; // gravity
-    b.vx*=0.98; // air resistance
+    b.vy+=0.45;
+    b.vx*=0.99;
     b.x+=b.vx;
     b.y+=b.vy;
-    // enforce minimum downward speed so ball never gets stuck
-    if(b.vy<0.3)b.vy=0.3;
+    if(b.vy<0.5)b.vy=0.5; // always moving down
 
     // pin collisions
     for(const pin of plPins){
       const dx=b.x-pin.x, dy=b.y-pin.y;
       const dist=Math.sqrt(dx*dx+dy*dy);
-      if(dist<PL_RADIUS+PL_PIN_R+2){
+      const minDist=ballR+pinR+1;
+      if(dist<minDist){
         const angle=Math.atan2(dy,dx);
-        const speed=Math.max(Math.sqrt(b.vx*b.vx+b.vy*b.vy),2);
-        b.vx=Math.cos(angle)*speed*0.7+(Math.random()-0.5)*2;
-        b.vy=Math.abs(Math.sin(angle)*speed*0.5)+1.0;
-        // push ball completely clear of pin
-        const clearDist=PL_RADIUS+PL_PIN_R+3;
-        b.x=pin.x+Math.cos(angle)*clearDist;
-        b.y=pin.y+Math.sin(angle)*clearDist;
-        break; // only handle one pin collision per frame
+        const speed=Math.max(Math.sqrt(b.vx*b.vx+b.vy*b.vy),2.5);
+        b.vx=Math.cos(angle)*speed*0.7+(Math.random()-0.5)*2.5;
+        b.vy=Math.abs(Math.sin(angle)*speed*0.5)+1.2;
+        b.x=pin.x+Math.cos(angle)*(minDist+1);
+        b.y=pin.y+Math.sin(angle)*(minDist+1);
+        break;
       }
     }
 
     // wall bounce
-    if(b.x<PL_RADIUS+10){b.x=PL_RADIUS+10;b.vx=Math.abs(b.vx)*0.6;}
-    if(b.x>W-PL_RADIUS-10){b.x=W-PL_RADIUS-10;b.vx=-Math.abs(b.vx)*0.6;}
+    if(b.x<ballR+5){b.x=ballR+5;b.vx=Math.abs(b.vx)*0.7;}
+    if(b.x>W-ballR-5){b.x=W-ballR-5;b.vx=-Math.abs(b.vx)*0.7;}
 
     // landed
-    if(b.y>H-50){
+    if(b.y>H-40){
       plBalls.splice(i,1);
       const cols=rows+1;
       const bucketW=(W-padX*2)/cols;
@@ -2232,17 +2240,19 @@ function drawPlinko(){
   plCtx.fillRect(0,0,W,H);
 
   // draw pins
+  const rows2=parseInt(document.getElementById('pl-rows')?.value)||12;
+  const {ballR:bR2,pinR:pR2}=plGetSizes(rows2);
   for(const pin of plPins){
     plCtx.beginPath();
-    plCtx.arc(pin.x,pin.y,PL_PIN_R,0,Math.PI*2);
-    plCtx.fillStyle='rgba(255,255,255,0.4)';
+    plCtx.arc(pin.x,pin.y,pR2,0,Math.PI*2);
+    plCtx.fillStyle='rgba(255,255,255,0.5)';
     plCtx.fill();
   }
 
   // draw balls
   for(const b of plBalls){
     plCtx.beginPath();
-    plCtx.arc(b.x,b.y,PL_RADIUS,0,Math.PI*2);
+    plCtx.arc(b.x,b.y,b.r||bR2,0,Math.PI*2);
     plCtx.fillStyle=b.color||'#ff5252';
     plCtx.shadowBlur=8;
     plCtx.shadowColor=b.color||'#ff5252';
@@ -2261,12 +2271,14 @@ function dropPlinko(){
   const W=plCanvas.width;
   const colors=['#ff5252','#ffd740','#00e676','#448aff','#7c5cfc','#ff6d00'];
   const currentRows=parseInt(document.getElementById('pl-rows')?.value)||12;
-  const initSpeed=currentRows>=32?2.5:currentRows>=16?2.0:1.5;
+  const initSpeed=currentRows>=32?3.0:currentRows>=16?2.5:2.0;
+  const {ballR}=plGetSizes(currentRows);
   plBalls.push({
-    x:W/2+(Math.random()-0.5)*8,
+    x:W/2+(Math.random()-0.5)*6,
     y:5,
-    vx:(Math.random()-0.5)*1.0,
+    vx:(Math.random()-0.5)*0.8,
     vy:initSpeed,
+    r:ballR,
     bet,
     color:colors[Math.floor(Math.random()*colors.length)]
   });
