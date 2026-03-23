@@ -273,9 +273,51 @@
     .pb{flex:1;text-align:center;padding:4px 2px;border-radius:6px;font-size:0.6rem;font-weight:700;background:var(--surface2);border:1px solid var(--border);transition:all 0.2s;}
     .pb.hit{animation:pbHit 0.4s ease;}
     @keyframes pbHit{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+    /* UPDATE BANNER */
+    #update-banner{position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#ff6d00,#ffd740);color:#0d0d0d;padding:0.75rem 1.5rem;display:flex;align-items:center;justify-content:center;gap:1rem;font-weight:700;font-size:0.9rem;transform:translateY(-100%);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);}
+    #update-banner.show{transform:translateY(0);}
+    #update-banner .ub-icon{font-size:1.2rem;animation:spin 1s linear infinite;}
+    #update-banner .ub-bar{height:4px;background:rgba(0,0,0,0.2);border-radius:2px;overflow:hidden;width:200px;}
+    #update-banner .ub-fill{height:100%;background:#0d0d0d;border-radius:2px;transition:width 1s linear;}
+    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+    /* ONLINE COIN FLIP */
+    .ocf-lobby{display:flex;flex-direction:column;gap:0.75rem;}
+    .ocf-game-card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;transition:all 0.2s;}
+    .ocf-game-card:hover{border-color:var(--accent);background:var(--surface2);}
+    .ocf-game-card .ocf-host{font-size:0.95rem;font-weight:700;}
+    .ocf-game-card .ocf-amt{font-size:1.1rem;font-weight:800;color:var(--gold);}
+    .ocf-game-card .ocf-join{background:var(--accent);color:#0d0d0d;border-radius:8px;padding:0.5rem 1.25rem;font-size:0.82rem;font-weight:700;transition:opacity 0.2s;white-space:nowrap;}
+    .ocf-game-card .ocf-join:hover{opacity:0.85;}
+    .ocf-game-card .ocf-join:disabled{opacity:0.4;cursor:not-allowed;}
+    .ocf-waiting{text-align:center;padding:2rem;color:var(--muted);font-size:0.85rem;}
+    .ocf-arena{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:2rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1.25rem;}
+    .ocf-vs{display:flex;align-items:center;gap:1.5rem;width:100%;max-width:380px;}
+    .ocf-player{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;}
+    .ocf-player.winner{border-color:var(--accent);background:rgba(0,230,118,0.07);}
+    .ocf-player.loser{border-color:var(--red);background:rgba(255,82,82,0.07);}
+    .ocf-player-name{font-size:0.85rem;font-weight:700;margin-bottom:4px;}
+    .ocf-player-side{font-size:0.72rem;color:var(--muted);}
+    .ocf-pot{font-size:1.8rem;font-weight:800;color:var(--gold);}
+    .ocf-side-btns{display:flex;gap:0.75rem;}
+    .ocf-side-btn{padding:0.65rem 1.75rem;border-radius:10px;font-size:0.9rem;font-weight:700;border:2px solid var(--border2);background:var(--surface2);color:var(--muted);transition:all 0.2s;cursor:pointer;}
+    .ocf-side-btn:hover{border-color:var(--border2);color:var(--fg);}
+    .ocf-side-btn.sel-heads{background:rgba(255,215,64,0.15);border-color:var(--gold);color:var(--gold);}
+    .ocf-side-btn.sel-tails{background:rgba(148,163,184,0.15);border-color:#94a3b8;color:#94a3b8;}
+    .ocf-tag{display:inline-block;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:4px;margin-left:6px;}
+    .ocf-tag-waiting{background:rgba(255,215,64,0.15);color:var(--gold);}
+    .ocf-tag-live{background:rgba(0,230,118,0.15);color:var(--accent);}
   </style>
 </head>
 <body>
+
+<!-- UPDATE BANNER -->
+<div id="update-banner">
+  <span class="ub-icon">🔄</span>
+  <span id="ub-msg">Server update incoming — reloading in <span id="ub-count">10</span>s</span>
+  <div class="ub-bar"><div class="ub-fill" id="ub-fill" style="width:100%"></div></div>
+</div>
 
 <!-- AUTH -->
 <div id="auth-overlay">
@@ -380,6 +422,7 @@
     <div class="nav-item" onclick="showPanel('mines')" id="nav-mines"><span class="icon">💣</span> Mines</div>
     <div class="nav-item" onclick="showPanel('towers')" id="nav-towers"><span class="icon">🗼</span> Towers</div>
     <div class="nav-item" onclick="showPanel('plinko')" id="nav-plinko"><span class="icon">🎯</span> Plinko</div>
+    <div class="nav-item" onclick="showPanel('ocf')" id="nav-ocf"><span class="icon">⚔️</span> Online Flip</div>
     <div class="sidebar-label">Community</div>
     <div class="nav-item" onclick="showPanel('leaderboard')" id="nav-leaderboard"><span class="icon">🏆</span> Leaderboard</div>
     <div class="nav-item" onclick="showPanel('badges')" id="nav-badges"><span class="icon">🎖️</span> Badges</div>
@@ -409,6 +452,7 @@
         <div class="game-card" onclick="showPanel('mines')"><div class="game-emoji">💣</div><h3>Mines</h3><p>Gems vs bombs. Your call.</p></div>
         <div class="game-card" onclick="showPanel('towers')"><div class="game-emoji">🗼</div><h3>Towers</h3><p>Climb floors. Cash out or bust.</p></div>
         <div class="game-card" onclick="showPanel('plinko')"><div class="game-emoji">🎯</div><h3>Plinko</h3><p>Drop the ball. Watch it fall.</p></div>
+        <div class="game-card" onclick="showPanel('ocf')"><div class="game-emoji">⚔️</div><h3>Online Flip</h3><p>Challenge real players. Winner takes all.</p></div>
       </div>
     </div>
 
@@ -582,6 +626,96 @@
       </div>
     </div>
 
+
+    <!-- ONLINE COIN FLIP -->
+    <div class="panel" id="panel-ocf">
+      <button class="back-btn" onclick="showPanel('home')">← Back</button>
+      <div class="section-title">⚔️ Online Coin Flip</div>
+      <div class="game-layout">
+
+        <!-- LEFT: arena / lobby -->
+        <div id="ocf-left">
+          <!-- CREATE GAME VIEW -->
+          <div id="ocf-create-view">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;margin-bottom:1rem;">
+              <div style="font-size:0.85rem;font-weight:700;margin-bottom:1rem;">🎲 Create a Game</div>
+              <div class="form-group" style="margin-bottom:0.75rem;">
+                <div class="form-label">Bet amount</div>
+                <input class="form-input" id="ocf-create-bet" type="number" value="100" min="1" />
+              </div>
+              <div class="bet-quick" style="margin-bottom:0.75rem;">
+                <button class="bet-quick-btn" onclick="setBet('ocf-create-bet',0.5)">½</button>
+                <button class="bet-quick-btn" onclick="setBet('ocf-create-bet',2)">2×</button>
+                <button class="bet-quick-btn" onclick="setBet('ocf-create-bet','max')">Max</button>
+              </div>
+              <button class="play-btn" onclick="ocfCreateGame()">Create Game</button>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+              <div style="font-size:0.85rem;font-weight:700;">Open Games</div>
+              <button class="bet-quick-btn" onclick="ocfLoadLobby()">↻ Refresh</button>
+            </div>
+            <div class="ocf-lobby" id="ocf-lobby">
+              <div class="ocf-waiting">Loading games...</div>
+            </div>
+          </div>
+
+          <!-- WAITING VIEW (after creating, waiting for opponent) -->
+          <div id="ocf-waiting-view" style="display:none;">
+            <div class="ocf-arena">
+              <div style="font-size:2rem;">⏳</div>
+              <div style="font-size:1.1rem;font-weight:700;">Waiting for opponent...</div>
+              <div id="ocf-waiting-amt" style="font-size:0.85rem;color:var(--muted)"></div>
+              <div class="ocf-pot" id="ocf-waiting-pot"></div>
+              <button class="play-btn red-btn" style="max-width:200px;" onclick="ocfCancelGame()">Cancel Game</button>
+            </div>
+          </div>
+
+          <!-- PICK SIDE VIEW (joined, picking side) -->
+          <div id="ocf-pick-view" style="display:none;">
+            <div class="ocf-arena">
+              <div style="font-size:1.1rem;font-weight:700;">Pick your side!</div>
+              <div style="font-size:0.82rem;color:var(--muted)" id="ocf-pick-info"></div>
+              <div class="ocf-vs" id="ocf-pick-vs"></div>
+              <div class="ocf-side-btns">
+                <button class="ocf-side-btn" id="ocf-btn-heads" onclick="ocfPickSide('heads')">👑 Heads</button>
+                <button class="ocf-side-btn" id="ocf-btn-tails" onclick="ocfPickSide('tails')">🌙 Tails</button>
+              </div>
+              <button class="play-btn" id="ocf-confirm-btn" onclick="ocfConfirmFlip()" style="max-width:220px;" disabled>Flip!</button>
+            </div>
+          </div>
+
+          <!-- RESULT VIEW -->
+          <div id="ocf-result-view" style="display:none;">
+            <div class="ocf-arena">
+              <div style="font-size:3rem;" id="ocf-result-emoji">🪙</div>
+              <div style="font-size:1.5rem;font-weight:800;" id="ocf-result-title"></div>
+              <div style="font-size:0.85rem;color:var(--muted);" id="ocf-result-sub"></div>
+              <div class="ocf-vs" id="ocf-result-vs"></div>
+              <button class="play-btn" style="max-width:200px;" onclick="ocfBackToLobby()">Back to Lobby</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: bet panel placeholder (styling) -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;height:fit-content;">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:1rem;">How it works</div>
+          <div style="display:flex;flex-direction:column;gap:0.85rem;font-size:0.82rem;color:var(--muted);line-height:1.6;">
+            <div><span style="color:var(--accent);font-weight:700;">1.</span> Create a game and set your bet</div>
+            <div><span style="color:var(--accent);font-weight:700;">2.</span> Another player joins and matches your bet</div>
+            <div><span style="color:var(--accent);font-weight:700;">3.</span> Both players pick heads or tails</div>
+            <div><span style="color:var(--accent);font-weight:700;">4.</span> The coin flips — winner takes the pot!</div>
+            <div style="margin-top:0.5rem;padding-top:0.75rem;border-top:1px solid var(--border);color:rgba(240,240,240,0.25);font-size:0.75rem;">Pot = 2× your bet. No house edge.</div>
+          </div>
+          <div style="margin-top:1.5rem;">
+            <div style="font-size:0.78rem;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:0.75rem;">Your Active Game</div>
+            <div id="ocf-my-game-status" style="font-size:0.82rem;color:var(--muted);">None</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- LEADERBOARD -->
     <div class="panel" id="panel-leaderboard">
       <div class="section-title">🏆 Leaderboard</div>
@@ -704,6 +838,8 @@
               <div><span style="color:var(--accent)">/givebadge</span> [user]</div>
               <div><span style="color:var(--accent)">/removebadge</span> [user]</div>
               <div><span style="color:var(--accent)">/clear</span></div>
+              <div><span style="color:var(--accent)">/update</span> [seconds] — trigger server restart countdown</div>
+              <div><span style="color:var(--accent)">/resetallcash</span> [amount] — reset everyone's balance (default 500)</div>
             </div>
           </div>
           <div class="owner-terminal">
@@ -919,12 +1055,14 @@ async function loginUser(username) {
   try { if (CU.accentColor) applyAccent(CU.accentColor); } catch(e) {}
   await updateUI();
   setTimeout(() => { try { initChat(); } catch(e) {} }, 400);
+  startVersionCheck();
 }
 
 function logout() {
   clearSession(); CU = null;
   if(ablyClient){try{ablyClient.close();}catch(e){} ablyClient=null; chatChannel=null;}
   plAutoRunning=false; if(plAutoInterval){clearInterval(plAutoInterval);plAutoInterval=null;}
+  if(ocfPollInterval){clearInterval(ocfPollInterval);ocfPollInterval=null;} ocfMyGameId=null; ocfMyRole=null;
   if(plAnimId){cancelAnimationFrame(plAnimId);plAnimId=null;}
   document.getElementById('auth-overlay').classList.remove('hidden');
   document.getElementById('chat-messages').innerHTML='<div style="text-align:center;padding:1rem;font-size:0.8rem;color:var(--muted)" id="chat-connecting">Connecting...</div>';
@@ -1130,6 +1268,7 @@ async function showPanel(id) {
   if(id==='mines') buildMinesGrid();
   if(id==='towers') buildTowersGrid();
   if(id==='plinko') initPlinko();
+  if(id==='ocf') ocfInit();
   if(id==='settings') await initSettings();
   if(id==='owner'&&!ownerUnlocked) { document.getElementById('owner-lock').style.display='block'; document.getElementById('owner-panel-content').style.display='none'; document.getElementById('owner-pass-err').classList.remove('show'); document.getElementById('owner-pass-input').value=''; }
 }
@@ -1591,6 +1730,283 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(plRisk) plRisk.addEventListener('change',()=>{if(plPins.length)buildPlinkoBoard();});
 });
 
+
+/* ================================================================
+   ONLINE COIN FLIP
+================================================================ */
+let ocfMyGameId = null;
+let ocfPollInterval = null;
+let ocfCurrentGame = null;
+let ocfMyRole = null; // 'host' or 'joiner'
+let ocfChosenSide = null;
+
+// DB helpers
+async function ocfGetGame(id) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/coinflip_games?id=eq.${encodeURIComponent(id)}&select=*`, { headers: sbHeaders });
+  const rows = await res.json();
+  if (!rows.length) return null;
+  const g = rows[0].data || {};
+  if (!g.id) g.id = rows[0].id;
+  return g;
+}
+async function ocfSaveGame(game) {
+  await fetch(`${SUPABASE_URL}/rest/v1/coinflip_games`, {
+    method: 'POST',
+    headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({ id: game.id, data: game })
+  });
+}
+async function ocfDeleteGame(id) {
+  await fetch(`${SUPABASE_URL}/rest/v1/coinflip_games?id=eq.${encodeURIComponent(id)}`, {
+    method: 'DELETE', headers: sbHeaders
+  });
+}
+async function ocfGetOpenGames() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/coinflip_games?select=*`, { headers: sbHeaders });
+  const rows = await res.json();
+  return rows.map(r => { const g = r.data||{}; if(!g.id) g.id=r.id; return g; }).filter(g => g.status === 'waiting');
+}
+
+function ocfShowView(view) {
+  ['ocf-create-view','ocf-waiting-view','ocf-pick-view','ocf-result-view'].forEach(v => {
+    document.getElementById(v).style.display = v === view ? 'block' : 'none';
+  });
+}
+
+function ocfInit() {
+  ocfChosenSide = null;
+  if (ocfMyGameId) {
+    // resume active game
+    ocfPollGame();
+  } else {
+    ocfShowView('ocf-create-view');
+    ocfLoadLobby();
+  }
+  if (!ocfPollInterval) ocfPollInterval = setInterval(ocfPollGame, 3000);
+}
+
+async function ocfLoadLobby() {
+  const el = document.getElementById('ocf-lobby');
+  el.innerHTML = '<div class="ocf-waiting">Loading...</div>';
+  try {
+    const games = await ocfGetOpenGames();
+    if (!games.length) { el.innerHTML = '<div class="ocf-waiting">No open games right now. Create one!</div>'; return; }
+    el.innerHTML = games.map(g => `
+      <div class="ocf-game-card">
+        <div>
+          <div class="ocf-host">${g.host} <span class="ocf-tag ocf-tag-waiting">Waiting</span></div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:3px;">Created ${timeAgo(g.createdAt)}</div>
+        </div>
+        <div class="ocf-amt">◈${(g.bet||0).toLocaleString()}</div>
+        <button class="ocf-join" ${g.host===CU?.username?'disabled title="Your own game"':''} onclick="ocfJoinGame('${g.id}')">
+          ${g.host===CU?.username ? 'Your game' : 'Join'}
+        </button>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div class="ocf-waiting">Error loading games.</div>'; }
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 60) return s + 's ago';
+  return Math.floor(s/60) + 'm ago';
+}
+
+async function ocfCreateGame() {
+  const bet = getBet('ocf-create-bet');
+  if (bet > CU.balance) { showToast('Not enough balance!', 'lose'); return; }
+  if (ocfMyGameId) { showToast('You already have an active game!', 'info'); return; }
+
+  CU.balance -= bet;
+  await saveCurrentUser();
+  updateUI();
+
+  const id = 'ocf_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  const game = { id, host: CU.username, bet, status: 'waiting', createdAt: Date.now(), hostSide: null, joiner: null, joinerSide: null, result: null };
+  await ocfSaveGame(game);
+  ocfMyGameId = id;
+  ocfMyRole = 'host';
+  ocfCurrentGame = game;
+
+  document.getElementById('ocf-waiting-amt').textContent = `Bet: ◈${bet.toLocaleString()} — Pot: ◈${(bet*2).toLocaleString()}`;
+  document.getElementById('ocf-waiting-pot').textContent = '◈' + (bet*2).toLocaleString();
+  document.getElementById('ocf-my-game-status').textContent = `Hosting ◈${bet.toLocaleString()} game`;
+  ocfShowView('ocf-waiting-view');
+  showToast('Game created! Waiting for opponent...', 'info');
+}
+
+async function ocfJoinGame(id) {
+  const game = await ocfGetGame(id);
+  if (!game || game.status !== 'waiting') { showToast('Game no longer available!', 'lose'); ocfLoadLobby(); return; }
+  if (game.host === CU.username) { showToast("You can't join your own game!", 'info'); return; }
+  if (game.bet > CU.balance) { showToast('Not enough balance!', 'lose'); return; }
+
+  // Mark as active so no one else can join
+  game.status = 'picking';
+  game.joiner = CU.username;
+  await ocfSaveGame(game);
+
+  CU.balance -= game.bet;
+  await saveCurrentUser();
+  updateUI();
+
+  ocfMyGameId = id;
+  ocfMyRole = 'joiner';
+  ocfCurrentGame = game;
+  ocfChosenSide = null;
+
+  document.getElementById('ocf-my-game-status').textContent = `In game vs ${game.host} — ◈${game.bet.toLocaleString()}`;
+  ocfShowPickView(game);
+  showToast(`Joined! Pot: ◈${(game.bet*2).toLocaleString()}`, 'info');
+}
+
+function ocfShowPickView(game) {
+  ocfShowView('ocf-pick-view');
+  document.getElementById('ocf-pick-info').textContent = `Pot: ◈${(game.bet*2).toLocaleString()} — Pick your side then hit Flip!`;
+  document.getElementById('ocf-pick-vs').innerHTML = `
+    <div class="ocf-player">
+      <div class="ocf-player-name">${game.host}</div>
+      <div class="ocf-player-side">${ocfMyRole==='host' ? 'You' : 'Opponent'}</div>
+    </div>
+    <div style="font-size:1.5rem;font-weight:800;color:var(--muted);">VS</div>
+    <div class="ocf-player">
+      <div class="ocf-player-name">${game.joiner||'...'}</div>
+      <div class="ocf-player-side">${ocfMyRole==='joiner' ? 'You' : 'Opponent'}</div>
+    </div>`;
+  document.getElementById('ocf-btn-heads').className = 'ocf-side-btn';
+  document.getElementById('ocf-btn-tails').className = 'ocf-side-btn';
+  document.getElementById('ocf-confirm-btn').disabled = true;
+}
+
+function ocfPickSide(side) {
+  ocfChosenSide = side;
+  document.getElementById('ocf-btn-heads').className = 'ocf-side-btn' + (side==='heads' ? ' sel-heads' : '');
+  document.getElementById('ocf-btn-tails').className = 'ocf-side-btn' + (side==='tails' ? ' sel-tails' : '');
+  document.getElementById('ocf-confirm-btn').disabled = false;
+}
+
+async function ocfConfirmFlip() {
+  if (!ocfChosenSide || !ocfMyGameId) return;
+  const btn = document.getElementById('ocf-confirm-btn');
+  btn.disabled = true; btn.textContent = 'Waiting for opponent...';
+
+  const game = await ocfGetGame(ocfMyGameId);
+  if (!game) { showToast('Game not found!', 'lose'); ocfBackToLobby(); return; }
+
+  if (ocfMyRole === 'host') {
+    game.hostSide = ocfChosenSide;
+  } else {
+    game.joinerSide = ocfChosenSide;
+  }
+
+  // If both have picked, resolve
+  if (game.hostSide && game.joinerSide) {
+    const result = Math.random() < 0.5 ? 'heads' : 'tails';
+    game.result = result;
+    game.status = 'done';
+    game.resolvedAt = Date.now();
+    const winner = game.hostSide === result ? game.host : game.joiner;
+    game.winner = winner;
+    await ocfSaveGame(game);
+    ocfShowResult(game);
+  } else {
+    await ocfSaveGame(game);
+    // Poll until opponent picks
+  }
+}
+
+async function ocfPollGame() {
+  if (!ocfMyGameId) return;
+  try {
+    const game = await ocfGetGame(ocfMyGameId);
+    if (!game) { ocfBackToLobby(); return; }
+    ocfCurrentGame = game;
+
+    // Host: opponent joined, show pick view
+    if (ocfMyRole === 'host' && game.status === 'picking' && !document.getElementById('ocf-pick-view').style.display.includes('block')) {
+      ocfShowPickView(game);
+      showToast(`${game.joiner} joined! Pick your side.`, 'info');
+    }
+
+    // Both picked, show result
+    if (game.status === 'done' && document.getElementById('ocf-result-view').style.display !== 'block') {
+      ocfShowResult(game);
+    }
+
+    // Waiting: opponent joined, switch to pick
+    if (ocfMyRole === 'host' && game.status === 'picking' && document.getElementById('ocf-waiting-view').style.display === 'block') {
+      ocfShowPickView(game);
+      showToast(`${game.joiner} joined! Pick your side.`, 'info');
+    }
+  } catch(e) {}
+}
+
+async function ocfShowResult(game) {
+  const iWon = game.winner === CU.username;
+  const prize = game.bet * 2;
+
+  if (iWon) {
+    CU.balance += prize;
+    const profit = game.bet;
+    await addResult('Online Flip', game.bet, `${game.result.toUpperCase()} — beat ${game.winner === game.host ? game.joiner : game.host}`, profit);
+    showToast(`You won ◈${prize.toLocaleString()}! 🎉`, 'win');
+  } else {
+    await addResult('Online Flip', game.bet, `${game.result.toUpperCase()} — lost to ${game.winner}`, -game.bet);
+    showToast(`You lost ◈${game.bet.toLocaleString()}`, 'lose');
+  }
+
+  const mySide = ocfMyRole === 'host' ? game.hostSide : game.joinerSide;
+  const theirSide = ocfMyRole === 'host' ? game.joinerSide : game.hostSide;
+  const opponent = ocfMyRole === 'host' ? game.joiner : game.host;
+
+  document.getElementById('ocf-result-emoji').textContent = iWon ? '🏆' : '💸';
+  document.getElementById('ocf-result-title').textContent = iWon ? `You won ◈${prize.toLocaleString()}!` : `You lost ◈${game.bet.toLocaleString()}`;
+  document.getElementById('ocf-result-title').style.color = iWon ? 'var(--accent)' : 'var(--red)';
+  document.getElementById('ocf-result-sub').textContent = `Coin landed: ${game.result.toUpperCase()} — You picked ${mySide}, ${opponent} picked ${theirSide}`;
+  document.getElementById('ocf-result-vs').innerHTML = `
+    <div class="ocf-player ${iWon?'winner':'loser'}">
+      <div class="ocf-player-name">${CU.username} ${iWon?'🏆':''}  </div>
+      <div class="ocf-player-side">${mySide} — ${iWon?'WIN':'LOSS'}</div>
+    </div>
+    <div style="font-size:1.2rem;font-weight:800;color:var(--muted);">VS</div>
+    <div class="ocf-player ${!iWon?'winner':'loser'}">
+      <div class="ocf-player-name">${opponent} ${!iWon?'🏆':''}</div>
+      <div class="ocf-player-side">${theirSide} — ${!iWon?'WIN':'LOSS'}</div>
+    </div>`;
+
+  ocfShowView('ocf-result-view');
+  // Clean up game after a delay
+  setTimeout(() => ocfDeleteGame(game.id), 5000);
+  ocfMyGameId = null;
+  ocfMyRole = null;
+  ocfCurrentGame = null;
+  document.getElementById('ocf-my-game-status').textContent = 'None';
+}
+
+async function ocfCancelGame() {
+  if (!ocfMyGameId) return;
+  const game = await ocfGetGame(ocfMyGameId);
+  if (game && game.status === 'waiting') {
+    // Refund
+    CU.balance += game.bet;
+    await saveCurrentUser();
+    updateUI();
+    await ocfDeleteGame(ocfMyGameId);
+    showToast('Game cancelled — bet refunded', 'info');
+  }
+  ocfMyGameId = null; ocfMyRole = null; ocfCurrentGame = null;
+  document.getElementById('ocf-my-game-status').textContent = 'None';
+  ocfShowView('ocf-create-view');
+  ocfLoadLobby();
+}
+
+function ocfBackToLobby() {
+  ocfMyGameId = null; ocfMyRole = null; ocfCurrentGame = null; ocfChosenSide = null;
+  document.getElementById('ocf-my-game-status').textContent = 'None';
+  ocfShowView('ocf-create-view');
+  ocfLoadLobby();
+}
+
 /* ================================================================
    SETTINGS
 ================================================================ */
@@ -1836,6 +2252,23 @@ async function runOwnerCmd(raw){
     ownerLog(`✓ Removed owner badge from ${user}`,'success');return;
   }
 
+  if(cmd==='/resetallcash'){
+    const amt=parseInt(raw.slice(cmd.length).trim())||500;
+    const users=await sbGetAllUsers();let count=0;
+    await Promise.all(Object.values(users).map(u=>{u.balance=amt;count++;return sbSaveUser(u);}));
+    if(CU){CU.balance=amt;updateUI();}
+    ownerLog(`✓ Reset all ${count} users to ◈${amt.toLocaleString()}`,'success');return;
+  }
+
+  if(cmd==='/update'){
+    const secs=parseInt(raw.slice(cmd.length).trim())||10;
+    const newVer=Date.now().toString();
+    await setServerVersion(newVer);
+    ownerLog(`✓ Update triggered! All clients will reload in ${secs}s`,'success');
+    triggerUpdateBanner(secs);
+    return;
+  }
+
   ownerLog(`Unknown command: ${cmd}`,'error');
 }
 
@@ -1875,6 +2308,63 @@ function initChat(){
     chatChannel.presence.enter({username:CU.username});
     chatChannel.presence.subscribe(()=>{chatChannel.presence.get((err,members)=>{if(!err)document.getElementById('online-count').textContent=members.length+' online';});});
   }catch(e){console.error('Ably error:',e);const conn=document.getElementById('chat-connecting');if(conn)conn.textContent='Chat unavailable';}
+}
+
+
+/* ================================================================
+   VERSION / UPDATE SYSTEM
+================================================================ */
+let currentVersion = null;
+let updateCheckInterval = null;
+
+async function getServerVersion() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.version&select=*`, { headers: sbHeaders });
+    const rows = await res.json();
+    return rows.length ? rows[0].value : null;
+  } catch(e) { return null; }
+}
+
+async function setServerVersion(v) {
+  await fetch(`${SUPABASE_URL}/rest/v1/config`, {
+    method: 'POST',
+    headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({ key: 'version', value: v })
+  });
+}
+
+function triggerUpdateBanner(seconds=10) {
+  const banner = document.getElementById('update-banner');
+  const countEl = document.getElementById('ub-count');
+  const fill = document.getElementById('ub-fill');
+  banner.classList.add('show');
+  let remaining = seconds;
+  countEl.textContent = remaining;
+  fill.style.width = '100%';
+  // shift nav down
+  document.querySelector('nav').style.marginTop = '48px';
+  const tick = setInterval(() => {
+    remaining--;
+    countEl.textContent = remaining;
+    fill.style.transition = 'width 1s linear';
+    fill.style.width = (remaining / seconds * 100) + '%';
+    if (remaining <= 0) {
+      clearInterval(tick);
+      location.reload();
+    }
+  }, 1000);
+}
+
+async function startVersionCheck() {
+  currentVersion = await getServerVersion();
+  if (updateCheckInterval) clearInterval(updateCheckInterval);
+  updateCheckInterval = setInterval(async () => {
+    const v = await getServerVersion();
+    if (v && currentVersion && v !== currentVersion) {
+      clearInterval(updateCheckInterval);
+      triggerUpdateBanner(10);
+    }
+  }, 20000); // check every 20 seconds
 }
 
 /* ================================================================
