@@ -400,7 +400,7 @@
   <div class="nav-center">
     <div style="position:relative;">
       <span class="search-icon">🔍</span>
-      <input class="search-input" id="search-input" type="text" placeholder="Search players..." oninput="handleSearch(this.value)" onblur="setTimeout(()=>closeSearch(),200)" />
+      <input class="search-input" id="search-input" type="text" placeholder="Search players..." oninput="debounceSearch(this.value)" onblur="setTimeout(()=>closeSearch(),200)" />
       <div class="search-dropdown" id="search-dropdown"></div>
     </div>
   </div>
@@ -1083,7 +1083,7 @@ async function loginUser(username, userObj=null) {
 function logout() {
   clearSession(); CU = null;
   if(ablyClient){try{ablyClient.close();}catch(e){} ablyClient=null; chatChannel=null;}
-  plAutoRunning=false; if(plAutoInterval){clearInterval(plAutoInterval);plAutoInterval=null;}
+  plAutoRunning=false; plInFlight=0; if(plAutoInterval){clearInterval(plAutoInterval);plAutoInterval=null;}
   if(ocfPollInterval){clearInterval(ocfPollInterval);ocfPollInterval=null;} ocfMyGameId=null; ocfMyRole=null;
   if(plAnimId){cancelAnimationFrame(plAnimId);plAnimId=null;}
   document.getElementById('auth-overlay').classList.remove('hidden');
@@ -1217,6 +1217,13 @@ async function renderLeaderboard() {
   } catch(e) { el.innerHTML='<div style="color:var(--muted)">Error loading leaderboard.</div>'; }
 }
 
+let _searchTimer = null;
+function debounceSearch(q) {
+  clearTimeout(_searchTimer);
+  if (!q.trim()) { document.getElementById('search-dropdown').classList.remove('show'); return; }
+  _searchTimer = setTimeout(() => handleSearch(q), 350);
+}
+
 async function handleSearch(q) {
   const dd = document.getElementById('search-dropdown');
   if (!q.trim()) { dd.classList.remove('show'); return; }
@@ -1315,12 +1322,13 @@ function playCoinFlip() {
   const result=Math.random()<0.5?'heads':'tails';
   const coin=document.getElementById('coin3d');
   const endRot=result==='tails'?1260:1080;
+  CU.balance-=bet; updateUI(); // deduct immediately
   coin.style.setProperty('--end-rot',endRot+'deg');
   coin.classList.remove('flipping'); void coin.offsetWidth; coin.classList.add('flipping');
   setTimeout(()=>{
     coin.classList.remove('flipping'); coin.style.transform=result==='tails'?'rotateY(180deg)':'rotateY(0deg)';
     const won=result===cfSide; const profit=won?bet:-bet;
-    CU.balance+=profit;
+    if(won) CU.balance+=bet*2; // bet was already deducted, add full payout on win
     setResult('cf-result',won?`✓ ${result.toUpperCase()}! +◈${bet}`:`✗ ${result.toUpperCase()}. -◈${bet}`,won?'win':'lose');
     showToast(won?`+◈${bet} 🎉`:`-◈${bet}`,won?'win':'lose');
     addResult('Coin Flip',bet,result,profit); btn.disabled=false;
@@ -1390,6 +1398,7 @@ function wSym(){const t=WGTS.reduce((a,b)=>a+b,0);let r=Math.random()*t;for(let 
 function spinSlots(){
   const bet=getBet('sl-bet');if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
   const btn=document.getElementById('sl-play');btn.disabled=true;
+  CU.balance-=bet; // deduct immediately to prevent spam
   document.getElementById('sl-result').textContent='';document.getElementById('sl-result').className='result-banner';
   document.getElementById('slots-payline').classList.remove('show');
   [0,1,2].forEach(i=>{document.getElementById('reel-'+i).classList.remove('win-reel');document.getElementById('reel-'+i).classList.add('spinning');});
@@ -1404,12 +1413,12 @@ function spinSlots(){
     else if(a===b||b===c||a===c){mult=2;msg='Pair! 2×';}
     else{msg='No match';}
     const profit=mult>0?bet*mult-bet:-bet;
-    CU.balance+=profit;
+    if(mult>0) CU.balance+=bet*mult; // add winnings (bet already deducted above)
     if(mult>0){document.getElementById('slots-payline').classList.add('show');[0,1,2].forEach(i=>document.getElementById('reel-'+i).classList.add('win-reel'));}
     document.getElementById('slots-result').textContent=msg;
     setResult('sl-result',mult>0?`✓ ${msg} +◈${profit}`:`✗ No match. -◈${bet}`,mult>0?'win':'lose');
     showToast(mult>0?`${msg} +◈${profit}`:`-◈${bet}`,mult>0?'win':'lose');
-    addResult('Slots',bet,msg,profit);btn.disabled=false;
+    addResult('Slots',bet,msg,mult>0?bet*mult-bet:-bet);btn.disabled=false;
   },1500);
 }
 
@@ -1649,6 +1658,7 @@ function plAnimLoop(){
       const mult=mults[safeIdx]||1;
       const profit=Math.floor(b.bet*mult)-b.bet;
       CU.balance+=Math.floor(b.bet*mult);
+      plInFlight=Math.max(0,plInFlight-b.bet);
       addResult('Plinko',b.bet,mult+'×',profit);
       setResult('pl-result',profit>=0?`✓ ${mult}× +◈${profit}`:`✗ ${mult}× -◈${Math.abs(profit)}`,profit>=0?'win':'lose');
       showToast(profit>=0?`+◈${profit} at ${mult}×`:`-◈${Math.abs(profit)} at ${mult}×`,profit>=0?'win':'lose');
@@ -1686,11 +1696,13 @@ function drawPlinko(){
   }
 }
 
+let plInFlight = 0; // total coins in currently-dropping balls
 function dropPlinko(){
   if(!CU)return;
   const bet=getBet('pl-bet');
-  if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
+  if(bet>CU.balance-plInFlight){showToast('Not enough balance!','lose');return;}
   CU.balance-=bet;
+  plInFlight+=bet;
   updateUI();
   const W=plCanvas.width;
   const colors=['#ff5252','#ffd740','#00e676','#448aff','#7c5cfc','#ff6d00'];
@@ -1758,6 +1770,7 @@ let ocfPollInterval = null;
 let ocfCurrentGame = null;
 let ocfMyRole = null; // 'host' or 'joiner'
 let ocfChosenSide = null;
+let ocfResultShown = false; // guard against double result
 
 // DB helpers
 async function ocfGetGame(id) {
@@ -1909,29 +1922,34 @@ async function ocfConfirmFlip() {
   const btn = document.getElementById('ocf-confirm-btn');
   btn.disabled = true; btn.textContent = 'Waiting for opponent...';
 
+  // Fetch current game state first
   const game = await ocfGetGame(ocfMyGameId);
   if (!game) { showToast('Game not found!', 'lose'); ocfBackToLobby(); return; }
+  if (game.status === 'done') { ocfShowResult(game); return; } // already resolved
 
+  // Save our side
   if (ocfMyRole === 'host') {
     game.hostSide = ocfChosenSide;
   } else {
     game.joinerSide = ocfChosenSide;
   }
+  await ocfSaveGame(game);
 
-  // If both have picked, resolve
-  if (game.hostSide && game.joinerSide) {
+  // Re-fetch after save to get latest state (other player may have saved theirs)
+  const latest = await ocfGetGame(ocfMyGameId);
+  if (!latest) { ocfBackToLobby(); return; }
+
+  // If both have picked now, resolve — only the SECOND person to pick triggers this
+  if (latest.hostSide && latest.joinerSide && latest.status !== 'done') {
     const result = Math.random() < 0.5 ? 'heads' : 'tails';
-    game.result = result;
-    game.status = 'done';
-    game.resolvedAt = Date.now();
-    const winner = game.hostSide === result ? game.host : game.joiner;
-    game.winner = winner;
-    await ocfSaveGame(game);
-    ocfShowResult(game);
-  } else {
-    await ocfSaveGame(game);
-    // Poll until opponent picks
+    latest.result = result;
+    latest.status = 'done';
+    latest.resolvedAt = Date.now();
+    latest.winner = latest.hostSide === result ? latest.host : latest.joiner;
+    await ocfSaveGame(latest);
+    ocfShowResult(latest);
   }
+  // Otherwise poll will detect when opponent picks
 }
 
 async function ocfPollGame() {
@@ -1941,26 +1959,24 @@ async function ocfPollGame() {
     if (!game) { ocfBackToLobby(); return; }
     ocfCurrentGame = game;
 
-    // Host: opponent joined, show pick view
-    if (ocfMyRole === 'host' && game.status === 'picking' && !document.getElementById('ocf-pick-view').style.display.includes('block')) {
+    // Host: opponent joined — switch from waiting to pick view
+    if (ocfMyRole === 'host' && game.status === 'picking' && 
+        document.getElementById('ocf-waiting-view').style.display === 'block') {
       ocfShowPickView(game);
       showToast(`${game.joiner} joined! Pick your side.`, 'info');
+      return;
     }
 
-    // Both picked, show result
-    if (game.status === 'done' && document.getElementById('ocf-result-view').style.display !== 'block') {
+    // Both picked, show result (only if not already shown)
+    if (game.status === 'done' && !ocfResultShown) {
       ocfShowResult(game);
-    }
-
-    // Waiting: opponent joined, switch to pick
-    if (ocfMyRole === 'host' && game.status === 'picking' && document.getElementById('ocf-waiting-view').style.display === 'block') {
-      ocfShowPickView(game);
-      showToast(`${game.joiner} joined! Pick your side.`, 'info');
     }
   } catch(e) {}
 }
 
 async function ocfShowResult(game) {
+  if (ocfResultShown) return; // prevent double firing
+  ocfResultShown = true;
   const iWon = game.winner === CU.username;
   const prize = game.bet * 2;
 
@@ -2013,14 +2029,14 @@ async function ocfCancelGame() {
     await ocfDeleteGame(ocfMyGameId);
     showToast('Game cancelled — bet refunded', 'info');
   }
-  ocfMyGameId = null; ocfMyRole = null; ocfCurrentGame = null;
+  ocfMyGameId = null; ocfMyRole = null; ocfCurrentGame = null; ocfResultShown = false;
   document.getElementById('ocf-my-game-status').textContent = 'None';
   ocfShowView('ocf-create-view');
   ocfLoadLobby();
 }
 
 function ocfBackToLobby() {
-  ocfMyGameId = null; ocfMyRole = null; ocfCurrentGame = null; ocfChosenSide = null;
+  ocfMyGameId = null; ocfMyRole = null; ocfCurrentGame = null; ocfChosenSide = null; ocfResultShown = false;
   document.getElementById('ocf-my-game-status').textContent = 'None';
   ocfShowView('ocf-create-view');
   ocfLoadLobby();
@@ -2273,16 +2289,33 @@ async function runOwnerCmd(raw){
 
   if(cmd==='/resetallcash'){
     const amt=parseInt(raw.slice(cmd.length).trim())||500;
+    ownerLog(`Resetting all balances to ◈${amt}... please wait`,'info');
     const users=await sbGetAllUsers();let count=0;
-    await Promise.all(Object.values(users).map(u=>{u.balance=amt;count++;return sbSaveUser(u);}));
-    if(CU){CU.balance=amt;updateUI();}
-    ownerLog(`✓ Reset all ${count} users to ◈${amt.toLocaleString()}`,'success');return;
+    // Reset all users one by one to preserve other stats
+    for(const u of Object.values(users)){
+      u.balance=amt;
+      u.won=0;u.lost=0;u.played=0;u.streak=0;u.bestStreak=0;u.history=[];
+      await sbSaveUser(u);
+      count++;
+    }
+    // Update current user in memory too
+    if(CU){CU.balance=amt;CU.won=0;CU.lost=0;CU.played=0;CU.streak=0;CU.bestStreak=0;CU.history=[];updateUI();}
+    // Trigger reload for everyone so they get fresh data
+    const newVer=Date.now().toString();
+    await setServerVersion(newVer);
+    ownerLog(`✓ Reset all ${count} users to ◈${amt.toLocaleString()} — reloading all clients in 5s`,'success');
+    triggerUpdateBanner(5);
+    return;
   }
 
   if(cmd==='/update'){
     const secs=parseInt(raw.slice(cmd.length).trim())||10;
     const newVer=Date.now().toString();
     await setServerVersion(newVer);
+    // Broadcast via Ably so everyone gets it instantly (not just on next poll)
+    if(chatChannel){
+      chatChannel.publish('server-update',{seconds:secs,version:newVer});
+    }
     ownerLog(`✓ Update triggered! All clients will reload in ${secs}s`,'success');
     triggerUpdateBanner(secs);
     return;
@@ -2321,6 +2354,11 @@ function initChat(){
     ablyClient.connection.on('connected',()=>appendMsg({text:'Connected to live chat 🟢'},true));
     ablyClient.connection.on('failed',()=>appendMsg({text:'Connection failed ❌'},true));
     chatChannel.subscribe('message',msg=>appendMsg(msg.data));
+    chatChannel.subscribe('server-update',msg=>{
+      if(msg.data && msg.data.seconds){
+        triggerUpdateBanner(msg.data.seconds);
+      }
+    });
     chatChannel.subscribe('force-logout',msg=>{
       if(msg.data.username===CU?.username){showToast('Your account has been removed.','lose');setTimeout(()=>logout(),1500);}
     });
