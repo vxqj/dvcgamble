@@ -1315,37 +1315,31 @@ const sbHeaders = {
   'Authorization': 'Bearer ' + SUPABASE_KEY
 };
 
-async function sbGetUser(username, retries=3) {
+async function sbGetUser(username, retries=4) {
   for (let attempt = 1; attempt <= retries; attempt++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(username)}&select=*`, {
-        headers: sbHeaders, signal: controller.signal
-      });
-      clearTimeout(timeout);
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(username)}&select=*`,
+        { headers: sbHeaders }
+      );
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const rows = await res.json();
-      if (!rows.length) return null; // user genuinely doesn't exist
+      if (!rows.length) return null;
       const user = rows[0].data || {};
       if (!user.username) user.username = rows[0].username;
       return user;
     } catch(e) {
-      clearTimeout(timeout);
       console.warn(`sbGetUser attempt ${attempt}/${retries} failed:`, e.message);
-      if (attempt < retries) await new Promise(r => setTimeout(r, 1000 * attempt)); // wait 1s, 2s before retry
+      if (attempt < retries) await new Promise(r => setTimeout(r, 800 * attempt));
     }
   }
-  return null; // all retries exhausted
+  return null;
 }
 
 async function sbGetAllUsers() {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, {
-      headers: sbHeaders, signal: controller.signal
-    });
-    clearTimeout(timeout);
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, { headers: sbHeaders });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const rows = await res.json();
     const out = {};
     rows.forEach(r => {
@@ -1355,26 +1349,21 @@ async function sbGetAllUsers() {
     });
     return out;
   } catch(e) {
-    clearTimeout(timeout);
-    if (e.name === 'AbortError') console.warn('sbGetAllUsers timed out');
+    console.warn('sbGetAllUsers error:', e.message);
     return {};
   }
 }
 
 async function sbSaveUser(user) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
       method: 'POST',
       headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
-      body: JSON.stringify({ username: user.username, data: user }),
-      signal: controller.signal
+      body: JSON.stringify({ username: user.username, data: user })
     });
-    clearTimeout(timeout);
+    if (!res.ok) console.warn('sbSaveUser failed:', res.status);
   } catch(e) {
-    clearTimeout(timeout);
-    if (e.name === 'AbortError') console.warn('sbSaveUser timed out for', user.username);
+    console.warn('sbSaveUser error:', e.message);
   }
 }
 
@@ -1496,7 +1485,7 @@ async function doLogin() {
   try {
     const user = await sbGetUser(u);
     if (!user) {
-      err.textContent='Could not reach server — please try again'; 
+      err.textContent='Server is slow — click Log in again to retry';
       err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
     }
     if (user.password !== p) {
@@ -1551,7 +1540,7 @@ function saveCurrentUser() {
       const resolvers = _saveResolvers.splice(0);
       try { await sbSaveUser(CU); } catch(e) { console.warn('Save failed:', e); }
       resolvers.forEach(r => r());
-    }, 1500);
+    }, 3000);
   });
 }
 // Force immediate save (for critical moments like cashout)
@@ -3824,12 +3813,20 @@ document.getElementById('owner-pass-input').addEventListener('keydown',e=>{if(e.
 // Auto-login from session
 const session = getSession();
 if(session){
+  // Pre-fill username so user just needs to enter password if auto-login fails
+  document.getElementById('login-user').value = session;
   sbGetUser(session).then(user => {
     if(user){ loginUser(session, user); }
-    else { clearSession(); }
+    else {
+      // User deleted or DB wiped — clear session and show login
+      clearSession();
+    }
   }).catch(e => {
     console.warn('Auto-login failed:', e);
-    // Don't clear session on network error — let them retry
+    // Show helpful message — keep session so they can retry
+    const err = document.getElementById('login-error');
+    err.textContent = 'Server is slow — click Log in to retry';
+    err.classList.add('show');
   });
 }
 </script>
