@@ -366,6 +366,53 @@
     .hilo-btn.higher{background:rgba(0,230,118,0.12);border-color:var(--accent);color:var(--accent);}
     .hilo-btn.lower{background:rgba(255,82,82,0.12);border-color:var(--red);color:var(--red);}
     .hilo-btn:disabled{opacity:0.35;cursor:not-allowed;}
+
+    /* WHEEL OF FORTUNE */
+    .wof-wheel-wrap{position:relative;width:260px;height:260px;margin:0 auto;}
+    #wof-canvas{border-radius:50%;display:block;}
+    .wof-pointer{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:1.5rem;z-index:2;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));}
+    .wof-segment-btn{padding:0.4rem 0.75rem;border-radius:6px;font-size:0.75rem;font-weight:700;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all 0.15s;text-align:center;}
+    .wof-segment-btn:hover,.wof-segment-btn.sel{transform:scale(1.05);}
+
+    /* KENO */
+    .keno-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;max-width:400px;}
+    .keno-num{aspect-ratio:1;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.15s;color:var(--muted);}
+    .keno-num:hover{border-color:var(--border2);color:var(--fg);}
+    .keno-num.picked{background:rgba(0,230,118,0.15);border-color:var(--accent);color:var(--accent);}
+    .keno-num.hit{background:rgba(255,215,64,0.2);border-color:var(--gold);color:var(--gold);animation:gemPop 0.3s ease;}
+    .keno-num.miss{background:rgba(255,82,82,0.1);border-color:var(--red);color:var(--red);}
+    .keno-num.drawn{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.15);color:var(--muted);}
+
+    /* VIDEO POKER */
+    .vp-hand{display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;}
+    .vp-card-wrap{display:flex;flex-direction:column;align-items:center;gap:0.35rem;}
+    .vp-card{width:68px;height:96px;border-radius:10px;background:#fff;border:2px solid #ddd;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1rem;font-weight:800;color:#1a1a1a;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;transition:all 0.2s;user-select:none;}
+    .vp-card.red{color:#e53935;}
+    .vp-card.held{border-color:var(--gold);box-shadow:0 0 12px rgba(255,215,64,0.4);transform:translateY(-8px);}
+    .vp-card.back{background:linear-gradient(135deg,#1a237e,#283593);}
+    .vp-hold-label{font-size:0.65rem;font-weight:800;color:var(--gold);letter-spacing:1px;opacity:0;transition:opacity 0.2s;}
+    .vp-hold-label.show{opacity:1;}
+    .vp-paytable{display:grid;grid-template-columns:1fr auto;gap:2px 1rem;font-size:0.75rem;}
+    .vp-paytable .hand-name{color:var(--muted);}
+    .vp-paytable .hand-pay{color:var(--gold);font-weight:700;text-align:right;}
+    .vp-paytable .highlight{color:var(--fg);font-weight:700;}
+    .vp-paytable .highlight-pay{color:var(--accent);font-weight:800;text-align:right;}
+
+    /* DRAGON TOWER */
+    .dt-grid{display:flex;flex-direction:column;gap:0.4rem;width:100%;max-width:300px;}
+    .dt-row{display:flex;gap:0.4rem;position:relative;align-items:center;}
+    .dt-row-label{font-size:0.65rem;color:var(--muted);width:28px;text-align:right;flex-shrink:0;font-weight:700;}
+    .dt-cell{flex:1;height:44px;border-radius:8px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;transition:all 0.15s;user-select:none;}
+    .dt-cell:hover:not(.dt-revealed){background:var(--surface3);border-color:rgba(255,255,255,0.2);transform:scale(1.04);}
+    .dt-cell.dt-safe{background:rgba(0,230,118,0.12);border-color:rgba(0,230,118,0.4);animation:gemPop 0.25s ease;}
+    .dt-cell.dt-bomb{background:rgba(255,82,82,0.15);border-color:rgba(255,82,82,0.4);animation:shake 0.3s ease;}
+    .dt-cell.dt-locked{opacity:0.3;cursor:default;}
+    .dt-cell.dt-active{border-color:rgba(255,215,64,0.5);box-shadow:0 0 8px rgba(255,215,64,0.15);}
+
+    /* LIMBO */
+    .limbo-multiplier{font-size:4rem;font-weight:800;letter-spacing:-3px;transition:all 0.1s;}
+    .limbo-bar{width:100%;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin:0.5rem 0;}
+    .limbo-bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width 0.05s;}
   </style>
 </head>
 <body>
@@ -485,6 +532,11 @@
     <div class="nav-item" onclick="showPanel('roulette')" id="nav-roulette"><span class="icon">🎡</span> Roulette</div>
     <div class="nav-item" onclick="showPanel('dice')" id="nav-dice"><span class="icon">🎲</span> Dice Duel</div>
     <div class="nav-item" onclick="showPanel('hilo')" id="nav-hilo"><span class="icon">🔼</span> Hi-Lo</div>
+    <div class="nav-item" onclick="showPanel('wheel')" id="nav-wheel"><span class="icon">🎰</span> Wheel</div>
+    <div class="nav-item" onclick="showPanel('keno')" id="nav-keno"><span class="icon">🔢</span> Keno</div>
+    <div class="nav-item" onclick="showPanel('videopoker')" id="nav-videopoker"><span class="icon">🂡</span> Video Poker</div>
+    <div class="nav-item" onclick="showPanel('dragon')" id="nav-dragon"><span class="icon">🐉</span> Dragon Tower</div>
+    <div class="nav-item" onclick="showPanel('limbo')" id="nav-limbo"><span class="icon">🎯</span> Limbo</div>
     <div class="sidebar-label">Community</div>
     <div class="nav-item" onclick="showPanel('leaderboard')" id="nav-leaderboard"><span class="icon">🏆</span> Leaderboard</div>
     <div class="nav-item" onclick="showPanel('badges')" id="nav-badges"><span class="icon">🎖️</span> Badges</div>
@@ -519,6 +571,11 @@
         <div class="game-card" onclick="showPanel('roulette')"><div class="game-emoji">🎡</div><h3>Roulette</h3><p>Pick a number, colour or section.</p></div>
         <div class="game-card" onclick="showPanel('dice')"><div class="game-emoji">🎲</div><h3>Dice Duel</h3><p>Roll the dice. Bet your fate.</p></div>
         <div class="game-card" onclick="showPanel('hilo')"><div class="game-emoji">🔼</div><h3>Hi-Lo</h3><p>Higher or lower? You decide.</p></div>
+        <div class="game-card" onclick="showPanel('wheel')"><div class="game-emoji">🎰</div><h3>Wheel</h3><p>Spin the wheel of fortune.</p></div>
+        <div class="game-card" onclick="showPanel('keno')"><div class="game-emoji">🔢</div><h3>Keno</h3><p>Pick your lucky numbers.</p></div>
+        <div class="game-card" onclick="showPanel('videopoker')"><div class="game-emoji">🂡</div><h3>Video Poker</h3><p>Classic Jacks or Better poker.</p></div>
+        <div class="game-card" onclick="showPanel('dragon')"><div class="game-emoji">🐉</div><h3>Dragon Tower</h3><p>Climb the dragon's lair.</p></div>
+        <div class="game-card" onclick="showPanel('limbo')"><div class="game-emoji">🎯</div><h3>Limbo</h3><p>Set a target. Beat the odds.</p></div>
       </div>
     </div>
 
@@ -932,6 +989,137 @@
       </div>
     </div>
 
+
+    <!-- WHEEL OF FORTUNE -->
+    <div class="panel" id="panel-wheel">
+      <button class="back-btn" onclick="showPanel('home')">← Back</button>
+      <div class="section-title">🎰 Wheel of Fortune</div>
+      <div class="game-layout">
+        <div class="game-area" style="gap:1rem;">
+          <div class="wof-wheel-wrap">
+            <div class="wof-pointer">▼</div>
+            <canvas id="wof-canvas" width="260" height="260"></canvas>
+          </div>
+          <div id="wof-result-display" style="font-size:1.1rem;font-weight:700;color:var(--muted);">Pick a segment and spin!</div>
+          <div class="result-banner" id="wof-result"></div>
+        </div>
+        <div class="bet-panel">
+          <div><div class="bet-label">Bet amount</div><input class="bet-input" id="wof-bet" type="number" value="100" min="1" /></div>
+          <div class="bet-quick"><button class="bet-quick-btn" onclick="setBet('wof-bet',0.5)">½</button><button class="bet-quick-btn" onclick="setBet('wof-bet',2)">2×</button><button class="bet-quick-btn" onclick="setBet('wof-bet','max')">Max</button></div>
+          <div style="font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;margin-top:0.25rem;">Bet on a colour</div>
+          <div id="wof-bet-btns" style="display:flex;flex-direction:column;gap:0.4rem;"></div>
+          <button class="play-btn" id="wof-spin-btn" onclick="wofSpin()" style="margin-top:0.5rem;">Spin!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KENO -->
+    <div class="panel" id="panel-keno">
+      <button class="back-btn" onclick="showPanel('home')">← Back</button>
+      <div class="section-title">🔢 Keno</div>
+      <div class="game-layout">
+        <div class="game-area" style="gap:1rem;padding:1rem;">
+          <div class="keno-grid" id="keno-grid"></div>
+          <div style="font-size:0.82rem;color:var(--muted)" id="keno-status">Pick 2-10 numbers then hit Play!</div>
+          <div class="result-banner" id="keno-result"></div>
+        </div>
+        <div class="bet-panel">
+          <div><div class="bet-label">Bet amount</div><input class="bet-input" id="kn-bet" type="number" value="50" min="1" /></div>
+          <div class="bet-quick"><button class="bet-quick-btn" onclick="setBet('kn-bet',0.5)">½</button><button class="bet-quick-btn" onclick="setBet('kn-bet',2)">2×</button><button class="bet-quick-btn" onclick="setBet('kn-bet','max')">Max</button></div>
+          <div style="font-size:0.72rem;color:var(--muted);line-height:1.9;background:var(--surface2);padding:0.75rem;border-radius:8px;">
+            <div>Pick 10, match 10: <span style="color:var(--gold)">1000×</span></div>
+            <div>Pick 5, match 5: <span style="color:var(--gold)">50×</span></div>
+            <div>Match 3+ of picks: <span style="color:var(--accent)">varies</span></div>
+          </div>
+          <div style="font-size:0.82rem;color:var(--accent)" id="keno-pick-count">Picked: 0</div>
+          <button class="play-btn" onclick="kenoClear()" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border2);">Clear</button>
+          <button class="play-btn" id="keno-play" onclick="kenoPlay()">Play!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIDEO POKER -->
+    <div class="panel" id="panel-videopoker">
+      <button class="back-btn" onclick="showPanel('home')">← Back</button>
+      <div class="section-title">🂡 Video Poker — Jacks or Better</div>
+      <div class="game-layout">
+        <div class="game-area" style="gap:1.25rem;">
+          <div class="vp-hand" id="vp-hand"></div>
+          <div style="font-size:0.9rem;font-weight:700;color:var(--accent)" id="vp-hand-name">Deal to start!</div>
+          <div class="result-banner" id="vp-result"></div>
+        </div>
+        <div class="bet-panel">
+          <div><div class="bet-label">Bet amount</div><input class="bet-input" id="vp-bet" type="number" value="100" min="1" /></div>
+          <div class="bet-quick"><button class="bet-quick-btn" onclick="setBet('vp-bet',0.5)">½</button><button class="bet-quick-btn" onclick="setBet('vp-bet',2)">2×</button><button class="bet-quick-btn" onclick="setBet('vp-bet','max')">Max</button></div>
+          <div class="vp-paytable">
+            <div class="hand-name">Royal Flush</div><div class="hand-pay">800×</div>
+            <div class="hand-name">Straight Flush</div><div class="hand-pay">50×</div>
+            <div class="hand-name">Four of a Kind</div><div class="hand-pay">25×</div>
+            <div class="hand-name">Full House</div><div class="hand-pay">9×</div>
+            <div class="hand-name">Flush</div><div class="hand-pay">6×</div>
+            <div class="hand-name">Straight</div><div class="hand-pay">4×</div>
+            <div class="hand-name">Three of a Kind</div><div class="hand-pay">3×</div>
+            <div class="hand-name">Two Pair</div><div class="hand-pay">2×</div>
+            <div class="hand-name">Jacks or Better</div><div class="hand-pay">1×</div>
+          </div>
+          <button class="play-btn" id="vp-deal-btn" onclick="vpDeal()">Deal</button>
+          <button class="play-btn gold-btn" id="vp-draw-btn" onclick="vpDraw()" style="display:none;">Draw</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRAGON TOWER -->
+    <div class="panel" id="panel-dragon">
+      <button class="back-btn" onclick="showPanel('home')">← Back</button>
+      <div class="section-title">🐉 Dragon Tower</div>
+      <div class="game-layout">
+        <div class="game-area" style="gap:0.75rem;padding:1.25rem;">
+          <div style="display:flex;gap:1.5rem;align-items:center;flex-shrink:0;">
+            <div><div style="font-size:0.7rem;color:var(--muted);margin-bottom:2px;letter-spacing:1px;text-transform:uppercase">Multiplier</div><div class="mines-mult" id="dt-mult">1.00×</div></div>
+            <div><div style="font-size:0.7rem;color:var(--muted);margin-bottom:2px;letter-spacing:1px;text-transform:uppercase">Floor</div><div style="font-size:1.6rem;font-weight:800;" id="dt-floor">0</div></div>
+          </div>
+          <div id="dt-grid" style="display:flex;flex-direction:column;gap:0.4rem;width:100%;max-width:300px;"></div>
+          <div id="dt-status" style="font-size:0.82rem;color:var(--muted)">Configure and start</div>
+        </div>
+        <div class="bet-panel">
+          <div><div class="bet-label">Bet amount</div><input class="bet-input" id="dt-bet" type="number" value="100" min="1" /></div>
+          <div class="bet-quick"><button class="bet-quick-btn" onclick="setBet('dt-bet',0.5)">½</button><button class="bet-quick-btn" onclick="setBet('dt-bet',2)">2×</button><button class="bet-quick-btn" onclick="setBet('dt-bet','max')">Max</button></div>
+          <div><div class="bet-label">Eggs per row</div>
+            <select class="bet-input" id="dt-eggs" style="cursor:pointer;">
+              <option value="1">1 egg — Easy (×3.0)</option>
+              <option value="2" selected>2 eggs — Medium (×1.9)</option>
+              <option value="3">3 eggs — Hard (×1.5)</option>
+            </select>
+          </div>
+          <button class="play-btn" id="dt-play" onclick="dtStart()">Start</button>
+          <button class="play-btn gold-btn" id="dt-cashout" onclick="dtCashOut()" style="display:none;">Cash Out <span id="dt-val"></span></button>
+          <div class="result-banner" id="dt-result"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIMBO -->
+    <div class="panel" id="panel-limbo">
+      <button class="back-btn" onclick="showPanel('home')">← Back</button>
+      <div class="section-title">🎯 Limbo</div>
+      <div class="game-layout">
+        <div class="game-area" style="gap:1rem;">
+          <div class="limbo-multiplier" id="limbo-mult" style="color:var(--accent);">—</div>
+          <div class="limbo-bar"><div class="limbo-bar-fill" id="limbo-bar" style="width:0%"></div></div>
+          <div style="font-size:0.85rem;color:var(--muted)" id="limbo-status">Set a target and roll!</div>
+          <div class="result-banner" id="limbo-result"></div>
+        </div>
+        <div class="bet-panel">
+          <div><div class="bet-label">Bet amount</div><input class="bet-input" id="lm-bet" type="number" value="100" min="1" /></div>
+          <div class="bet-quick"><button class="bet-quick-btn" onclick="setBet('lm-bet',0.5)">½</button><button class="bet-quick-btn" onclick="setBet('lm-bet',2)">2×</button><button class="bet-quick-btn" onclick="setBet('lm-bet','max')">Max</button></div>
+          <div><div class="bet-label">Target multiplier (1.01 – 1000×)</div><input class="bet-input" id="lm-target" type="number" value="2.00" min="1.01" max="1000" step="0.01" /></div>
+          <div style="font-size:0.78rem;color:var(--muted);">Win chance: <span id="lm-chance" style="color:var(--fg);font-weight:600;">49.5%</span></div>
+          <div style="font-size:0.78rem;color:var(--muted);">Payout: <span id="lm-payout" style="color:var(--fg);font-weight:600;">2.00×</span></div>
+          <button class="play-btn" id="lm-roll" onclick="limboRoll()">Roll</button>
+        </div>
+      </div>
+    </div>
+
     <!-- LEADERBOARD -->
     <div class="panel" id="panel-leaderboard">
       <div class="section-title">🏆 Leaderboard</div>
@@ -1327,6 +1515,53 @@ const BADGE_DEFS = [
   { id:'onroll',   emoji:'📈', label:'On a Roll',       desc:'Achieve a 5 win streak.',                  check:u=>(u.bestStreak||0)>=5 },
   { id:'hotstreak',emoji:'⚡', label:'Hot Streak',      desc:'Achieve a 10 win streak.',                 check:u=>(u.bestStreak||0)>=10 },
   { id:'master',   emoji:'🏆', label:'Master Gambler',  desc:'Win a total of ◈100,000.',                 check:u=>(u.won||0)>=100000 },
+  { id:'whale',    emoji:'🐋', label:'Whale',            desc:'Reach a balance of ◈500,000.',             check:u=>(u.balance||0)>=500000 },
+  { id:'legend',   emoji:'👾', label:'Legend',           desc:'Play 1,000 games.',                        check:u=>(u.played||0)>=1000 },
+  { id:'lucky7',   emoji:'7️⃣',  label:'Lucky 7',          desc:'Win 7 in a row.',                          check:u=>(u.bestStreak||0)>=7 },
+  { id:'unstop',   emoji:'⚡', label:'Unstoppable',      desc:'Win 20 in a row.',                         check:u=>(u.bestStreak||0)>=20 },
+  { id:'comeback', emoji:'🔄', label:'Comeback Kid',     desc:'Win after reaching ◈0.',                   check:u=>(u.badges||[]).includes('comeback') },
+  { id:'highbet',  emoji:'💸', label:'High Stakes',      desc:'Place a single bet of ◈10,000+.',          check:u=>(u.badges||[]).includes('highbet') },
+  { id:'millionaire', emoji:'🤑', label:'Millionaire',       desc:'Win a total of ◈1,000,000.',                   check:u=>(u.won||0)>=1000000 },
+
+  // ── BALANCE TIERS ──────────────────────────────────────────────
+  { id:'whale',       emoji:'🐋', label:'Whale',             desc:'Reach ◈500,000 balance.',                      check:u=>(u.balance||0)>=500000 },
+  { id:'tycoon',      emoji:'🏦', label:'Tycoon',            desc:'Reach ◈1,000,000 balance.',                    check:u=>(u.balance||0)>=1000000 },
+  { id:'billionaire', emoji:'💰', label:'Billionaire',       desc:'Reach ◈1,000,000,000 balance.',                check:u=>(u.balance||0)>=1000000000 },
+  { id:'trillionaire',emoji:'🌍', label:'Trillionaire',      desc:'Reach ◈1,000,000,000,000 balance.',            check:u=>(u.balance||0)>=1000000000000 },
+  { id:'quadrillionbal',emoji:'🪐',label:'Quadrillionaire',  desc:'Reach ◈1,000,000,000,000,000 balance.',        check:u=>(u.balance||0)>=1000000000000000 },
+  { id:'sextillionbal',emoji:'🌌',label:'Galaxy Brain',      desc:'Reach ◈1,000,000,000,000,000,000 balance.',    check:u=>(u.balance||0)>=1000000000000000000 },
+
+  // ── TOTAL WON TIERS ────────────────────────────────────────────
+  { id:'won10m',      emoji:'💵', label:'10 Million Won',    desc:'Win a total of ◈10,000,000.',                  check:u=>(u.won||0)>=10000000 },
+  { id:'won1b',       emoji:'💎', label:'Billion Won',       desc:'Win a total of ◈1,000,000,000.',               check:u=>(u.won||0)>=1000000000 },
+  { id:'won1t',       emoji:'🌟', label:'Trillion Won',      desc:'Win a total of ◈1,000,000,000,000.',           check:u=>(u.won||0)>=1000000000000 },
+  { id:'won1q',       emoji:'🚀', label:'Quadrillion Won',   desc:'Win a total of ◈1,000,000,000,000,000.',       check:u=>(u.won||0)>=1000000000000000 },
+  { id:'won1sex',     emoji:'🌠', label:'Sextillion Won',    desc:'Win a total of ◈1,000,000,000,000,000,000.',   check:u=>(u.won||0)>=1000000000000000000 },
+  { id:'won_goat',    emoji:'🐐', label:'The GOAT',          desc:'Win more than any human should ever win.',      check:u=>(u.won||0)>=1000000000000000000000 },
+
+  // ── GAMES PLAYED TIERS ─────────────────────────────────────────
+  { id:'legend',      emoji:'👾', label:'Legend',            desc:'Play 1,000 games.',                            check:u=>(u.played||0)>=1000 },
+  { id:'addicted',    emoji:'😵', label:'Addicted',          desc:'Play 5,000 games.',                            check:u=>(u.played||0)>=5000 },
+  { id:'nolife',      emoji:'💀', label:'No Life',           desc:'Play 10,000 games.',                           check:u=>(u.played||0)>=10000 },
+  { id:'robot',       emoji:'🤖', label:'Are You a Bot?',    desc:'Play 50,000 games.',                           check:u=>(u.played||0)>=50000 },
+  { id:'sim',         emoji:'🖥️', label:'Running on a Server',desc:'Play 100,000 games.',                         check:u=>(u.played||0)>=100000 },
+  { id:'twohundredk', emoji:'💻', label:'200K Games',        desc:'Play 200,000 games. Seek help.',               check:u=>(u.played||0)>=200000 },
+  { id:'halflmillion',emoji:'🧠', label:'Half a Million',    desc:'Play 500,000 games.',                          check:u=>(u.played||0)>=500000 },
+
+  // ── STREAK TIERS ───────────────────────────────────────────────
+  { id:'lucky7',      emoji:'7️⃣', label:'Lucky 7',           desc:'Achieve a 7 win streak.',                      check:u=>(u.bestStreak||0)>=7 },
+  { id:'unstop',      emoji:'⚡', label:'Unstoppable',       desc:'Achieve a 20 win streak.',                     check:u=>(u.bestStreak||0)>=20 },
+  { id:'goated',      emoji:'🔥', label:'On Fire',           desc:'Achieve a 50 win streak.',                     check:u=>(u.bestStreak||0)>=50 },
+  { id:'streak100',   emoji:'☄️', label:'Comet',             desc:'Achieve a 100 win streak.',                    check:u=>(u.bestStreak||0)>=100 },
+  { id:'streak500',   emoji:'🌋', label:'Volcanic',          desc:'Achieve a 500 win streak.',                    check:u=>(u.bestStreak||0)>=500 },
+  { id:'streak1000',  emoji:'⚛️', label:'Atomic',            desc:'Achieve a 1,000 win streak. How???',           check:u=>(u.bestStreak||0)>=1000 },
+
+  // ── SPECIAL / MANUAL ───────────────────────────────────────────
+  { id:'comeback',    emoji:'🔄', label:'Comeback Kid',      desc:'Won after going completely broke.',             check:u=>(u.badges||[]).includes('comeback') },
+  { id:'highbet',     emoji:'💸', label:'High Stakes',       desc:'Place a single bet of ◈10,000+.',              check:u=>(u.badges||[]).includes('highbet') },
+  { id:'megabet',     emoji:'💣', label:'Absolute Maniac',   desc:'Place a single bet of ◈1,000,000+.',           check:u=>(u.badges||[]).includes('megabet') },
+  { id:'kfcworker',   emoji:'🍗', label:'KFC Worker',        desc:'A legendary grinder. You know who you are.',   check:u=>(u.badges||[]).includes('kfcworker') },
+  { id:'firstblood',  emoji:'🩸', label:'First Blood',       desc:'First ever player on DVCGamble.',              check:u=>(u.badges||[]).includes('firstblood') },
 ];
 
 function getEarnedBadges(user) {
@@ -1366,7 +1601,27 @@ function renderBadgesPage() {
       if(b.id==='diamond')  progress=`◈${(CU.balance||0).toLocaleString()} / ◈100,000`;
       if(b.id==='onroll')   progress=`${Math.min(CU.bestStreak||0,5)}/5 win streak`;
       if(b.id==='hotstreak')progress=`${Math.min(CU.bestStreak||0,10)}/10 win streak`;
-      if(b.id==='master')   progress=`◈${(CU.won||0).toLocaleString()} / ◈100,000 won`;
+      if(b.id==='master')      progress=`◈${(CU.won||0).toLocaleString()} / ◈100,000 won`;
+      if(b.id==='won10m')      progress=`◈${(CU.won||0).toLocaleString()} / ◈10,000,000 won`;
+      if(b.id==='won1b')       progress=`◈${(CU.won||0).toLocaleString()} / ◈1,000,000,000 won`;
+      if(b.id==='won1t')       progress=`◈${(CU.won||0).toLocaleString()} / ◈1,000,000,000,000 won`;
+      if(b.id==='won1q')       progress=`◈${(CU.won||0).toLocaleString()} / ◈1 Quadrillion won`;
+      if(b.id==='won1sex')     progress=`◈${(CU.won||0).toLocaleString()} / ◈1 Sextillion won`;
+      if(b.id==='whale')       progress=`◈${(CU.balance||0).toLocaleString()} / ◈500,000`;
+      if(b.id==='tycoon')      progress=`◈${(CU.balance||0).toLocaleString()} / ◈1,000,000`;
+      if(b.id==='billionaire') progress=`◈${(CU.balance||0).toLocaleString()} / ◈1,000,000,000`;
+      if(b.id==='trillionaire')progress=`◈${(CU.balance||0).toLocaleString()} / ◈1 Trillion`;
+      if(b.id==='legend')      progress=`${(CU.played||0).toLocaleString()} / 1,000 games`;
+      if(b.id==='addicted')    progress=`${(CU.played||0).toLocaleString()} / 5,000 games`;
+      if(b.id==='nolife')      progress=`${(CU.played||0).toLocaleString()} / 10,000 games`;
+      if(b.id==='robot')       progress=`${(CU.played||0).toLocaleString()} / 50,000 games`;
+      if(b.id==='sim')         progress=`${(CU.played||0).toLocaleString()} / 100,000 games`;
+      if(b.id==='twohundredk') progress=`${(CU.played||0).toLocaleString()} / 200,000 games`;
+      if(b.id==='lucky7')      progress=`${Math.min(CU.bestStreak||0,7)}/7 win streak`;
+      if(b.id==='unstop')      progress=`${Math.min(CU.bestStreak||0,20)}/20 win streak`;
+      if(b.id==='goated')      progress=`${Math.min(CU.bestStreak||0,50)}/50 win streak`;
+      if(b.id==='streak100')   progress=`${Math.min(CU.bestStreak||0,100)}/100 win streak`;
+      if(b.id==='streak500')   progress=`${Math.min(CU.bestStreak||0,500)}/500 win streak`;
     }
     return `<div style="display:flex;align-items:center;gap:1.25rem;padding:1.25rem;background:${have?'rgba(0,230,118,0.05)':'var(--surface)'};border:1px solid ${have?'rgba(0,230,118,0.2)':'var(--border)'};border-radius:14px;${have?'':'opacity:0.6'}">
       <div style="font-size:2.5rem;width:52px;text-align:center;flex-shrink:0;${have?'':'filter:grayscale(1)'}">${b.emoji}</div>
@@ -1412,6 +1667,15 @@ async function addResult(game, bet, result, profit) {
   else { CU.lost+=Math.abs(profit); CU.streak=0; }
   CU.history.unshift({ game, bet, result, profit, ts:Date.now() });
   if (CU.history.length > 100) CU.history.pop();
+  // Award highbet / megabet badges based on bet size
+  if(!CU.badges)CU.badges=[];
+  if(bet>=1000000&&!CU.badges.includes('megabet')){
+    CU.badges.push('megabet');
+    showToast('💣 New badge: Absolute Maniac!','info');
+  } else if(bet>=10000&&!CU.badges.includes('highbet')){
+    CU.badges.push('highbet');
+    showToast('💸 New badge: High Stakes!','info');
+  }
   checkAndAwardBadges();
   await saveCurrentUser();
   updateUI();
@@ -1499,7 +1763,14 @@ async function openProfile(username) {
 function closeSearch() { document.getElementById('search-dropdown').classList.remove('show'); document.getElementById('search-input').value=''; }
 function closeProfile() { document.getElementById('profile-modal').classList.remove('show'); }
 function showBustModal() { if(document.getElementById('bust-modal').classList.contains('show'))return; document.getElementById('bust-modal').classList.add('show'); }
-async function claimFreeCoins() { CU.balance=500; await saveCurrentUser(); updateUI(); document.getElementById('bust-modal').classList.remove('show'); showToast('◈500 added! Good luck 🍀','win'); }
+async function claimFreeCoins() {
+  CU.balance=500;
+  if(!CU.badges)CU.badges=[];
+  if(!CU.badges.includes('comeback'))CU.badges.push('comeback');
+  await saveCurrentUser();updateUI();
+  document.getElementById('bust-modal').classList.remove('show');
+  showToast('◈500 added! Good luck 🍀','win');
+}
 
 async function showPanel(id) {
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
@@ -1515,6 +1786,10 @@ async function showPanel(id) {
   if(id==='roulette') rlInit();
   if(id==='dice') diceInit();
   if(id==='hilo') hiloInit();
+  if(id==='wheel') wofInit();
+  if(id==='keno') kenoInit();
+  if(id==='videopoker') vpInit();
+  if(id==='dragon') dtInit();
   if(id==='ocf') ocfInit();
   else {
     if(ocfLobbyInterval){ clearInterval(ocfLobbyInterval); ocfLobbyInterval=null; }
@@ -2664,6 +2939,351 @@ function hiloCashOut(){
   document.getElementById('hilo-higher').disabled=true;
 }
 
+
+/* ================================================================
+   WHEEL OF FORTUNE
+================================================================ */
+const WOF_SEGMENTS = [
+  {label:'2×',mult:2,color:'#00e676',chance:25},
+  {label:'3×',mult:3,color:'#448aff',chance:20},
+  {label:'5×',mult:5,color:'#ffd740',chance:15},
+  {label:'10×',mult:10,color:'#ff6d00',chance:10},
+  {label:'0×',mult:0,color:'#ff5252',chance:20},
+  {label:'1.5×',mult:1.5,color:'#7c5cfc',chance:10},
+];
+// Expand segments by chance weighting
+const WOF_WHEEL = [];
+WOF_SEGMENTS.forEach(s=>{for(let i=0;i<s.chance;i++)WOF_WHEEL.push(s);});
+
+let wofSpinning=false,wofSelectedSeg=null,wofAngle=0;
+
+function wofInit(){
+  wofDrawWheel(wofAngle);
+  const btns=document.getElementById('wof-bet-btns');
+  btns.innerHTML='';
+  WOF_SEGMENTS.forEach(s=>{
+    const b=document.createElement('div');
+    b.className='wof-segment-btn'+(wofSelectedSeg===s?' sel':'');
+    b.style.background=s.color+'22';b.style.borderColor=s.color+'66';b.style.color=s.color;
+    b.textContent=`${s.label} — ${s.chance}% chance`;
+    b.onclick=()=>{wofSelectedSeg=s;document.querySelectorAll('.wof-segment-btn').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');};
+    btns.appendChild(b);
+  });
+}
+
+function wofDrawWheel(rotation){
+  const canvas=document.getElementById('wof-canvas');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const cx=130,cy=130,r=120;
+  ctx.clearRect(0,0,260,260);
+  const total=WOF_WHEEL.length;
+  const arc=(Math.PI*2)/total;
+  WOF_WHEEL.forEach((s,i)=>{
+    const start=rotation+i*arc,end=start+arc;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,end);ctx.closePath();
+    ctx.fillStyle=s.color+'cc';ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.3)';ctx.lineWidth=1;ctx.stroke();
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(start+arc/2);
+    ctx.fillStyle='#fff';ctx.font='bold 11px Inter';ctx.textAlign='right';ctx.fillText(s.label,r-8,4);
+    ctx.restore();
+  });
+  // Center circle
+  ctx.beginPath();ctx.arc(cx,cy,20,0,Math.PI*2);
+  ctx.fillStyle='#0d0d0d';ctx.fill();ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=2;ctx.stroke();
+}
+
+function wofSpin(){
+  if(wofSpinning)return;
+  if(!wofSelectedSeg){showToast('Pick a multiplier first!','info');return;}
+  const bet=getBet('wof-bet');if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
+  wofSpinning=true;CU.balance-=bet;updateUI();
+  document.getElementById('wof-result').className='result-banner';
+  document.getElementById('wof-spin-btn').disabled=true;
+  const result=WOF_WHEEL[Math.floor(Math.random()*WOF_WHEEL.length)];
+  const resultIdx=WOF_WHEEL.lastIndexOf(result);
+  const arc=(Math.PI*2)/WOF_WHEEL.length;
+  const targetAngle=-(resultIdx*arc+arc/2);
+  const spins=Math.PI*2*8+targetAngle-wofAngle;
+  const start=Date.now(),dur=4000;
+  const startAngle=wofAngle;
+  function animate(){
+    const elapsed=Date.now()-start;
+    const t=Math.min(elapsed/dur,1);
+    const ease=1-Math.pow(1-t,4);
+    wofAngle=startAngle+spins*ease;
+    wofDrawWheel(wofAngle);
+    if(t<1){requestAnimationFrame(animate);}
+    else{
+      const won=result===wofSelectedSeg;
+      const profit=won?Math.floor(bet*result.mult)-bet:-bet;
+      if(won&&result.mult>0)CU.balance+=Math.floor(bet*result.mult);
+      const msg=won&&result.mult>0?`✓ ${result.label}! +◈${Math.floor(bet*result.mult)-bet}`:`✗ ${result.label}. -◈${bet}`;
+      setResult('wof-result',msg,(won&&result.mult>0)?'win':'lose');
+      document.getElementById('wof-result-display').textContent=`Landed: ${result.label}`;
+      showToast(msg,(won&&result.mult>0)?'win':'lose');
+      addResult('Wheel',bet,result.label,profit);
+      wofSpinning=false;document.getElementById('wof-spin-btn').disabled=false;
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+/* ================================================================
+   KENO
+================================================================ */
+const KENO_PAYOUTS = {
+  2: [0,0,3],
+  3: [0,0,2,5],
+  4: [0,0,1,3,10],
+  5: [0,0,1,2,7,20],
+  6: [0,0,1,2,4,12,50],
+  7: [0,0,1,2,3,8,25,100],
+  8: [0,0,1,2,3,6,15,50,200],
+  9: [0,0,1,2,3,5,12,30,100,500],
+  10:[0,0,1,2,3,5,10,20,50,200,1000],
+};
+let kenoPicks=new Set(),kenoRunning=false;
+
+function kenoInit(){
+  const g=document.getElementById('keno-grid');g.innerHTML='';
+  for(let i=1;i<=80;i++){
+    const d=document.createElement('div');d.className='keno-num';d.textContent=i;d.dataset.n=i;
+    d.onclick=()=>kenoToggle(i,d);g.appendChild(d);
+  }
+}
+function kenoToggle(n,el){
+  if(kenoRunning)return;
+  if(kenoPicks.has(n)){kenoPicks.delete(n);el.classList.remove('picked');}
+  else if(kenoPicks.size<10){kenoPicks.add(n);el.classList.add('picked');}
+  else{showToast('Max 10 picks!','info');return;}
+  document.getElementById('keno-pick-count').textContent=`Picked: ${kenoPicks.size} / 10`;
+}
+function kenoClear(){kenoPicks.clear();document.querySelectorAll('.keno-num').forEach(el=>{el.className='keno-num';});document.getElementById('keno-pick-count').textContent='Picked: 0';}
+async function kenoPlay(){
+  if(kenoRunning)return;
+  if(kenoPicks.size<2){showToast('Pick at least 2 numbers!','info');return;}
+  const bet=getBet('kn-bet');if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
+  kenoRunning=true;CU.balance-=bet;updateUI();
+  document.getElementById('keno-result').className='result-banner';
+  document.getElementById('keno-play').disabled=true;
+  // Reset styling
+  document.querySelectorAll('.keno-num').forEach(el=>{if(kenoPicks.has(parseInt(el.dataset.n)))el.className='keno-num picked';else el.className='keno-num';});
+  // Draw 20 numbers
+  const pool=[...Array(80)].map((_,i)=>i+1);
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  const drawn=new Set(pool.slice(0,20));
+  let hits=0;
+  // Animate draws
+  const drawArr=[...drawn];
+  for(let i=0;i<drawArr.length;i++){
+    await new Promise(r=>setTimeout(r,80));
+    const n=drawArr[i];
+    const el=document.querySelector(`.keno-num[data-n="${n}"]`);
+    if(el){
+      if(kenoPicks.has(n)){el.className='keno-num hit';hits++;}
+      else el.className='keno-num drawn';
+    }
+  }
+  const payouts=KENO_PAYOUTS[kenoPicks.size]||[];
+  const mult=payouts[Math.min(hits,payouts.length-1)]||0;
+  const profit=mult>0?bet*mult-bet:-bet;
+  if(mult>0)CU.balance+=bet*mult;
+  setResult('keno-result',mult>0?`✓ ${hits}/${kenoPicks.size} hits! ${mult}× +◈${bet*mult-bet}`:`✗ ${hits}/${kenoPicks.size} hits. -◈${bet}`,mult>0?'win':'lose');
+  showToast(mult>0?`${hits} hits! +◈${bet*mult-bet}`:`${hits} hits — no win`,mult>0?'win':'lose');
+  addResult('Keno',bet,`${hits}/${kenoPicks.size} hits`,profit);
+  kenoRunning=false;document.getElementById('keno-play').disabled=false;
+}
+
+/* ================================================================
+   VIDEO POKER
+================================================================ */
+const VP_SUITS=['♠','♥','♦','♣'];
+const VP_RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+let vpDeck=[],vpHand=[],vpHeld=[],vpPhase='deal';
+
+function vpNewDeck(){vpDeck=[];for(const s of VP_SUITS)for(const r of VP_RANKS)vpDeck.push({s,r});for(let i=vpDeck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[vpDeck[i],vpDeck[j]]=[vpDeck[j],vpDeck[i]];}}
+function vpCardVal(r){const idx=VP_RANKS.indexOf(r);return idx;}
+function vpInit(){vpPhase='deal';document.getElementById('vp-deal-btn').style.display='block';document.getElementById('vp-draw-btn').style.display='none';document.getElementById('vp-hand').innerHTML='<div style="color:var(--muted);font-size:0.85rem">Deal to start!</div>';document.getElementById('vp-hand-name').textContent='Deal to start!';}
+function vpRenderHand(){
+  const el=document.getElementById('vp-hand');el.innerHTML='';
+  vpHand.forEach((c,i)=>{
+    const wrap=document.createElement('div');wrap.className='vp-card-wrap';
+    const card=document.createElement('div');card.className='vp-card'+(['♥','♦'].includes(c.s)?' red':'')+(vpHeld[i]?' held':'');
+    card.innerHTML=`<div style="font-size:0.8rem;line-height:1">${c.r}</div><div>${c.s}</div>`;
+    if(vpPhase==='draw')card.onclick=()=>{vpHeld[i]=!vpHeld[i];vpRenderHand();};
+    const lbl=document.createElement('div');lbl.className='vp-hold-label'+(vpHeld[i]?' show':'');lbl.textContent='HELD';
+    wrap.appendChild(card);wrap.appendChild(lbl);el.appendChild(wrap);
+  });
+}
+function vpEvaluate(hand){
+  const vals=hand.map(c=>vpCardVal(c.r)).sort((a,b)=>a-b);
+  const suits=hand.map(c=>c.s);
+  const counts={};vals.forEach(v=>{counts[v]=(counts[v]||0)+1;});
+  const groups=Object.values(counts).sort((a,b)=>b-a);
+  const isFlush=suits.every(s=>s===suits[0]);
+  const isStraight=vals[4]-vals[0]===4&&new Set(vals).size===5||
+    (vals.join(',')===VP_RANKS.indexOf('A')+','+VP_RANKS.indexOf('2')+','+VP_RANKS.indexOf('3')+','+VP_RANKS.indexOf('4')+','+VP_RANKS.indexOf('5'));
+  const isRoyal=isFlush&&isStraight&&vals[0]===VP_RANKS.indexOf('10');
+  if(isRoyal)return{name:'Royal Flush',mult:800};
+  if(isFlush&&isStraight)return{name:'Straight Flush',mult:50};
+  if(groups[0]===4)return{name:'Four of a Kind',mult:25};
+  if(groups[0]===3&&groups[1]===2)return{name:'Full House',mult:9};
+  if(isFlush)return{name:'Flush',mult:6};
+  if(isStraight)return{name:'Straight',mult:4};
+  if(groups[0]===3)return{name:'Three of a Kind',mult:3};
+  if(groups[0]===2&&groups[1]===2)return{name:'Two Pair',mult:2};
+  // Jacks or better
+  const pairs=Object.entries(counts).filter(([v,c])=>c===2);
+  if(pairs.length===1&&parseInt(pairs[0][0])>=VP_RANKS.indexOf('J'))return{name:'Jacks or Better',mult:1};
+  return{name:'Nothing',mult:0};
+}
+function vpDeal(){
+  const bet=getBet('vp-bet');if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
+  vpNewDeck();vpHand=vpDeck.splice(0,5);vpHeld=[false,false,false,false,false];vpPhase='draw';
+  CU.balance-=bet;updateUI();
+  document.getElementById('vp-result').className='result-banner';
+  vpRenderHand();
+  const ev=vpEvaluate(vpHand);
+  document.getElementById('vp-hand-name').textContent=ev.name!=='Nothing'?`👀 ${ev.name} — hold these cards!`:'Click cards to hold, then Draw';
+  document.getElementById('vp-deal-btn').style.display='none';
+  document.getElementById('vp-draw-btn').style.display='block';
+  document.getElementById('vp-draw-btn').dataset.bet=bet;
+}
+function vpDraw(){
+  const bet=parseInt(document.getElementById('vp-draw-btn').dataset.bet)||100;
+  vpHand=vpHand.map((c,i)=>vpHeld[i]?c:vpDeck.shift());
+  vpPhase='result';vpRenderHand();
+  const ev=vpEvaluate(vpHand);
+  const profit=ev.mult>0?bet*ev.mult-bet:-bet;
+  if(ev.mult>0)CU.balance+=bet*ev.mult;
+  document.getElementById('vp-hand-name').textContent=ev.name;
+  setResult('vp-result',ev.mult>0?`✓ ${ev.name}! +◈${bet*ev.mult-bet}`:`✗ ${ev.name}. -◈${bet}`,ev.mult>0?'win':'lose');
+  showToast(ev.mult>0?`${ev.name}! +◈${bet*ev.mult-bet}`:`${ev.name} — no win`,ev.mult>0?'win':'lose');
+  addResult('Video Poker',bet,ev.name,profit);
+  document.getElementById('vp-deal-btn').style.display='block';
+  document.getElementById('vp-draw-btn').style.display='none';
+}
+
+/* ================================================================
+   DRAGON TOWER
+================================================================ */
+const DT_FLOORS=8;
+let dtActive=false,dtFloor=0,dtBoard=[],dtBet=0,dtEggs=2,dtMult=1;
+
+function dtInit(){buildDtGrid();}
+function buildDtGrid(){
+  const g=document.getElementById('dt-grid');g.innerHTML='';
+  const eggs=parseInt(document.getElementById('dt-eggs')?.value)||2;
+  for(let row=DT_FLOORS-1;row>=0;row--){
+    const wrap=document.createElement('div');wrap.className='dt-row';
+    const lbl=document.createElement('div');lbl.className='dt-row-label';lbl.textContent=row+1;wrap.appendChild(lbl);
+    for(let col=0;col<eggs;col++){
+      const c=document.createElement('div');c.className='dt-cell dt-locked';c.textContent='🥚';
+      c.dataset.row=row;c.dataset.col=col;
+      c.addEventListener('click',()=>dtPick(row,col));wrap.appendChild(c);
+    }
+    g.appendChild(wrap);
+  }
+}
+function dtGetCells(row){return document.querySelectorAll(`.dt-cell[data-row="${row}"]`);}
+function dtStart(){
+  const bet=getBet('dt-bet');if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
+  dtEggs=parseInt(document.getElementById('dt-eggs').value)||2;
+  dtBet=bet;dtFloor=0;dtMult=1;dtActive=true;CU.balance-=bet;updateUI();
+  const multPerFloor={1:3.0,2:1.9,3:1.5}[dtEggs]||1.9;
+  dtBoard=[];
+  for(let r=0;r<DT_FLOORS;r++){
+    const bombIdx=Math.floor(Math.random()*dtEggs);
+    dtBoard.push(Array(dtEggs).fill('egg').map((_,i)=>i===bombIdx?'bomb':'egg'));
+  }
+  document.getElementById('dt-play').style.display='none';document.getElementById('dt-cashout').style.display='block';
+  document.getElementById('dt-result').className='result-banner';
+  document.getElementById('dt-mult').textContent='1.00×';document.getElementById('dt-floor').textContent='0';
+  document.getElementById('dt-status').textContent='Pick an egg on floor 1!';
+  document.getElementById('dt-val').textContent='◈'+dtBet;
+  buildDtGrid();dtActivateRow(0);
+}
+function dtActivateRow(row){dtGetCells(row).forEach(c=>{c.classList.remove('dt-locked');c.classList.add('dt-active');c.textContent='🥚';});}
+function dtPick(row,col){
+  if(!dtActive||row!==dtFloor)return;
+  const cells=dtGetCells(row);
+  cells.forEach(c=>{c.classList.remove('dt-active');c.classList.add('dt-revealed');});
+  const isBomb=dtBoard[row][col]==='bomb';
+  cells.forEach((c,i)=>{c.textContent=dtBoard[row][i]==='bomb'?'💣':'🥚';if(i!==col)c.style.opacity='0.4';});
+  const cell=[...cells][col];
+  if(isBomb){
+    cell.className='dt-cell dt-bomb dt-revealed';
+    dtActive=false;document.getElementById('dt-play').style.display='block';document.getElementById('dt-cashout').style.display='none';
+    setResult('dt-result',`✗ Dragon! -◈${dtBet}`,'lose');showToast(`🐉 Dragon! -◈${dtBet}`,'lose');
+    addResult('Dragon Tower',dtBet,`Floor ${row+1} dragon`,-dtBet);
+    document.getElementById('dt-status').textContent='The dragon got you!';
+    for(let r=row+1;r<DT_FLOORS;r++)dtGetCells(r).forEach(c=>{c.classList.add('dt-locked');c.textContent='🥚';});
+  } else {
+    cell.className='dt-cell dt-safe dt-revealed';
+    const multPerFloor={1:3.0,2:1.9,3:1.5}[dtEggs]||1.9;
+    dtFloor++;dtMult=+(dtMult*multPerFloor).toFixed(2);
+    const val=Math.floor(dtBet*dtMult);
+    document.getElementById('dt-mult').textContent=dtMult.toFixed(2)+'×';
+    document.getElementById('dt-floor').textContent=dtFloor;
+    document.getElementById('dt-val').textContent='◈'+val;
+    if(dtFloor===DT_FLOORS){dtCashOut(true);}
+    else{document.getElementById('dt-status').textContent=`Floor ${dtFloor} cleared! Cash out: ◈${val}`;dtActivateRow(dtFloor);}
+  }
+}
+function dtCashOut(topped=false){
+  if(!dtActive)return;dtActive=false;
+  const win=Math.floor(dtBet*dtMult),profit=win-dtBet;
+  CU.balance+=win;updateUI();
+  setResult('dt-result',topped?`🏆 All floors! +◈${profit}`:`✓ ${dtMult.toFixed(2)}× +◈${profit}`,'win');
+  showToast(`+◈${profit} at ${dtMult.toFixed(2)}× 🎉`,'win');
+  addResult('Dragon Tower',dtBet,`${dtFloor} floors ${dtMult.toFixed(2)}×`,profit);
+  document.getElementById('dt-play').style.display='block';document.getElementById('dt-cashout').style.display='none';
+  document.getElementById('dt-status').textContent=topped?'You conquered the Dragon Tower! 🏆':`Cashed out at floor ${dtFloor}!`;
+}
+
+/* ================================================================
+   LIMBO
+================================================================ */
+let limboRunning=false;
+function limboRoll(){
+  if(limboRunning)return;
+  const bet=getBet('lm-bet');if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
+  const target=Math.max(1.01,parseFloat(document.getElementById('lm-target').value)||2);
+  limboRunning=true;CU.balance-=bet;updateUI();
+  document.getElementById('limbo-result').className='result-banner';
+  document.getElementById('lm-roll').disabled=true;
+  const multEl=document.getElementById('limbo-mult');
+  const bar=document.getElementById('limbo-bar');
+  multEl.textContent='...';multEl.style.color='var(--accent)';
+  bar.style.width='0%';
+  // Animate count-up
+  let frame=0;
+  const anim=setInterval(()=>{
+    frame++;
+    const disp=(1+frame*0.08).toFixed(2);
+    multEl.textContent=disp+'×';
+    bar.style.width=Math.min(frame*2,98)+'%';
+    if(frame>15){clearInterval(anim);resolve();}
+  },50);
+  function resolve(){
+    // Generate result: house edge ~1%
+    const rand=Math.random()*99;
+    const result=+(99/rand).toFixed(2);
+    const won=result>=target;
+    multEl.textContent=result+'×';
+    multEl.style.color=won?'var(--accent)':'var(--red)';
+    bar.style.width='100%';
+    bar.style.background=won?'var(--accent)':'var(--red)';
+    setTimeout(()=>{bar.style.background='var(--accent)';},1500);
+    const profit=won?Math.floor(bet*target)-bet:-bet;
+    if(won)CU.balance+=Math.floor(bet*target);
+    setResult('limbo-result',won?`✓ ${result}× ≥ ${target}× +◈${Math.floor(bet*target)-bet}`:`✗ ${result}× < ${target}× -◈${bet}`,won?'win':'lose');
+    showToast(won?`+◈${Math.floor(bet*target)-bet} 🎯`:`-◈${bet}`,won?'win':'lose');
+    addResult('Limbo',bet,`${result}× vs ${target}×`,profit);
+    limboRunning=false;document.getElementById('lm-roll').disabled=false;
+  }
+}
+
 /* ================================================================
    SETTINGS
 ================================================================ */
@@ -3066,6 +3686,12 @@ setTimeout(()=>{try{resizeCrash();}catch(e){}},200);
 buildMinesGrid();
 buildTowersGrid();
 
+document.getElementById('lm-target').addEventListener('input',()=>{
+  const t=parseFloat(document.getElementById('lm-target').value)||2;
+  const chance=Math.min(99,(99/t)).toFixed(1);
+  document.getElementById('lm-chance').textContent=chance+'%';
+  document.getElementById('lm-payout').textContent=t.toFixed(2)+'×';
+});
 document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 document.getElementById('login-user').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 document.getElementById('signup-pass2').addEventListener('keydown',e=>{if(e.key==='Enter')doSignup();});
