@@ -83,7 +83,7 @@
     .app{display:flex;height:calc(100vh - 56px);overflow:hidden;}
     .sidebar{width:200px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;height:calc(100vh - 56px);}
     .sidebar-top{flex-shrink:0;padding:1rem 0 0;}
-    .sidebar-games-scroll{max-height:210px;overflow-y:auto;padding:0;flex-shrink:0;}
+    .sidebar-games-scroll{max-height:calc(100vh - 56px - 280px);overflow-y:auto;padding:0;flex-shrink:0;}
     .sidebar-games-scroll::-webkit-scrollbar{width:3px;}
     .sidebar-games-scroll::-webkit-scrollbar-track{background:transparent;}
     .sidebar-games-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.15);border-radius:2px;}
@@ -749,6 +749,7 @@
               <option value="8">8 rows</option>
               <option value="12" selected>12 rows</option>
               <option value="16">16 rows</option>
+              <option value="32">32 rows</option>
             </select>
           </div>
           <button class="play-btn" id="pl-drop" onclick="dropPlinko()">Drop Ball</button>
@@ -2068,25 +2069,43 @@ const PLINKO_MULTIPLIERS = {
   low: {
     8:  [2.5,1.5,1.1,0.8,0.5,0.8,1.1,1.5,2.5],
     12: [4,2,1.3,1.0,0.8,0.5,0.8,1.0,1.3,2,4],
-    16: [6,3.5,2,1.4,1.0,0.8,0.6,0.4,0.6,0.8,1.0,1.4,2,3.5,6]
+    16: [6,3.5,2,1.4,1.0,0.8,0.6,0.4,0.3,0.4,0.6,0.8,1.0,1.4,2,3.5,6],
+    32: [50,20,8,4,2,1.4,1.1,0.9,0.7,0.6,0.5,0.4,0.3,0.3,0.2,0.2,0.2,0.2,0.3,0.3,0.4,0.5,0.6,0.7,0.9,1.1,1.4,2,4,8,20,50]
   },
   medium: {
     8:  [6,2.5,1.2,0.6,0.3,0.6,1.2,2.5,6],
     12: [12,5,2.5,1.5,0.8,0.4,0.2,0.4,0.8,1.5,2.5,5,12],
-    16: [25,8,4,2.5,1.5,0.9,0.5,0.3,0.2,0.3,0.5,0.9,1.5,2.5,4,8,25]
+    16: [25,8,4,2.5,1.5,0.9,0.5,0.3,0.2,0.3,0.5,0.9,1.5,2.5,4,8,25],
+    32: [500,100,30,10,4,2,1.2,0.8,0.5,0.4,0.3,0.2,0.2,0.1,0.1,0.1,0.1,0.1,0.1,0.2,0.2,0.3,0.4,0.5,0.8,1.2,2,4,10,30,100,500]
   },
   high: {
     8:  [12,3,1.2,0.2,0.1,0.2,1.2,3,12],
     12: [40,12,5,1.5,0.5,0.2,0.1,0.2,0.5,1.5,5,12,40],
-    16: [100,30,12,5,2.5,1.2,0.5,0.2,0.1,0.2,0.5,1.2,2.5,5,12,30,100]
+    16: [100,30,12,5,2.5,1.2,0.5,0.2,0.1,0.2,0.5,1.2,2.5,5,12,30,100],
+    32: [5000,1000,200,50,15,5,2,0.8,0.4,0.2,0.1,0.1,0.1,0.1,0.0,0.0,0.0,0.0,0.1,0.1,0.1,0.1,0.2,0.4,0.8,2,5,15,50,200,1000,5000]
   }
 };
 
 const PLINKO_COLORS = {
   low:    ['#ffd740','#69f0ae','#00e676','#1de9b6','#00b0ff','#1de9b6','#00e676','#69f0ae','#ffd740'],
   medium: ['#ff6d00','#ffd740','#69f0ae','#00e676','#1de9b6','#00b0ff','#448aff','#00b0ff','#1de9b6','#00e676','#69f0ae','#ffd740','#ff6d00'],
-  high:   ['#ff1744','#ff6d00','#ffd740','#69f0ae','#00e676','#1de9b6','#00b0ff','#448aff','#7c5cfc','#448aff','#00b0ff','#1de9b6','#00e676','#69f0ae','#ffd740','#ff6d00','#ff1744','#ff1744']
+  high:   ['#ff1744','#ff6d00','#ffd740','#69f0ae','#00e676','#1de9b6','#00b0ff','#448aff','#7c5cfc','#448aff','#00b0ff','#1de9b6','#00e676','#69f0ae','#ffd740','#ff6d00','#ff1744']
 };
+// Generate colors for 32 rows dynamically based on risk
+function getPlinkoBucketColors(risk, rows) {
+  const base = PLINKO_COLORS[risk];
+  if (rows <= 16) return base;
+  // For 32 rows, interpolate colors across buckets
+  const count = rows + 1;
+  const colors = [];
+  for (let i = 0; i < count; i++) {
+    const t = i / (count - 1);
+    const mirror = t <= 0.5 ? t * 2 : (1 - t) * 2;
+    const idx = Math.floor(mirror * (base.length - 1));
+    colors.push(base[Math.min(idx, base.length - 1)]);
+  }
+  return colors;
+}
 
 let plCanvas, plCtx, plBalls=[], plPins=[], plAnimId=null, plAutoInterval=null, plAutoRunning=false;
 let plInFlight = 0;
@@ -2107,7 +2126,7 @@ function buildPlinkoBoard(){
   plPins=[];
   const mults=PLINKO_MULTIPLIERS[risk][rows];
   const cols=rows+1; // number of buckets
-  const padX=40, padY=40;
+  const padX=rows>=32?15:40, padY=rows>=32?15:40;
   const spacingX=(W-padX*2)/rows;
   const spacingY=(H-padY*2-50)/rows;
 
@@ -2121,7 +2140,7 @@ function buildPlinkoBoard(){
   }
 
   // render buckets
-  const colors=PLINKO_COLORS[risk];
+  const colors=getPlinkoBucketColors(risk, rows);
   const bEl=document.getElementById('plinko-buckets');
   bEl.innerHTML='';
   bEl.style.width=plCanvas.offsetWidth+'px';
@@ -2145,7 +2164,7 @@ function plAnimLoop(){
   drawPlinko();
   const rows=parseInt(document.getElementById('pl-rows').value)||12;
   const W=plCanvas.width,H=plCanvas.height;
-  const padX=40,padY=40;
+  const padX=rows>=32?15:40,padY=rows>=32?15:40;
   const spacingX=(W-padX*2)/rows;
   const spacingY=(H-padY*2-50)/rows;
   const risk=document.getElementById('pl-risk').value||'medium';
@@ -2153,22 +2172,27 @@ function plAnimLoop(){
 
   for(let i=plBalls.length-1;i>=0;i--){
     const b=plBalls[i];
-    b.vy+=0.35; // gravity
-    b.vx*=0.99; // air resistance
+    b.vy+=0.4; // gravity
+    b.vx*=0.98; // air resistance
     b.x+=b.vx;
     b.y+=b.vy;
+    // enforce minimum downward speed so ball never gets stuck
+    if(b.vy<0.3)b.vy=0.3;
 
     // pin collisions
     for(const pin of plPins){
       const dx=b.x-pin.x, dy=b.y-pin.y;
       const dist=Math.sqrt(dx*dx+dy*dy);
-      if(dist<PL_RADIUS+PL_PIN_R+1){
+      if(dist<PL_RADIUS+PL_PIN_R+2){
         const angle=Math.atan2(dy,dx);
-        const speed=Math.sqrt(b.vx*b.vx+b.vy*b.vy);
-        b.vx=Math.cos(angle)*speed*0.6+(Math.random()-0.5)*1.5;
-        b.vy=Math.abs(Math.sin(angle)*speed*0.6)+0.5;
-        b.x=pin.x+Math.cos(angle)*(PL_RADIUS+PL_PIN_R+2);
-        b.y=pin.y+Math.sin(angle)*(PL_RADIUS+PL_PIN_R+2);
+        const speed=Math.max(Math.sqrt(b.vx*b.vx+b.vy*b.vy),2);
+        b.vx=Math.cos(angle)*speed*0.7+(Math.random()-0.5)*2;
+        b.vy=Math.abs(Math.sin(angle)*speed*0.5)+1.0;
+        // push ball completely clear of pin
+        const clearDist=PL_RADIUS+PL_PIN_R+3;
+        b.x=pin.x+Math.cos(angle)*clearDist;
+        b.y=pin.y+Math.sin(angle)*clearDist;
+        break; // only handle one pin collision per frame
       }
     }
 
@@ -2236,11 +2260,13 @@ function dropPlinko(){
   updateUI();
   const W=plCanvas.width;
   const colors=['#ff5252','#ffd740','#00e676','#448aff','#7c5cfc','#ff6d00'];
+  const currentRows=parseInt(document.getElementById('pl-rows')?.value)||12;
+  const initSpeed=currentRows>=32?2.5:currentRows>=16?2.0:1.5;
   plBalls.push({
-    x:W/2+(Math.random()-0.5)*10,
-    y:10,
-    vx:(Math.random()-0.5)*1.5,
-    vy:1,
+    x:W/2+(Math.random()-0.5)*8,
+    y:5,
+    vx:(Math.random()-0.5)*1.0,
+    vy:initSpeed,
     bet,
     color:colors[Math.floor(Math.random()*colors.length)]
   });
@@ -3582,15 +3608,17 @@ async function runOwnerCmd(raw){
   }
 
   if(cmd==='/update'){
-    const secs=parseInt(raw.slice(cmd.length).trim())||10;
+    const after=raw.slice(cmd.length).trim();
+    const parts=after.split(' ');
+    const secs=parseInt(parts[0])||10;
+    const msg=parts.slice(1).join(' ')||null; // everything after the number is the message
     const newVer=Date.now().toString();
     await setServerVersion(newVer);
-    // Broadcast via Ably so everyone gets it instantly (not just on next poll)
     if(chatChannel){
-      chatChannel.publish('server-update',{seconds:secs,version:newVer});
+      chatChannel.publish('server-update',{seconds:secs,version:newVer,message:msg});
     }
-    ownerLog(`✓ Update triggered! All clients will reload in ${secs}s`,'success');
-    triggerUpdateBanner(secs);
+    ownerLog(`✓ Update triggered! Reloading in ${secs}s${msg?' — "'+msg+'"':''}`,'success');
+    triggerUpdateBanner(secs,msg);
     return;
   }
 
@@ -3629,7 +3657,7 @@ function initChat(){
     chatChannel.subscribe('message',msg=>appendMsg(msg.data));
     chatChannel.subscribe('server-update',msg=>{
       if(msg.data && msg.data.seconds){
-        triggerUpdateBanner(msg.data.seconds);
+        triggerUpdateBanner(msg.data.seconds, msg.data.message||null);
       }
     });
     chatChannel.subscribe('force-logout',msg=>{
@@ -3664,21 +3692,28 @@ async function setServerVersion(v) {
   });
 }
 
-function triggerUpdateBanner(seconds=10) {
+function triggerUpdateBanner(seconds=10, message=null) {
   if (updateBannerShown) return; // prevent double trigger
   updateBannerShown = true;
   const banner = document.getElementById('update-banner');
   const countEl = document.getElementById('ub-count');
+  const msgEl = document.getElementById('ub-msg');
   const fill = document.getElementById('ub-fill');
   banner.classList.add('show');
   let remaining = seconds;
   countEl.textContent = remaining;
   fill.style.width = '100%';
-  // shift nav down
+  // Show custom message if provided
+  if (message) {
+    msgEl.innerHTML = `${message} — reloading in <span id="ub-count">${remaining}</span>s`;
+  } else {
+    msgEl.innerHTML = `Server update incoming — reloading in <span id="ub-count">${remaining}</span>s`;
+  }
   document.querySelector('nav').style.marginTop = '48px';
   const tick = setInterval(() => {
     remaining--;
-    countEl.textContent = remaining;
+    const c = document.getElementById('ub-count');
+    if(c) c.textContent = remaining;
     fill.style.transition = 'width 1s linear';
     fill.style.width = (remaining / seconds * 100) + '%';
     if (remaining <= 0) {
