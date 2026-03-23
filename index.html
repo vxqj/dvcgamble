@@ -1316,38 +1316,63 @@ const sbHeaders = {
 };
 
 async function sbGetUser(username) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(username)}&select=*`, {
-    headers: sbHeaders
-  });
-  const rows = await res.json();
-  if (!rows.length) return null;
-  const user = rows[0].data || {};
-  if (!user.username) user.username = rows[0].username;
-  return user;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(username)}&select=*`, {
+      headers: sbHeaders, signal: controller.signal
+    });
+    clearTimeout(timeout);
+    const rows = await res.json();
+    if (!rows.length) return null;
+    const user = rows[0].data || {};
+    if (!user.username) user.username = rows[0].username;
+    return user;
+  } catch(e) {
+    clearTimeout(timeout);
+    if (e.name === 'AbortError') console.warn('sbGetUser timed out for', username);
+    return null;
+  }
 }
 
 async function sbGetAllUsers() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, {
-    headers: sbHeaders
-  });
-  const rows = await res.json();
-  const out = {};
-  rows.forEach(r => {
-    // r.data is the jsonb column; make sure username is always set
-    const user = r.data || {};
-    if (!user.username) user.username = r.username;
-    out[r.username] = user;
-  });
-  return out;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, {
+      headers: sbHeaders, signal: controller.signal
+    });
+    clearTimeout(timeout);
+    const rows = await res.json();
+    const out = {};
+    rows.forEach(r => {
+      const user = r.data || {};
+      if (!user.username) user.username = r.username;
+      out[r.username] = user;
+    });
+    return out;
+  } catch(e) {
+    clearTimeout(timeout);
+    if (e.name === 'AbortError') console.warn('sbGetAllUsers timed out');
+    return {};
+  }
 }
 
 async function sbSaveUser(user) {
-  // Upsert: insert or update by username
-  await fetch(`${SUPABASE_URL}/rest/v1/users`, {
-    method: 'POST',
-    headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
-    body: JSON.stringify({ username: user.username, data: user })
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+      method: 'POST',
+      headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ username: user.username, data: user }),
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+  } catch(e) {
+    clearTimeout(timeout);
+    if (e.name === 'AbortError') console.warn('sbSaveUser timed out for', user.username);
+  }
 }
 
 async function sbDeleteUser(username) {
@@ -1370,7 +1395,7 @@ let CU = null;
 ================================================================ */
 let _lbCache = null;
 let _lbCacheTime = 0;
-const LB_CACHE_TTL = 60000; // 1 minute cache
+const LB_CACHE_TTL = 180000; // 3 minute cache
 
 async function getLeaderboard(force=false) {
   if (!force && _lbCache && (Date.now() - _lbCacheTime) < LB_CACHE_TTL) return _lbCache;
@@ -1510,9 +1535,27 @@ function logout() {
   document.getElementById('chat-messages').innerHTML='<div style="text-align:center;padding:1rem;font-size:0.8rem;color:var(--muted)" id="chat-connecting">Connecting...</div>';
 }
 
-async function saveCurrentUser() {
+// Debounced save — batches rapid saves into one write every 1.5s
+let _saveTimer = null;
+let _saveResolvers = [];
+function saveCurrentUser() {
+  if (!CU) return Promise.resolve();
+  return new Promise(resolve => {
+    _saveResolvers.push(resolve);
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(async () => {
+      const resolvers = _saveResolvers.splice(0);
+      try { await sbSaveUser(CU); } catch(e) { console.warn('Save failed:', e); }
+      resolvers.forEach(r => r());
+    }, 1500);
+  });
+}
+// Force immediate save (for critical moments like cashout)
+async function saveCurrentUserNow() {
   if (!CU) return;
-  await sbSaveUser(CU);
+  clearTimeout(_saveTimer);
+  _saveResolvers.splice(0);
+  try { await sbSaveUser(CU); } catch(e) { console.warn('Save failed:', e); }
 }
 
 /* ================================================================
@@ -1693,7 +1736,7 @@ async function addResult(game, bet, result, profit) {
     showToast('💸 New badge: High Stakes!','info');
   }
   checkAndAwardBadges();
-  await saveCurrentUser();
+  try { await saveCurrentUser(); } catch(e) { console.warn('addResult save failed:', e); }
   updateUI();
 }
 
@@ -1805,6 +1848,7 @@ async function showPanel(id) {
   if(id==='badges') renderBadgesPage();
   if(id==='mines') buildMinesGrid();
   if(id==='towers') buildTowersGrid();
+  if(id!=='crash'&&crashRunning){endCrash();}
   if(id==='plinko') initPlinko();
   if(id==='roulette') rlInit();
   if(id==='dice') diceInit();
@@ -1901,7 +1945,7 @@ function cashOut(){
   CU.balance+=crashBet+profit;
   showToast(`Cashed out ${crashMult.toFixed(2)}× +◈${profit}`,'win');
   setResult('cr-result',`✓ ${crashMult.toFixed(2)}× +◈${profit}`,'win');
-  addResult('Crash',crashBet,crashMult.toFixed(2)+'×',profit);
+  addResult('Crash',crashBet,crashMult.toFixed(2)+'×',profit).then(()=>saveCurrentUserNow());
   // Re-start the interval so the graph keeps animating until crash point
   crashInterval=setInterval(()=>{
     crashMult=+(crashMult*1.04).toFixed(2);cHistory.push(crashMult);
@@ -1992,7 +2036,7 @@ function cashOutMines(){
   const mult=calcMult(mRevealed,mCount),win=Math.floor(mBet*mult),profit=win-mBet;
   CU.balance+=win;
   setResult('mn-result',`✓ ${mult.toFixed(2)}× +◈${profit}`,'win');showToast(`+◈${profit} at ${mult.toFixed(2)}× 🎉`,'win');
-  addResult('Mines',mBet,`${mRevealed} gems ${mult.toFixed(2)}×`,profit);
+  addResult('Mines',mBet,`${mRevealed} gems ${mult.toFixed(2)}×`,profit).then(()=>saveCurrentUserNow());
   document.getElementById('mn-play').style.display='block';document.getElementById('mn-cashout').style.display='none';
   document.getElementById('mines-status').textContent=`Cashed out at ${mult.toFixed(2)}×`;
   mBoard.forEach((v,j)=>{if(v==='bomb'){const c=document.querySelector(`.mine-cell[data-index="${j}"]`);if(c){c.textContent='💣';c.className='mine-cell bomb revealed';}}});
@@ -2055,7 +2099,7 @@ function cashOutTowers(topped=false){
   CU.balance+=win;
   const msg=topped?`🏆 TOPPED OUT! ${twMult.toFixed(2)}×`:`✓ Floor ${twFloor} cash out ${twMult.toFixed(2)}×`;
   setResult('tw-result',`${msg} +◈${profit}`,'win');showToast(`+◈${profit} at ${twMult.toFixed(2)}× 🎉`,'win');
-  addResult('Towers',twBet,`${twFloor} floors ${twMult.toFixed(2)}×`,profit);
+  addResult('Towers',twBet,`${twFloor} floors ${twMult.toFixed(2)}×`,profit).then(()=>saveCurrentUserNow());
   document.getElementById('tw-play').style.display='block';document.getElementById('tw-cashout').style.display='none';
   document.getElementById('tw-status').textContent=topped?`TOPPED OUT at ${twMult.toFixed(2)}×! 🏆`:`Cashed out at floor ${twFloor}!`;
   for(let r=twFloor;r<TW_FLOORS;r++)twGetCells(r).forEach(c=>{c.classList.add('tw-locked');});
@@ -2306,12 +2350,13 @@ function toggleAutoDrop(){
       document.getElementById('pl-drop').disabled=false;
       return;
     }
-    if(CU.balance<getBet('pl-bet')){
+    if(!CU||CU.balance-plInFlight<getBet('pl-bet')){
       plAutoRunning=false;
       clearInterval(plAutoInterval);
+      plAutoInterval=null;
       document.getElementById('pl-auto-btn').textContent='▶ Auto';
       document.getElementById('pl-drop').disabled=false;
-      showToast('Not enough balance to continue!','lose');
+      if(CU&&CU.balance>0)showToast('Not enough balance to continue!','lose');
       return;
     }
     dropPlinko();
@@ -2388,8 +2433,8 @@ function ocfInit() {
   if (!ocfPollInterval) ocfPollInterval = setInterval(ocfPollGame, 5000);
   // Auto-refresh lobby every 4 seconds so players see new games instantly
   if (!ocfLobbyInterval) ocfLobbyInterval = setInterval(() => {
-    if (!ocfMyGameId) ocfLoadLobby(); // only refresh lobby if not in a game
-  }, 4000);
+    if (!ocfMyGameId) ocfLoadLobby();
+  }, 8000);
 }
 
 async function ocfLoadLobby() {
@@ -2561,7 +2606,7 @@ async function ocfPollGame() {
     if (game.status === 'done' && !ocfResultShown) {
       ocfShowResult(game);
     }
-  } catch(e) { /* swallow network errors silently */ }
+  } catch(e) { console.warn('OCF poll error:', e.message); }
 }
 
 async function ocfShowResult(game) {
@@ -2710,6 +2755,7 @@ function bjDeal(){
 }
 function bjHit(){
   if(!bjActive)return;
+  if(!bjDeck.length)bjNewDeck();
   bjPlayerHand.push(bjDeck.pop());
   bjRenderHands(true);
   if(bjHandValue(bjPlayerHand)>21){bjEnd('bust');}
@@ -2832,7 +2878,7 @@ function rlSpin(){
     setResult('rl-result',won?`✓ ${result}! +◈${bet*s.payout}`:`✗ ${result}. -◈${bet}`,won?'win':'lose');
     showToast(won?`${result} wins! +◈${bet*s.payout}`:`${result} — no win.`,won?'win':'lose');
     addResult('Roulette',bet,`${result} (${s.label})`,profit);
-    rlSpinning=false;document.getElementById('rl-spin').disabled=false;
+    rlSpinning=false;if(document.getElementById('rl-spin'))document.getElementById('rl-spin').disabled=false;
   },3200);
 }
 
@@ -2979,7 +3025,7 @@ function hiloGuess(guess){
     document.getElementById('hilo-status').textContent=`✓ ${next.r}${next.s}! Next card vs ${next.r}?`;
     document.getElementById('hl-val').textContent=`◈${val}`;
     setResult('hilo-result',`✓ Correct! ${streak} streak — cash out: ◈${val}`,'win');
-    if(hlDeck.length<2){hiloCashOut();return;}
+    if(hlDeck.length<2){hiloCashOut();return;} // auto cashout when deck almost empty
     document.getElementById('hilo-lower').disabled=false;
     document.getElementById('hilo-higher').disabled=false;
   }
@@ -3151,7 +3197,8 @@ async function kenoPlay(){
   setResult('keno-result',mult>0?`✓ ${hits}/${kenoPicks.size} hits! ${mult}× +◈${bet*mult-bet}`:`✗ ${hits}/${kenoPicks.size} hits. -◈${bet}`,mult>0?'win':'lose');
   showToast(mult>0?`${hits} hits! +◈${bet*mult-bet}`:`${hits} hits — no win`,mult>0?'win':'lose');
   addResult('Keno',bet,`${hits}/${kenoPicks.size} hits`,profit);
-  kenoRunning=false;document.getElementById('keno-play').disabled=false;
+  kenoRunning=false;
+  if(document.getElementById('keno-play'))document.getElementById('keno-play').disabled=false;
 }
 
 /* ================================================================
@@ -3210,7 +3257,7 @@ function vpDeal(){
   document.getElementById('vp-draw-btn').dataset.bet=bet;
 }
 function vpDraw(){
-  const bet=parseInt(document.getElementById('vp-draw-btn').dataset.bet)||100;
+  const bet=Math.max(1,parseInt(document.getElementById('vp-draw-btn').dataset.bet)||100);
   vpHand=vpHand.map((c,i)=>vpHeld[i]?c:vpDeck.shift());
   vpPhase='result';vpRenderHand();
   const ev=vpEvaluate(vpHand);
@@ -3339,8 +3386,9 @@ function limboRoll(){
     if(won)CU.balance+=Math.floor(bet*target);
     setResult('limbo-result',won?`✓ ${result}× ≥ ${target}× +◈${Math.floor(bet*target)-bet}`:`✗ ${result}× < ${target}× -◈${bet}`,won?'win':'lose');
     showToast(won?`+◈${Math.floor(bet*target)-bet} 🎯`:`-◈${bet}`,won?'win':'lose');
-    addResult('Limbo',bet,`${result}× vs ${target}×`,profit);
-    limboRunning=false;document.getElementById('lm-roll').disabled=false;
+    addResult('Limbo',bet,`${result}× vs ${target}×`,profit).catch(()=>{}).finally(()=>{
+      limboRunning=false;if(document.getElementById('lm-roll'))document.getElementById('lm-roll').disabled=false;
+    });
   }
 }
 
@@ -3744,7 +3792,7 @@ async function startVersionCheck() {
       clearInterval(updateCheckInterval);
       triggerUpdateBanner(10);
     }
-  }, 30000); // check every 30 seconds
+  }, 60000); // check every 60 seconds — Ably handles instant delivery
 }
 
 /* ================================================================
