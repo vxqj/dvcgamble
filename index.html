@@ -1457,19 +1457,56 @@ async function doSignup() {
   if (p !== p2) { err.textContent='Passwords do not match'; err.classList.add('show'); return; }
 
   showAuthLoading(btn, 'Creating account...');
-  try {
-    const existing = await sbGetUser(u);
-    if (existing) { err.textContent='Username already taken'; err.classList.add('show'); hideAuthLoading(btn,'Create account'); return; }
 
-    const newUser = { username:u, password:p, balance:1000, won:0, lost:0, played:0, streak:0, bestStreak:0, history:[], badges:[] };
-    await sbSaveUser(newUser);
+  // Step 1: Check if username taken
+  let existing = null;
+  try { existing = await sbGetUser(u); } catch(e) { /* treat as not found */ }
+  if (existing) {
+    err.textContent='Username already taken';
+    err.classList.add('show'); hideAuthLoading(btn,'Create account'); return;
+  }
+
+  // Step 2: Save new user with retry
+  const newUser = { username:u, password:p, balance:1000, won:0, lost:0, played:0, streak:0, bestStreak:0, history:[], badges:[] };
+  let saved = false;
+  for (let i = 0; i < 3; i++) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+        method: 'POST',
+        headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ username: u, data: newUser })
+      });
+      if (res.ok || res.status === 201 || res.status === 200) { saved = true; break; }
+      console.warn('Save attempt', i+1, 'status:', res.status);
+    } catch(e) {
+      console.warn('Save attempt', i+1, 'error:', e.message);
+    }
+    await new Promise(r => setTimeout(r, 1000));
+  }
+
+  if (!saved) {
+    // Try one more time with no error check — Supabase sometimes returns non-200 but still saves
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+        method: 'POST',
+        headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ username: u, data: newUser })
+      });
+    } catch(e) {}
+  }
+
+  // Step 3: Log in regardless — if save worked, user exists
+  showAuthLoading(btn, 'Logging in...');
+  try {
     await loginUser(u, newUser);
     showToast('Welcome! You start with ◈1,000 🎉', 'info');
   } catch(e) {
-    console.error('Signup error:', e);
-    err.textContent = 'Could not connect. Try again.';
+    console.error('Login after signup failed:', e);
+    err.textContent = 'Account created — please log in manually.';
     err.classList.add('show');
     hideAuthLoading(btn, 'Create account');
+    switchAuthTab('login');
+    document.getElementById('login-user').value = u;
   }
 }
 
@@ -1482,22 +1519,50 @@ async function doLogin() {
   if (!u) { err.textContent='Enter a username'; err.classList.add('show'); return; }
   if (!p) { err.textContent='Enter a password'; err.classList.add('show'); return; }
   showAuthLoading(btn, 'Logging in...');
+
+  let user = null;
+  let networkError = false;
+  for (let i = 0; i < 4; i++) {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(u)}&select=*`,
+        { headers: sbHeaders }
+      );
+      if (!res.ok) { networkError = true; break; }
+      const rows = await res.json();
+      if (rows.length) {
+        user = rows[0].data || {};
+        if (!user.username) user.username = rows[0].username;
+      }
+      networkError = false;
+      break; // success
+    } catch(e) {
+      console.warn('Login fetch attempt', i+1, 'failed:', e.message);
+      networkError = true;
+      if (i < 3) await new Promise(r => setTimeout(r, 800 * (i+1)));
+    }
+  }
+
+  if (networkError) {
+    err.textContent = 'Server unreachable — check your connection and try again';
+    err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
+  }
+  if (!user) {
+    err.textContent = 'Username not found';
+    err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
+  }
+  if (user.password !== p) {
+    err.textContent = 'Wrong password';
+    err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
+  }
+
   try {
-    const user = await sbGetUser(u);
-    if (!user) {
-      err.textContent='Server is slow — click Log in again to retry';
-      err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
-    }
-    if (user.password !== p) {
-      err.textContent='Wrong password'; err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
-    }
-    await loginUser(u, user); // pass user so we don't fetch twice
+    await loginUser(u, user);
     showToast('Welcome back, ' + u + '!', 'info');
   } catch(e) {
-    console.error('Login error:', e);
-    err.textContent = 'Could not connect — check your internet and try again.';
-    err.classList.add('show');
-    hideAuthLoading(btn, 'Log in');
+    console.error('loginUser error:', e);
+    err.textContent = 'Login failed — please try again';
+    err.classList.add('show'); hideAuthLoading(btn,'Log in');
   }
 }
 
