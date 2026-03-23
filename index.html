@@ -764,7 +764,10 @@ async function sbGetUser(username) {
     headers: sbHeaders
   });
   const rows = await res.json();
-  return rows.length ? rows[0].data : null;
+  if (!rows.length) return null;
+  const user = rows[0].data || {};
+  if (!user.username) user.username = rows[0].username;
+  return user;
 }
 
 async function sbGetAllUsers() {
@@ -1116,7 +1119,7 @@ function closeProfile() { document.getElementById('profile-modal').classList.rem
 function showBustModal() { if(document.getElementById('bust-modal').classList.contains('show'))return; document.getElementById('bust-modal').classList.add('show'); }
 async function claimFreeCoins() { CU.balance=500; await saveCurrentUser(); updateUI(); document.getElementById('bust-modal').classList.remove('show'); showToast('◈500 added! Good luck 🍀','win'); }
 
-function showPanel(id) {
+async function showPanel(id) {
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
@@ -1127,7 +1130,7 @@ function showPanel(id) {
   if(id==='mines') buildMinesGrid();
   if(id==='towers') buildTowersGrid();
   if(id==='plinko') initPlinko();
-  if(id==='settings') initSettings();
+  if(id==='settings') await initSettings();
   if(id==='owner'&&!ownerUnlocked) { document.getElementById('owner-lock').style.display='block'; document.getElementById('owner-panel-content').style.display='none'; document.getElementById('owner-pass-err').classList.remove('show'); document.getElementById('owner-pass-input').value=''; }
 }
 
