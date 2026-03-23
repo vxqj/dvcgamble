@@ -81,7 +81,13 @@
 
     /* LAYOUT */
     .app{display:flex;height:calc(100vh - 56px);}
-    .sidebar{width:200px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:1rem 0;display:flex;flex-direction:column;overflow-y:auto;}
+    .sidebar{width:200px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+    .sidebar-top{flex-shrink:0;padding:1rem 0 0;}
+    .sidebar-games-scroll{flex:1;overflow-y:auto;padding:0;}
+    .sidebar-games-scroll::-webkit-scrollbar{width:3px;}
+    .sidebar-games-scroll::-webkit-scrollbar-track{background:transparent;}
+    .sidebar-games-scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px;}
+    .sidebar-bottom{flex-shrink:0;padding-bottom:1rem;border-top:1px solid var(--border);}
     .sidebar-label{font-size:0.62rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:0 1rem;margin-bottom:0.5rem;margin-top:1rem;}
     .sidebar-label:first-child{margin-top:0;}
     .nav-item{display:flex;align-items:center;gap:10px;padding:0.65rem 1rem;font-size:0.875rem;font-weight:500;color:var(--muted);transition:all 0.15s;cursor:pointer;border-left:2px solid transparent;}
@@ -518,31 +524,40 @@
 
 <div class="app">
   <div class="sidebar">
-    <div class="sidebar-label">Menu</div>
-    <div class="nav-item active" onclick="showPanel('home')" id="nav-home"><span class="icon">🏠</span> Home</div>
-    <div class="sidebar-label">Games</div>
-    <div class="nav-item" onclick="showPanel('coinflip')" id="nav-coinflip"><span class="icon">🪙</span> Coin Flip</div>
-    <div class="nav-item" onclick="showPanel('crash')" id="nav-crash"><span class="icon">📈</span> Crash</div>
-    <div class="nav-item" onclick="showPanel('slots')" id="nav-slots"><span class="icon">🎰</span> Slots</div>
-    <div class="nav-item" onclick="showPanel('mines')" id="nav-mines"><span class="icon">💣</span> Mines</div>
-    <div class="nav-item" onclick="showPanel('towers')" id="nav-towers"><span class="icon">🗼</span> Towers</div>
-    <div class="nav-item" onclick="showPanel('plinko')" id="nav-plinko"><span class="icon">🎯</span> Plinko</div>
-    <div class="nav-item" onclick="showPanel('ocf')" id="nav-ocf"><span class="icon">⚔️</span> Online Flip</div>
-    <div class="nav-item" onclick="showPanel('blackjack')" id="nav-blackjack"><span class="icon">🃏</span> Blackjack</div>
-    <div class="nav-item" onclick="showPanel('roulette')" id="nav-roulette"><span class="icon">🎡</span> Roulette</div>
-    <div class="nav-item" onclick="showPanel('dice')" id="nav-dice"><span class="icon">🎲</span> Dice Duel</div>
-    <div class="nav-item" onclick="showPanel('hilo')" id="nav-hilo"><span class="icon">🔼</span> Hi-Lo</div>
-    <div class="nav-item" onclick="showPanel('wheel')" id="nav-wheel"><span class="icon">🎰</span> Wheel</div>
-    <div class="nav-item" onclick="showPanel('keno')" id="nav-keno"><span class="icon">🔢</span> Keno</div>
-    <div class="nav-item" onclick="showPanel('videopoker')" id="nav-videopoker"><span class="icon">🂡</span> Video Poker</div>
-    <div class="nav-item" onclick="showPanel('dragon')" id="nav-dragon"><span class="icon">🐉</span> Dragon Tower</div>
-    <div class="nav-item" onclick="showPanel('limbo')" id="nav-limbo"><span class="icon">🎯</span> Limbo</div>
-    <div class="sidebar-label">Community</div>
-    <div class="nav-item" onclick="showPanel('leaderboard')" id="nav-leaderboard"><span class="icon">🏆</span> Leaderboard</div>
-    <div class="nav-item" onclick="showPanel('badges')" id="nav-badges"><span class="icon">🎖️</span> Badges</div>
-    <div class="nav-item" onclick="showPanel('history')" id="nav-history"><span class="icon">📋</span> History</div>
-    <div class="nav-item" onclick="showPanel('settings')" id="nav-settings"><span class="icon">⚙️</span> Settings</div>
-    <div class="nav-item" onclick="showPanel('owner')" id="nav-owner" style="color:var(--gold)"><span class="icon">👑</span> Owner</div>
+    <!-- Fixed top: Menu -->
+    <div class="sidebar-top">
+      <div class="sidebar-label" style="margin-top:0;">Menu</div>
+      <div class="nav-item active" onclick="showPanel('home')" id="nav-home"><span class="icon">🏠</span> Home</div>
+      <div class="sidebar-label">Games</div>
+    </div>
+    <!-- Scrollable games list -->
+    <div class="sidebar-games-scroll">
+      <div class="nav-item" onclick="showPanel('coinflip')" id="nav-coinflip"><span class="icon">🪙</span> Coin Flip</div>
+      <div class="nav-item" onclick="showPanel('crash')" id="nav-crash"><span class="icon">📈</span> Crash</div>
+      <div class="nav-item" onclick="showPanel('slots')" id="nav-slots"><span class="icon">🎰</span> Slots</div>
+      <div class="nav-item" onclick="showPanel('mines')" id="nav-mines"><span class="icon">💣</span> Mines</div>
+      <div class="nav-item" onclick="showPanel('towers')" id="nav-towers"><span class="icon">🗼</span> Towers</div>
+      <div class="nav-item" onclick="showPanel('plinko')" id="nav-plinko"><span class="icon">🎯</span> Plinko</div>
+      <div class="nav-item" onclick="showPanel('ocf')" id="nav-ocf"><span class="icon">⚔️</span> Online Flip</div>
+      <div class="nav-item" onclick="showPanel('blackjack')" id="nav-blackjack"><span class="icon">🃏</span> Blackjack</div>
+      <div class="nav-item" onclick="showPanel('roulette')" id="nav-roulette"><span class="icon">🎡</span> Roulette</div>
+      <div class="nav-item" onclick="showPanel('dice')" id="nav-dice"><span class="icon">🎲</span> Dice Duel</div>
+      <div class="nav-item" onclick="showPanel('hilo')" id="nav-hilo"><span class="icon">🔼</span> Hi-Lo</div>
+      <div class="nav-item" onclick="showPanel('wheel')" id="nav-wheel"><span class="icon">🎰</span> Wheel</div>
+      <div class="nav-item" onclick="showPanel('keno')" id="nav-keno"><span class="icon">🔢</span> Keno</div>
+      <div class="nav-item" onclick="showPanel('videopoker')" id="nav-videopoker"><span class="icon">🂡</span> Video Poker</div>
+      <div class="nav-item" onclick="showPanel('dragon')" id="nav-dragon"><span class="icon">🐉</span> Dragon Tower</div>
+      <div class="nav-item" onclick="showPanel('limbo')" id="nav-limbo"><span class="icon">🎯</span> Limbo</div>
+    </div>
+    <!-- Fixed bottom: Community -->
+    <div class="sidebar-bottom">
+      <div class="sidebar-label">Community</div>
+      <div class="nav-item" onclick="showPanel('leaderboard')" id="nav-leaderboard"><span class="icon">🏆</span> Leaderboard</div>
+      <div class="nav-item" onclick="showPanel('badges')" id="nav-badges"><span class="icon">🎖️</span> Badges</div>
+      <div class="nav-item" onclick="showPanel('history')" id="nav-history"><span class="icon">📋</span> History</div>
+      <div class="nav-item" onclick="showPanel('settings')" id="nav-settings"><span class="icon">⚙️</span> Settings</div>
+      <div class="nav-item" onclick="showPanel('owner')" id="nav-owner" style="color:var(--gold)"><span class="icon">👑</span> Owner</div>
+    </div>
   </div>
 
   <div class="content">
