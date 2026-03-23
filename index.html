@@ -266,6 +266,13 @@
     @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
     @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
     @media(max-width:640px){.sidebar{display:none;}.nav-center{display:none;}}
+
+    /* PLINKO */
+    #plinko-canvas{display:block;border-radius:12px;background:var(--surface2);border:1px solid var(--border2);}
+    .plinko-bucket{display:flex;gap:2px;justify-content:center;margin-top:4px;}
+    .pb{flex:1;text-align:center;padding:4px 2px;border-radius:6px;font-size:0.6rem;font-weight:700;background:var(--surface2);border:1px solid var(--border);transition:all 0.2s;}
+    .pb.hit{animation:pbHit 0.4s ease;}
+    @keyframes pbHit{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
   </style>
 </head>
 <body>
@@ -372,6 +379,7 @@
     <div class="nav-item" onclick="showPanel('slots')" id="nav-slots"><span class="icon">🎰</span> Slots</div>
     <div class="nav-item" onclick="showPanel('mines')" id="nav-mines"><span class="icon">💣</span> Mines</div>
     <div class="nav-item" onclick="showPanel('towers')" id="nav-towers"><span class="icon">🗼</span> Towers</div>
+    <div class="nav-item" onclick="showPanel('plinko')" id="nav-plinko"><span class="icon">🎯</span> Plinko</div>
     <div class="sidebar-label">Community</div>
     <div class="nav-item" onclick="showPanel('leaderboard')" id="nav-leaderboard"><span class="icon">🏆</span> Leaderboard</div>
     <div class="nav-item" onclick="showPanel('badges')" id="nav-badges"><span class="icon">🎖️</span> Badges</div>
@@ -400,6 +408,7 @@
         <div class="game-card" onclick="showPanel('slots')"><div class="game-emoji">🎰</div><h3>Slots</h3><p>Spin. Match. Win big.</p></div>
         <div class="game-card" onclick="showPanel('mines')"><div class="game-emoji">💣</div><h3>Mines</h3><p>Gems vs bombs. Your call.</p></div>
         <div class="game-card" onclick="showPanel('towers')"><div class="game-emoji">🗼</div><h3>Towers</h3><p>Climb floors. Cash out or bust.</p></div>
+        <div class="game-card" onclick="showPanel('plinko')"><div class="game-emoji">🎯</div><h3>Plinko</h3><p>Drop the ball. Watch it fall.</p></div>
       </div>
     </div>
 
@@ -529,6 +538,46 @@
           <button class="play-btn" id="tw-play" onclick="startTowers()">Start</button>
           <button class="play-btn gold-btn" id="tw-cashout" onclick="cashOutTowers()" style="display:none">Cash Out <span id="tw-val"></span></button>
           <div class="result-banner" id="tw-result"></div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PLINKO -->
+    <div class="panel" id="panel-plinko">
+      <button class="back-btn" onclick="showPanel('home')">← Back</button>
+      <div class="section-title">🎯 Plinko</div>
+      <div class="game-layout">
+        <div class="game-area" style="padding:1rem;gap:0.5rem;">
+          <canvas id="plinko-canvas" width="420" height="420"></canvas>
+          <div class="plinko-bucket" id="plinko-buckets"></div>
+        </div>
+        <div class="bet-panel">
+          <div><div class="bet-label">Bet amount</div><input class="bet-input" id="pl-bet" type="number" value="100" min="1" /></div>
+          <div class="bet-quick"><button class="bet-quick-btn" onclick="setBet('pl-bet',0.5)">½</button><button class="bet-quick-btn" onclick="setBet('pl-bet',2)">2×</button><button class="bet-quick-btn" onclick="setBet('pl-bet','max')">Max</button></div>
+          <div><div class="bet-label">Risk</div>
+            <select class="bet-input" id="pl-risk" style="cursor:pointer;">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+          <div><div class="bet-label">Rows</div>
+            <select class="bet-input" id="pl-rows" style="cursor:pointer;">
+              <option value="8">8 rows</option>
+              <option value="12" selected>12 rows</option>
+              <option value="16">16 rows</option>
+            </select>
+          </div>
+          <button class="play-btn" id="pl-drop" onclick="dropPlinko()">Drop Ball</button>
+          <div style="margin-top:0.5rem;">
+            <div class="bet-label" style="margin-bottom:6px;">Auto Drop</div>
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <input class="bet-input" id="pl-auto-count" type="number" value="10" min="1" max="100" style="width:70px;" />
+              <button class="play-btn" id="pl-auto-btn" onclick="toggleAutoDrop()" style="flex:1;font-size:0.8rem;">▶ Auto</button>
+            </div>
+          </div>
+          <div class="result-banner" id="pl-result"></div>
         </div>
       </div>
     </div>
@@ -871,7 +920,11 @@ async function loginUser(username) {
 
 function logout() {
   clearSession(); CU = null;
+  if(ablyClient){try{ablyClient.close();}catch(e){} ablyClient=null; chatChannel=null;}
+  plAutoRunning=false; if(plAutoInterval){clearInterval(plAutoInterval);plAutoInterval=null;}
+  if(plAnimId){cancelAnimationFrame(plAnimId);plAnimId=null;}
   document.getElementById('auth-overlay').classList.remove('hidden');
+  document.getElementById('chat-messages').innerHTML='<div style="text-align:center;padding:1rem;font-size:0.8rem;color:var(--muted)" id="chat-connecting">Connecting...</div>';
 }
 
 async function saveCurrentUser() {
@@ -982,7 +1035,7 @@ async function addResult(game, bet, result, profit) {
   if (CU.history.length > 100) CU.history.pop();
   checkAndAwardBadges();
   await saveCurrentUser();
-  updateUI();
+  await updateUI();
 }
 
 function renderHistory() {
@@ -1073,6 +1126,7 @@ function showPanel(id) {
   if(id==='badges') renderBadgesPage();
   if(id==='mines') buildMinesGrid();
   if(id==='towers') buildTowersGrid();
+  if(id==='plinko') initPlinko();
   if(id==='settings') initSettings();
   if(id==='owner'&&!ownerUnlocked) { document.getElementById('owner-lock').style.display='block'; document.getElementById('owner-panel-content').style.display='none'; document.getElementById('owner-pass-err').classList.remove('show'); document.getElementById('owner-pass-input').value=''; }
 }
@@ -1136,6 +1190,7 @@ function startCrash(){
   const bet=getBet('cr-bet');if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
   crashBet=bet;crashMult=1;crashedOut=false;cHistory=[1];
   CU.balance-=bet;
+  saveCurrentUser();
   crashPoint=genCrashPoint();
   document.getElementById('cr-play').style.display='none';document.getElementById('cr-cashout').style.display='block';
   document.getElementById('cr-result').className='result-banner';document.getElementById('crash-multi').className='crash-multiplier';
@@ -1208,7 +1263,7 @@ function buildMinesGrid(){
 function startMines(){
   const bet=getBet('mn-bet');mCount=Math.min(20,Math.max(1,parseInt(document.getElementById('mn-mines').value)||3));
   if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
-  mBet=bet;mRevealed=0;mActive=true;CU.balance-=bet;
+  mBet=bet;mRevealed=0;mActive=true;CU.balance-=bet;saveCurrentUser();
   mBoard=Array(25).fill('gem');let p=0;while(p<mCount){const r=Math.floor(Math.random()*25);if(mBoard[r]==='gem'){mBoard[r]='bomb';p++;}}
   document.getElementById('mn-play').style.display='none';document.getElementById('mn-cashout').style.display='block';
   document.getElementById('mn-result').className='result-banner';document.getElementById('mines-mult').textContent='1.00×';
@@ -1264,7 +1319,7 @@ function twGetCells(row){return document.querySelectorAll(`.tw-cell[data-row="${
 function startTowers(){
   const bet=getBet('tw-bet');if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
   const diffKey=document.getElementById('tw-diff').value;twDiff=TW_DIFF[diffKey];
-  twBet=bet;twFloor=0;twMult=1;twActive=true;CU.balance-=bet;
+  twBet=bet;twFloor=0;twMult=1;twActive=true;CU.balance-=bet;saveCurrentUser();
   twBoard=[];for(let r=0;r<TW_FLOORS;r++){const row=Array(TW_COLS).fill('safe');let p=0;while(p<twDiff.bombs){const c=Math.floor(Math.random()*TW_COLS);if(row[c]==='safe'){row[c]='bomb';p++;}}twBoard.push(row);}
   document.getElementById('tw-play').style.display='none';document.getElementById('tw-cashout').style.display='block';
   document.getElementById('tw-result').className='result-banner';document.getElementById('tw-mult').textContent='1.00×';
@@ -1307,11 +1362,237 @@ function cashOutTowers(topped=false){
   for(let r=twFloor;r<TW_FLOORS;r++)twGetCells(r).forEach(c=>{c.classList.add('tw-locked');});
 }
 
+
+/* ================================================================
+   PLINKO
+================================================================ */
+const PLINKO_MULTIPLIERS = {
+  low: {
+    8:  [5.6,2.1,1.1,1,0.5,1,1.1,2.1,5.6],
+    12: [8.9,3,1.4,1.1,1,0.5,1,1.1,1.4,3,8.9],
+    16: [15,9,2,1.4,1.1,1,0.7,0.5,0.7,1,1.1,1.4,2,9,15]
+  },
+  medium: {
+    8:  [13,3,1.3,0.7,0.4,0.7,1.3,3,13],
+    12: [33,11,4,2,1.1,0.6,0.3,0.6,1.1,2,4,11,33],
+    16: [85,15,7,4,1.7,1.1,0.7,0.5,0.3,0.5,0.7,1.1,1.7,4,7,15,85]
+  },
+  high: {
+    8:  [29,4,1.5,0.3,0.2,0.3,1.5,4,29],
+    12: [170,24,8.1,2,0.7,0.2,0.2,0.2,0.7,2,8.1,24,170],
+    16: [1000,130,26,9,4,2,0.7,0.2,0.2,0.2,0.2,0.7,2,4,9,26,130,1000]
+  }
+};
+
+const PLINKO_COLORS = {
+  low:    ['#ffd740','#69f0ae','#00e676','#1de9b6','#00b0ff','#1de9b6','#00e676','#69f0ae','#ffd740'],
+  medium: ['#ff6d00','#ffd740','#69f0ae','#00e676','#1de9b6','#00b0ff','#448aff','#00b0ff','#1de9b6','#00e676','#69f0ae','#ffd740','#ff6d00'],
+  high:   ['#ff1744','#ff6d00','#ffd740','#69f0ae','#00e676','#1de9b6','#00b0ff','#448aff','#7c5cfc','#448aff','#00b0ff','#1de9b6','#00e676','#69f0ae','#ffd740','#ff6d00','#ff1744','#ff1744']
+};
+
+let plCanvas, plCtx, plBalls=[], plPins=[], plAnimId=null, plAutoInterval=null, plAutoRunning=false;
+const PL_RADIUS=6, PL_PIN_R=4;
+
+function initPlinko(){
+  plCanvas=document.getElementById('plinko-canvas');
+  plCtx=plCanvas.getContext('2d');
+  plBalls=[];
+  buildPlinkoBoard();
+  if(!plAnimId) plAnimLoop();
+}
+
+function buildPlinkoBoard(){
+  const rows=parseInt(document.getElementById('pl-rows').value)||12;
+  const risk=document.getElementById('pl-risk').value||'medium';
+  const W=plCanvas.width, H=plCanvas.height;
+  plPins=[];
+  const mults=PLINKO_MULTIPLIERS[risk][rows];
+  const cols=rows+1; // number of buckets
+  const padX=40, padY=40;
+  const spacingX=(W-padX*2)/rows;
+  const spacingY=(H-padY*2-50)/rows;
+
+  for(let r=0;r<rows;r++){
+    const count=r+2;
+    const rowW=(count-1)*spacingX;
+    const startX=(W-rowW)/2;
+    for(let c=0;c<count;c++){
+      plPins.push({x:startX+c*spacingX, y:padY+r*spacingY});
+    }
+  }
+
+  // render buckets
+  const colors=PLINKO_COLORS[risk];
+  const bEl=document.getElementById('plinko-buckets');
+  bEl.innerHTML='';
+  bEl.style.width=plCanvas.offsetWidth+'px';
+  const bucketW=Math.floor((W-padX*2)/cols);
+  for(let i=0;i<mults.length;i++){
+    const d=document.createElement('div');
+    d.className='pb';
+    d.id='plb-'+i;
+    const col=colors[Math.min(i,colors.length-1)];
+    d.style.background=col+'22';
+    d.style.borderColor=col+'66';
+    d.style.color=col;
+    d.textContent=mults[i]+'×';
+    bEl.appendChild(d);
+  }
+  drawPlinko();
+}
+
+function plAnimLoop(){
+  plAnimId=requestAnimationFrame(plAnimLoop);
+  drawPlinko();
+  const rows=parseInt(document.getElementById('pl-rows').value)||12;
+  const W=plCanvas.width,H=plCanvas.height;
+  const padX=40,padY=40;
+  const spacingX=(W-padX*2)/rows;
+  const spacingY=(H-padY*2-50)/rows;
+  const risk=document.getElementById('pl-risk').value||'medium';
+  const mults=PLINKO_MULTIPLIERS[risk][rows];
+
+  for(let i=plBalls.length-1;i>=0;i--){
+    const b=plBalls[i];
+    b.vy+=0.35; // gravity
+    b.vx*=0.99; // air resistance
+    b.x+=b.vx;
+    b.y+=b.vy;
+
+    // pin collisions
+    for(const pin of plPins){
+      const dx=b.x-pin.x, dy=b.y-pin.y;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<PL_RADIUS+PL_PIN_R+1){
+        const angle=Math.atan2(dy,dx);
+        const speed=Math.sqrt(b.vx*b.vx+b.vy*b.vy);
+        b.vx=Math.cos(angle)*speed*0.6+(Math.random()-0.5)*1.5;
+        b.vy=Math.abs(Math.sin(angle)*speed*0.6)+0.5;
+        b.x=pin.x+Math.cos(angle)*(PL_RADIUS+PL_PIN_R+2);
+        b.y=pin.y+Math.sin(angle)*(PL_RADIUS+PL_PIN_R+2);
+      }
+    }
+
+    // wall bounce
+    if(b.x<PL_RADIUS+10){b.x=PL_RADIUS+10;b.vx=Math.abs(b.vx)*0.6;}
+    if(b.x>W-PL_RADIUS-10){b.x=W-PL_RADIUS-10;b.vx=-Math.abs(b.vx)*0.6;}
+
+    // landed
+    if(b.y>H-50){
+      plBalls.splice(i,1);
+      const cols=rows+1;
+      const bucketW=(W-padX*2)/cols;
+      const bucketIdx=Math.min(Math.floor((b.x-padX)/bucketW),mults.length-1);
+      const safeIdx=Math.max(0,bucketIdx);
+      const mult=mults[safeIdx]||1;
+      const profit=Math.floor(b.bet*mult)-b.bet;
+      CU.balance+=Math.floor(b.bet*mult);
+      addResult('Plinko',b.bet,mult+'×',profit);
+      setResult('pl-result',profit>=0?`✓ ${mult}× +◈${profit}`:`✗ ${mult}× -◈${Math.abs(profit)}`,profit>=0?'win':'lose');
+      showToast(profit>=0?`+◈${profit} at ${mult}×`:`-◈${Math.abs(profit)} at ${mult}×`,profit>=0?'win':'lose');
+      // flash bucket
+      const bEl=document.getElementById('plb-'+safeIdx);
+      if(bEl){bEl.classList.remove('hit');void bEl.offsetWidth;bEl.classList.add('hit');}
+    }
+  }
+}
+
+function drawPlinko(){
+  if(!plCtx)return;
+  const W=plCanvas.width,H=plCanvas.height;
+  plCtx.clearRect(0,0,W,H);
+  plCtx.fillStyle='#1e1e1e';
+  plCtx.fillRect(0,0,W,H);
+
+  // draw pins
+  for(const pin of plPins){
+    plCtx.beginPath();
+    plCtx.arc(pin.x,pin.y,PL_PIN_R,0,Math.PI*2);
+    plCtx.fillStyle='rgba(255,255,255,0.4)';
+    plCtx.fill();
+  }
+
+  // draw balls
+  for(const b of plBalls){
+    plCtx.beginPath();
+    plCtx.arc(b.x,b.y,PL_RADIUS,0,Math.PI*2);
+    plCtx.fillStyle=b.color||'#ff5252';
+    plCtx.shadowBlur=8;
+    plCtx.shadowColor=b.color||'#ff5252';
+    plCtx.fill();
+    plCtx.shadowBlur=0;
+  }
+}
+
+function dropPlinko(){
+  if(!CU)return;
+  const bet=getBet('pl-bet');
+  if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
+  CU.balance-=bet;
+  saveCurrentUser();
+  updateUI();
+  const W=plCanvas.width;
+  const colors=['#ff5252','#ffd740','#00e676','#448aff','#7c5cfc','#ff6d00'];
+  plBalls.push({
+    x:W/2+(Math.random()-0.5)*10,
+    y:10,
+    vx:(Math.random()-0.5)*1.5,
+    vy:1,
+    bet,
+    color:colors[Math.floor(Math.random()*colors.length)]
+  });
+}
+
+let autoDropCount=0, autoDropTotal=0;
+function toggleAutoDrop(){
+  if(plAutoRunning){
+    plAutoRunning=false;
+    clearInterval(plAutoInterval);
+    document.getElementById('pl-auto-btn').textContent='▶ Auto';
+    document.getElementById('pl-drop').disabled=false;
+    return;
+  }
+  autoDropTotal=Math.min(100,Math.max(1,parseInt(document.getElementById('pl-auto-count').value)||10));
+  autoDropCount=0;
+  plAutoRunning=true;
+  document.getElementById('pl-auto-btn').textContent='⏹ Stop';
+  document.getElementById('pl-drop').disabled=true;
+  const runDrop=()=>{
+    if(!plAutoRunning||autoDropCount>=autoDropTotal){
+      plAutoRunning=false;
+      clearInterval(plAutoInterval);
+      document.getElementById('pl-auto-btn').textContent='▶ Auto';
+      document.getElementById('pl-drop').disabled=false;
+      return;
+    }
+    if(CU.balance<getBet('pl-bet')){
+      plAutoRunning=false;
+      clearInterval(plAutoInterval);
+      document.getElementById('pl-auto-btn').textContent='▶ Auto';
+      document.getElementById('pl-drop').disabled=false;
+      showToast('Not enough balance to continue!','lose');
+      return;
+    }
+    dropPlinko();
+    autoDropCount++;
+  };
+  runDrop();
+  plAutoInterval=setInterval(runDrop,400);
+}
+
+// Rebuild board when rows/risk changes
+document.addEventListener('DOMContentLoaded',()=>{
+  const plRows=document.getElementById('pl-rows');
+  const plRisk=document.getElementById('pl-risk');
+  if(plRows) plRows.addEventListener('change',()=>{if(plPins.length)buildPlinkoBoard();});
+  if(plRisk) plRisk.addEventListener('change',()=>{if(plPins.length)buildPlinkoBoard();});
+});
+
 /* ================================================================
    SETTINGS
 ================================================================ */
 const PRESET_COLOURS=['#00e676','#7c5cfc','#448aff','#ff5252','#ffd740','#ff6d00','#e91e63','#00bcd4','#69f0ae','#ffffff'];
-function initSettings(){
+async function initSettings(){
   const swatches=document.getElementById('colour-swatches');swatches.innerHTML='';
   const current=CU?.accentColor||'#00e676';
   PRESET_COLOURS.forEach(col=>{const s=document.createElement('div');s.className='colour-swatch'+(col===current?' active':'');s.style.background=col;s.title=col;s.onclick=()=>applyAccent(col);swatches.appendChild(s);});
@@ -1319,6 +1600,9 @@ function initSettings(){
   ['set-username','set-username-pass','set-old-pass','set-new-pass','set-new-pass2'].forEach(id=>document.getElementById(id).value='');
   ['set-username-err','set-pass-err'].forEach(id=>document.getElementById(id).classList.remove('show'));
   if(!CU)return;
+  // Re-fetch fresh data from Supabase so stats are always up to date
+  const fresh=await sbGetUser(CU.username);
+  if(fresh) CU=fresh;
   const accent=CU.accentColor||'#00e676';
   document.getElementById('sc-avatar').textContent=CU.username.slice(0,2).toUpperCase();
   document.getElementById('sc-avatar').style.background=accent+'33';document.getElementById('sc-avatar').style.color=accent;
@@ -1575,6 +1859,7 @@ function appendMsg(data,isSystem=false){
 function sendMessage(){const input=document.getElementById('chat-input');const text=input.value.trim();if(!text||!chatChannel||!CU)return;chatChannel.publish('message',{username:CU.username,text,ts:Date.now()});input.value='';}
 function initChat(){
   if(!CU||ablyClient)return;
+  if(typeof Ably==='undefined'){setTimeout(initChat,200);return;}
   try{
     ablyClient=new Ably.Realtime({key:ABLY_KEY,clientId:CU.username});
     chatChannel=ablyClient.channels.get('dvcgamble-chat');
