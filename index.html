@@ -65,7 +65,6 @@
     .search-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.9rem 0.4rem 2.2rem;color:var(--fg);font-size:0.82rem;transition:border-color 0.2s;}
     .search-input:focus{border-color:var(--accent);}
     .search-input::placeholder{color:rgba(240,240,240,0.25);}
-    .search-icon{position:absolute;left:0.7rem;top:50%;transform:translateY(-50%);font-size:0.8rem;color:var(--muted);pointer-events:none;}
     .search-dropdown{position:absolute;top:calc(100%+4px);left:0;right:0;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;z-index:200;overflow:hidden;display:none;box-shadow:0 8px 24px rgba(0,0,0,0.4);}
     .search-dropdown.show{display:block;}
     .search-result{padding:0.7rem 1rem;cursor:pointer;transition:background 0.15s;display:flex;align-items:center;gap:8px;}
@@ -181,7 +180,6 @@
     .tw-cell.tw-revealed{cursor:default;}
     .tw-cell.tw-locked{cursor:default;opacity:0.35;}
     .tw-cell.tw-active{border-color:rgba(255,215,64,0.5);box-shadow:0 0 8px rgba(255,215,64,0.15);}
-    .mines-mult{font-size:1.6rem;font-weight:800;color:var(--accent);}
 
     /* LEADERBOARD */
     .lb-table{width:100%;border-collapse:collapse;}
@@ -212,19 +210,6 @@
     .colour-swatch{width:100%;aspect-ratio:1;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all 0.15s;}
     .colour-swatch:hover{transform:scale(1.1);}
     .colour-swatch.active{border-color:#fff;transform:scale(1.1);}
-
-    /* BADGES PAGE */
-    .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-top:0.5rem;}
-    .badge-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;display:flex;align-items:center;gap:1rem;transition:all 0.2s;position:relative;overflow:hidden;}
-    .badge-card.earned{border-color:var(--border2);background:var(--surface2);}
-    .badge-card.locked{opacity:0.45;filter:grayscale(0.6);}
-    .badge-card .badge-emoji{font-size:2.2rem;flex-shrink:0;width:48px;text-align:center;}
-    .badge-card .badge-info{flex:1;min-width:0;}
-    .badge-card .badge-name{font-size:0.9rem;font-weight:700;margin-bottom:3px;}
-    .badge-card .badge-desc{font-size:0.75rem;color:var(--muted);line-height:1.4;}
-    .badge-card .badge-check{position:absolute;top:0.75rem;right:0.75rem;width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:#000;}
-    .badge-section-label{font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;margin-top:1.5rem;}
-    .badge-section-label:first-child{margin-top:0;}
 
     /* OWNER PANEL */
     .owner-terminal{background:#0a0a0a;border:1px solid rgba(0,230,118,0.2);border-radius:12px;padding:1.25rem;font-family:'Courier New',monospace;}
@@ -328,9 +313,7 @@
       <div id="pc-shine" style="position:absolute;inset:0;border-radius:20px;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:1;"></div>
       <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 75% 25%,rgba(100,100,255,0.07),transparent 55%);z-index:0;"></div>
       <div id="pc-topline" style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:20px 20px 0 0;z-index:2;background:linear-gradient(90deg,#7c5cfc,transparent);"></div>
-
       <div style="position:relative;z-index:2;">
-        <!-- header -->
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
           <div style="display:flex;align-items:center;gap:0.85rem;">
             <div id="pc-avatar" style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:800;flex-shrink:0;border:2px solid rgba(255,255,255,0.15);background:rgba(124,92,252,0.2);color:#7c5cfc;"></div>
@@ -343,38 +326,15 @@
           </div>
           <button class="profile-close" onclick="closeProfile()">✕</button>
         </div>
-
-        <!-- badges -->
         <div id="pm-badges" style="margin-bottom:1.25rem;min-height:0;"></div>
-
-        <!-- stats -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;">
-          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
-            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Balance</div>
-            <div class="ps-val" style="color:var(--gold)" id="pm-bal"></div>
-          </div>
-          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
-            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Total Won</div>
-            <div class="ps-val" style="color:var(--accent)" id="pm-won"></div>
-          </div>
-          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
-            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Total Lost</div>
-            <div class="ps-val" style="color:var(--red)" id="pm-lost"></div>
-          </div>
-          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
-            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Best Streak</div>
-            <div class="ps-val" id="pm-streak"></div>
-          </div>
-          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
-            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Games Played</div>
-            <div class="ps-val" id="pm-played"></div>
-          </div>
-          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;">
-            <div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Net Profit</div>
-            <div class="ps-val" id="pm-net"></div>
-          </div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;"><div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Balance</div><div class="ps-val" style="color:var(--gold)" id="pm-bal"></div></div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;"><div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Total Won</div><div class="ps-val" style="color:var(--accent)" id="pm-won"></div></div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;"><div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Total Lost</div><div class="ps-val" style="color:var(--red)" id="pm-lost"></div></div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;"><div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Best Streak</div><div class="ps-val" id="pm-streak"></div></div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;"><div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Games Played</div><div class="ps-val" id="pm-played"></div></div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:0.85rem;"><div style="font-size:0.58rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:5px;">Net Profit</div><div class="ps-val" id="pm-net"></div></div>
         </div>
-
         <div style="margin-top:1rem;padding-top:0.85rem;border-top:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;font-size:0.65rem;color:rgba(255,255,255,0.2);">
           <span>dvcgamble.lol</span><span>Player Card</span>
         </div>
@@ -596,7 +556,6 @@
       <div class="section-title">⚙️ Settings</div>
       <div style="display:grid;grid-template-columns:560px 1fr;gap:2rem;align-items:start;">
         <div style="display:flex;flex-direction:column;gap:1rem;">
-
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;">
             <div style="font-size:0.85rem;font-weight:700;margin-bottom:1rem;">👤 Change Username</div>
             <div class="form-group" style="margin-bottom:0.75rem;"><div class="form-label">New username</div><input class="form-input" id="set-username" type="text" placeholder="Enter new username" /></div>
@@ -604,7 +563,6 @@
             <div class="auth-error" id="set-username-err"></div>
             <button class="play-btn" style="margin-top:0.5rem" onclick="changeUsername()">Save Username</button>
           </div>
-
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;">
             <div style="font-size:0.85rem;font-weight:700;margin-bottom:1rem;">🔒 Change Password</div>
             <div class="form-group" style="margin-bottom:0.75rem;"><div class="form-label">Current password</div><input class="form-input" id="set-old-pass" type="password" placeholder="Current password" /></div>
@@ -613,7 +571,6 @@
             <div class="auth-error" id="set-pass-err"></div>
             <button class="play-btn" style="margin-top:0.5rem" onclick="changePassword()">Save Password</button>
           </div>
-
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;">
             <div style="font-size:0.85rem;font-weight:700;margin-bottom:1rem;">🎨 Accent Colour</div>
             <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:0.6rem;margin-bottom:1rem;" id="colour-swatches"></div>
@@ -623,16 +580,12 @@
               <button class="bet-quick-btn" onclick="applyCustomColour()">Apply</button>
             </div>
           </div>
-
           <div style="background:var(--surface);border:1px solid rgba(255,82,82,0.2);border-radius:var(--r);padding:1.5rem;">
             <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.5rem;color:var(--red);">⚠️ Danger Zone</div>
             <div style="font-size:0.8rem;color:var(--muted);margin-bottom:1rem;">Reset your balance back to ◈1,000.</div>
             <button class="play-btn red-btn" onclick="resetBalance()">Reset Balance to ◈1,000</button>
           </div>
-
         </div>
-
-        <!-- PROFILE CARD -->
         <div style="position:sticky;top:1.5rem;">
           <div id="settings-card" style="border-radius:24px;padding:2.5rem;position:relative;overflow:hidden;background:linear-gradient(145deg,#1a1a2e,#0f0f1f);border:1px solid rgba(255,255,255,0.1);transform-style:preserve-3d;transition:transform 0.08s ease,box-shadow 0.08s ease;cursor:default;display:flex;flex-direction:column;gap:2rem;">
             <div id="sc-shine" style="position:absolute;inset:0;border-radius:24px;pointer-events:none;opacity:0;transition:opacity 0.1s;z-index:1;"></div>
@@ -699,8 +652,8 @@
               <div><span style="color:var(--accent)">/stats</span> [user]</div>
               <div><span style="color:var(--accent)">/clearhistory</span> [user]</div>
               <div><span style="color:var(--accent)">/wipeall</span> CONFIRM</div>
-              <div><span style="color:var(--accent)">/givebadge</span> [user] — give 👑 Owner badge</div>
-              <div><span style="color:var(--accent)">/removebadge</span> [user] — remove owner badge</div>
+              <div><span style="color:var(--accent)">/givebadge</span> [user]</div>
+              <div><span style="color:var(--accent)">/removebadge</span> [user]</div>
               <div><span style="color:var(--accent)">/clear</span></div>
             </div>
           </div>
@@ -746,80 +699,82 @@
 
 <script>
 /* ================================================================
-   DATA
+   SUPABASE CONFIG
 ================================================================ */
-/* ================================================================
-   JSONBIN DATABASE — public bin, shared across all devices
-================================================================ */
-const DB_URL = 'https://jsonblob.com/api/jsonBlob/019d17f0-a432-7cf3-9a37-1fae70c4a615';
-let dbCache = null;
+const SUPABASE_URL = 'https://hjamzcqxomwnolgeofyh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqYW16Y3F4b213bm9sZ2VvZnloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NDMyNDMsImV4cCI6MjA4OTUxOTI0M30.0wbN-fzVhSSEhf21fjTbde-cOzyeDSHFfpZb_zbOEUI';
 
-async function fetchDB() {
-  const res = await fetch(DB_URL, {headers:{'Accept':'application/json'}});
-  dbCache = await res.json();
-  return dbCache;
+const sbHeaders = {
+  'Content-Type': 'application/json',
+  'apikey': SUPABASE_KEY,
+  'Authorization': 'Bearer ' + SUPABASE_KEY
+};
+
+async function sbGetUser(username) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(username)}&select=*`, {
+    headers: sbHeaders
+  });
+  const rows = await res.json();
+  return rows.length ? rows[0].data : null;
 }
 
-async function saveDB(data) {
-  dbCache = data;
-  await fetch(DB_URL, {
-    method: 'PUT',
-    headers: {'Content-Type':'application/json','Accept':'application/json'},
-    body: JSON.stringify(data)
+async function sbGetAllUsers() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, {
+    headers: sbHeaders
+  });
+  const rows = await res.json();
+  const out = {};
+  rows.forEach(r => { out[r.username] = r.data; });
+  return out;
+}
+
+async function sbSaveUser(user) {
+  // Upsert: insert or update by username
+  await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+    method: 'POST',
+    headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({ username: user.username, data: user })
   });
 }
 
-async function getUsers() {
-  if (dbCache) return dbCache.users || {};
-  const db = await fetchDB();
-  return db.users || {};
+async function sbDeleteUser(username) {
+  await fetch(`${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(username)}`, {
+    method: 'DELETE',
+    headers: sbHeaders
+  });
 }
 
-async function saveUsers(users) {
-  const db = dbCache || {users: {}};
-  db.users = users;
-  await saveDB(db);
-}
-
-async function saveCurrentUser() {
-  if (!CU) return;
-  const users = dbCache?.users || await getUsers();
-  users[CU.username] = CU;
-  dbCache = {users};
-  await saveDB({users});
-}
-
-async function saveUser(user) {
-  const users = await getUsers();
-  users[user.username] = user;
-  dbCache={users};await saveDB({users});
-}
-
-const getSession  = () => localStorage.getItem('dvc_session');
-const saveSession = u  => localStorage.setItem('dvc_session', u);
-const clearSession= () => localStorage.removeItem('dvc_session');
+/* ================================================================
+   SESSION
+================================================================ */
+const getSession   = () => localStorage.getItem('dvc_session');
+const saveSession  = u  => localStorage.setItem('dvc_session', u);
+const clearSession = () => localStorage.removeItem('dvc_session');
 let CU = null;
 
+/* ================================================================
+   LEADERBOARD HELPERS
+================================================================ */
 async function getLeaderboard() {
-  const users = await getUsers();
+  const users = await sbGetAllUsers();
   return Object.values(users).sort((a,b)=>(b.won||0)-(a.won||0)).map((u,i)=>({...u,rank:i+1}));
 }
 async function getRankOfUser(username) {
   const lb = await getLeaderboard();
-  return lb.find(u=>u.username===username)?.rank||null;
+  return lb.find(u=>u.username===username)?.rank || null;
 }
 function getRankTag(rank) {
-  if(!rank)return '';
+  if(!rank) return '';
   if(rank<=10)  return `<span class="player-tag tag-top10">Top 10</span>`;
   if(rank<=50)  return `<span class="player-tag tag-top50">Top 50</span>`;
   if(rank<=100) return `<span class="player-tag tag-top100">Top 100</span>`;
   return '';
 }
 function getRankBadge(rank) {
-  if(rank===1)return`<span class="rank-badge gold">🥇</span>`;
-  if(rank===2)return`<span class="rank-badge silver">🥈</span>`;
-  if(rank===3)return`<span class="rank-badge bronze">🥉</span>`;
-  return`<span class="rank-badge">${rank}</span>`;
+  if(rank===1) return `<span class="rank-badge gold">🥇</span>`;
+  if(rank===2) return `<span class="rank-badge silver">🥈</span>`;
+  if(rank===3) return `<span class="rank-badge bronze">🥉</span>`;
+  return `<span class="rank-badge">${rank}</span>`;
 }
 
 /* ================================================================
@@ -838,75 +793,86 @@ function validateUsername(u) {
 }
 
 function switchAuthTab(tab) {
-  document.getElementById('tab-login').classList.toggle('active',tab==='login');
-  document.getElementById('tab-signup').classList.toggle('active',tab==='signup');
-  document.getElementById('form-login').classList.toggle('hidden',tab!=='login');
-  document.getElementById('form-signup').classList.toggle('hidden',tab!=='signup');
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-signup').classList.toggle('active', tab==='signup');
+  document.getElementById('form-login').classList.toggle('hidden', tab!=='login');
+  document.getElementById('form-signup').classList.toggle('hidden', tab!=='signup');
 }
 
-function showAuthLoading(btn,msg){btn.disabled=true;btn.textContent=msg;}
-function hideAuthLoading(btn,msg){btn.disabled=false;btn.textContent=msg;}
+function showAuthLoading(btn, msg) { btn.disabled=true; btn.textContent=msg; }
+function hideAuthLoading(btn, msg) { btn.disabled=false; btn.textContent=msg; }
 
 async function doSignup() {
-  const u=document.getElementById('signup-user').value.trim();
-  const p=document.getElementById('signup-pass').value;
-  const p2=document.getElementById('signup-pass2').value;
-  const err=document.getElementById('signup-error');
-  const btn=document.querySelector('#form-signup .auth-submit');
+  const u   = document.getElementById('signup-user').value.trim();
+  const p   = document.getElementById('signup-pass').value;
+  const p2  = document.getElementById('signup-pass2').value;
+  const err = document.getElementById('signup-error');
+  const btn = document.querySelector('#form-signup .auth-submit');
   err.classList.remove('show');
-  const nameErr=validateUsername(u);
-  if(nameErr){err.textContent=nameErr;err.classList.add('show');return;}
-  if(!p||p.length<4){err.textContent='Password must be 4+ chars';err.classList.add('show');return;}
-  if(p!==p2){err.textContent='Passwords do not match';err.classList.add('show');return;}
-  showAuthLoading(btn,'Creating account...');
+
+  const nameErr = validateUsername(u);
+  if (nameErr) { err.textContent=nameErr; err.classList.add('show'); return; }
+  if (!p || p.length < 4) { err.textContent='Password must be 4+ chars'; err.classList.add('show'); return; }
+  if (p !== p2) { err.textContent='Passwords do not match'; err.classList.add('show'); return; }
+
+  showAuthLoading(btn, 'Creating account...');
   try {
-    const users=await getUsers();
-    if(users[u]){err.textContent='Username already taken';err.classList.add('show');hideAuthLoading(btn,'Create account');return;}
-    const newUser={username:u,password:p,balance:1000,won:0,lost:0,played:0,streak:0,bestStreak:0,history:[],badges:[]};
-    users[u]=newUser;
-    dbCache={users};
-    try { await saveDB({users}); } catch(e){ console.warn('Save failed, will retry on next action'); }
+    const existing = await sbGetUser(u);
+    if (existing) { err.textContent='Username already taken'; err.classList.add('show'); hideAuthLoading(btn,'Create account'); return; }
+
+    const newUser = { username:u, password:p, balance:1000, won:0, lost:0, played:0, streak:0, bestStreak:0, history:[], badges:[] };
+    await sbSaveUser(newUser);
     await loginUser(u);
-    showToast('Welcome! You start with ◈1,000 🎉','info');
-  } catch(e){
-    console.error('Signup error:',e);
-    err.textContent='Could not connect. Try again.';
+    showToast('Welcome! You start with ◈1,000 🎉', 'info');
+  } catch(e) {
+    console.error('Signup error:', e);
+    err.textContent = 'Could not connect. Try again.';
     err.classList.add('show');
-    hideAuthLoading(btn,'Create account');
+    hideAuthLoading(btn, 'Create account');
   }
 }
 
 async function doLogin() {
-  const u=document.getElementById('login-user').value.trim();
-  const p=document.getElementById('login-pass').value;
-  const err=document.getElementById('login-error');
-  const btn=document.querySelector('#form-login .auth-submit');
+  const u   = document.getElementById('login-user').value.trim();
+  const p   = document.getElementById('login-pass').value;
+  const err = document.getElementById('login-error');
+  const btn = document.querySelector('#form-login .auth-submit');
   err.classList.remove('show');
-  showAuthLoading(btn,'Logging in...');
+  showAuthLoading(btn, 'Logging in...');
   try {
-    const users=await getUsers();
-    if(!users[u]||users[u].password!==p){err.textContent='Invalid username or password';err.classList.add('show');hideAuthLoading(btn,'Log in');return;}
+    const user = await sbGetUser(u);
+    if (!user || user.password !== p) {
+      err.textContent='Invalid username or password'; err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
+    }
     await loginUser(u);
-    showToast('Welcome back, '+u+'!','info');
-  } catch(e){
-    console.error('Login error:',e);
-    err.textContent='Could not connect. Try again.';
+    showToast('Welcome back, ' + u + '!', 'info');
+  } catch(e) {
+    console.error('Login error:', e);
+    err.textContent = 'Could not connect. Try again.';
     err.classList.add('show');
-    hideAuthLoading(btn,'Log in');
+    hideAuthLoading(btn, 'Log in');
   }
 }
 
 async function loginUser(username) {
-  const users=await getUsers();
-  CU=users[username];
+  CU = await sbGetUser(username);
+  if (!CU) return;
   saveSession(username);
   document.getElementById('auth-overlay').classList.add('hidden');
-  try{if(CU.accentColor)applyAccent(CU.accentColor);}catch(e){}
+  try { if (CU.accentColor) applyAccent(CU.accentColor); } catch(e) {}
   await updateUI();
-  setTimeout(()=>{try{initChat();}catch(e){}},400);
+  setTimeout(() => { try { initChat(); } catch(e) {} }, 400);
 }
 
-function logout() { clearSession();CU=null;document.getElementById('auth-overlay').classList.remove('hidden'); }
+function logout() {
+  clearSession(); CU = null;
+  document.getElementById('auth-overlay').classList.remove('hidden');
+}
+
+async function saveCurrentUser() {
+  if (!CU) return;
+  await sbSaveUser(CU);
+}
 
 /* ================================================================
    BADGES
@@ -927,78 +893,56 @@ const BADGE_DEFS = [
 ];
 
 function getEarnedBadges(user) {
-  // owner badge is ONLY from user.badges array — never auto-granted, never auto-removed
   return BADGE_DEFS.filter(b => {
-    if(b.id==='owner') return (user.badges||[]).includes('owner');
+    if (b.id==='owner') return (user.badges||[]).includes('owner');
     return b.check(user);
   });
+}
+
+function renderBadges(user, limit=null) {
+  const earned = getEarnedBadges(user);
+  const show = limit ? earned.slice(0, limit) : earned;
+  return show.map(b => `<span title="${b.label}" style="font-size:1.1rem;cursor:default">${b.emoji}</span>`).join('');
+}
+
+function renderBadgeFull(user) {
+  const earned = getEarnedBadges(user);
+  if (!earned.length) return '';
+  return `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:0.5rem;">${earned.map(b=>`<span title="${b.label}" style="display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:700;padding:3px 9px;border-radius:6px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);cursor:default;">${b.emoji} ${b.label}</span>`).join('')}</div>`;
 }
 
 function renderBadgesPage() {
   const el = document.getElementById('badges-content');
   const earned = getEarnedBadges(CU);
   const earnedIds = new Set(earned.map(b=>b.id));
-
   const rows = BADGE_DEFS.map(b => {
     const have = earnedIds.has(b.id);
-    const isOwner = b.id === 'owner';
+    const isOwner = b.id==='owner';
     let progress = '';
     if (!have && !isOwner) {
-      if(b.id==='getting')  progress = `${Math.min(CU.played||0,10)}/10 games`;
-      if(b.id==='regular')  progress = `${Math.min(CU.played||0,50)}/50 games`;
-      if(b.id==='century')  progress = `${Math.min(CU.played||0,100)}/100 games`;
-      if(b.id==='veteran')  progress = `${Math.min(CU.played||0,500)}/500 games`;
-      if(b.id==='loaded')   progress = `◈${(CU.balance||0).toLocaleString()} / ◈10,000`;
-      if(b.id==='highroll') progress = `◈${(CU.balance||0).toLocaleString()} / ◈50,000`;
-      if(b.id==='diamond')  progress = `◈${(CU.balance||0).toLocaleString()} / ◈100,000`;
-      if(b.id==='onroll')   progress = `${Math.min(CU.bestStreak||0,5)}/5 win streak`;
-      if(b.id==='hotstreak')progress = `${Math.min(CU.bestStreak||0,10)}/10 win streak`;
-      if(b.id==='master')   progress = `◈${(CU.won||0).toLocaleString()} / ◈100,000 won`;
+      if(b.id==='getting')  progress=`${Math.min(CU.played||0,10)}/10 games`;
+      if(b.id==='regular')  progress=`${Math.min(CU.played||0,50)}/50 games`;
+      if(b.id==='century')  progress=`${Math.min(CU.played||0,100)}/100 games`;
+      if(b.id==='veteran')  progress=`${Math.min(CU.played||0,500)}/500 games`;
+      if(b.id==='loaded')   progress=`◈${(CU.balance||0).toLocaleString()} / ◈10,000`;
+      if(b.id==='highroll') progress=`◈${(CU.balance||0).toLocaleString()} / ◈50,000`;
+      if(b.id==='diamond')  progress=`◈${(CU.balance||0).toLocaleString()} / ◈100,000`;
+      if(b.id==='onroll')   progress=`${Math.min(CU.bestStreak||0,5)}/5 win streak`;
+      if(b.id==='hotstreak')progress=`${Math.min(CU.bestStreak||0,10)}/10 win streak`;
+      if(b.id==='master')   progress=`◈${(CU.won||0).toLocaleString()} / ◈100,000 won`;
     }
-
-    return `
-      <div style="display:flex;align-items:center;gap:1.25rem;padding:1.25rem;background:${have?'rgba(0,230,118,0.05)':'var(--surface)'};border:1px solid ${have?'rgba(0,230,118,0.2)':'var(--border)'};border-radius:14px;transition:all 0.2s;${have?'':'opacity:0.6'}">
-        <div style="font-size:2.5rem;width:52px;text-align:center;flex-shrink:0;${have?'':'filter:grayscale(1)'}">${b.emoji}</div>
-        <div style="flex:1;">
-          <div style="font-size:0.95rem;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:8px;">
-            ${b.label}
-            ${have?`<span style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(0,230,118,0.15);color:var(--accent);">EARNED</span>`:''}
-            ${isOwner&&!have?`<span style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(255,215,64,0.1);color:var(--gold);">Owner only</span>`:''}
-          </div>
-          <div style="font-size:0.8rem;color:var(--muted);">${b.desc}</div>
-          ${progress?`<div style="font-size:0.75rem;color:var(--accent);margin-top:4px;">${progress}</div>`:''}
-        </div>
-        <div style="font-size:1.5rem;">${have?'✅':'🔒'}</div>
-      </div>`;
-  }).join('');
-
-  const earnedCount = earned.length;
-  const total = BADGE_DEFS.length;
-  el.innerHTML = `
-    <div style="margin-bottom:1.5rem;padding:1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;gap:1rem;">
-      <div style="font-size:2rem;">🎖️</div>
-      <div>
-        <div style="font-size:1rem;font-weight:700;">Your Progress</div>
-        <div style="font-size:0.82rem;color:var(--muted);margin-top:2px;">${earnedCount} / ${total} badges earned</div>
-        <div style="margin-top:8px;height:6px;background:var(--surface2);border-radius:3px;width:240px;overflow:hidden;">
-          <div style="height:100%;width:${Math.round(earnedCount/total*100)}%;background:var(--accent);border-radius:3px;transition:width 0.5s;"></div>
-        </div>
+    return `<div style="display:flex;align-items:center;gap:1.25rem;padding:1.25rem;background:${have?'rgba(0,230,118,0.05)':'var(--surface)'};border:1px solid ${have?'rgba(0,230,118,0.2)':'var(--border)'};border-radius:14px;${have?'':'opacity:0.6'}">
+      <div style="font-size:2.5rem;width:52px;text-align:center;flex-shrink:0;${have?'':'filter:grayscale(1)'}">${b.emoji}</div>
+      <div style="flex:1;">
+        <div style="font-size:0.95rem;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:8px;">${b.label}${have?`<span style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(0,230,118,0.15);color:var(--accent);">EARNED</span>`:''}${isOwner&&!have?`<span style="font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(255,215,64,0.1);color:var(--gold);">Owner only</span>`:''}</div>
+        <div style="font-size:0.8rem;color:var(--muted);">${b.desc}</div>
+        ${progress?`<div style="font-size:0.75rem;color:var(--accent);margin-top:4px;">${progress}</div>`:''}
       </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:0.75rem;">${rows}</div>`;
-}
-
-function renderBadges(user, limit=null) {
-  const earned = getEarnedBadges(user);
-  const show = limit ? earned.slice(0, limit) : earned;
-  return show.map(b => `<span title="${b.label}" style="font-size:1.1rem;cursor:default" class="badge-icon">${b.emoji}</span>`).join('');
-}
-
-
-function renderBadgeFull(user) {
-  const earned = getEarnedBadges(user);
-  if (!earned.length) return '';
-  return `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:0.5rem;">${earned.map(b=>`<span title="${b.label}" style="display:inline-flex;align-items:center;gap:4px;font-size:0.72rem;font-weight:700;padding:3px 9px;border-radius:6px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);cursor:default;">${b.emoji} ${b.label}</span>`).join('')}</div>`;
+      <div style="font-size:1.5rem;">${have?'✅':'🔒'}</div>
+    </div>`;
+  }).join('');
+  const earnedCount = earned.length, total = BADGE_DEFS.length;
+  el.innerHTML = `<div style="margin-bottom:1.5rem;padding:1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;gap:1rem;"><div style="font-size:2rem;">🎖️</div><div><div style="font-size:1rem;font-weight:700;">Your Progress</div><div style="font-size:0.82rem;color:var(--muted);margin-top:2px;">${earnedCount} / ${total} badges earned</div><div style="margin-top:8px;height:6px;background:var(--surface2);border-radius:3px;width:240px;overflow:hidden;"><div style="height:100%;width:${Math.round(earnedCount/total*100)}%;background:var(--accent);border-radius:3px;transition:width 0.5s;"></div></div></div></div><div style="display:flex;flex-direction:column;gap:0.75rem;">${rows}</div>`;
 }
 
 function checkAndAwardBadges() {
@@ -1010,154 +954,150 @@ function checkAndAwardBadges() {
    UI
 ================================================================ */
 async function updateUI() {
-  if(!CU)return;
-  const rank=await getRankOfUser(CU.username);
-  document.getElementById('nav-user').textContent=CU.username;
-  document.getElementById('nav-balance').textContent=CU.balance.toLocaleString();
-  document.getElementById('home-user').textContent=CU.username;
-  document.getElementById('home-rank-tag').innerHTML=getRankTag(rank);
-  document.getElementById('home-balance').textContent='◈ '+CU.balance.toLocaleString();
-  document.getElementById('home-won').textContent='◈ '+(CU.won||0).toLocaleString();
-  document.getElementById('home-lost').textContent='◈ '+(CU.lost||0).toLocaleString();
-  document.getElementById('home-played').textContent=CU.played||0;
-  document.getElementById('home-streak').textContent=(CU.streak||0)+' 🔥';
-  document.getElementById('home-lbrank').textContent=rank?'#'+rank:'—';
-  if(CU.balance<=0)showBustModal();
+  if (!CU) return;
+  const rank = await getRankOfUser(CU.username);
+  document.getElementById('nav-user').textContent = CU.username;
+  document.getElementById('nav-balance').textContent = CU.balance.toLocaleString();
+  document.getElementById('home-user').textContent = CU.username;
+  document.getElementById('home-rank-tag').innerHTML = getRankTag(rank);
+  document.getElementById('home-balance').textContent = '◈ '+CU.balance.toLocaleString();
+  document.getElementById('home-won').textContent = '◈ '+(CU.won||0).toLocaleString();
+  document.getElementById('home-lost').textContent = '◈ '+(CU.lost||0).toLocaleString();
+  document.getElementById('home-played').textContent = CU.played||0;
+  document.getElementById('home-streak').textContent = (CU.streak||0)+' 🔥';
+  document.getElementById('home-lbrank').textContent = rank ? '#'+rank : '—';
+  if (CU.balance <= 0) showBustModal();
 }
 
-async function addResult(game,bet,result,profit) {
+async function addResult(game, bet, result, profit) {
   CU.played++;
-  if(profit>0){CU.won+=profit;CU.streak=(CU.streak||0)+1;CU.bestStreak=Math.max(CU.bestStreak||0,CU.streak);}
-  else{CU.lost+=Math.abs(profit);CU.streak=0;}
-  CU.history.unshift({game,bet,result,profit,ts:Date.now()});
-  if(CU.history.length>100)CU.history.pop();
+  if (profit > 0) { CU.won+=profit; CU.streak=(CU.streak||0)+1; CU.bestStreak=Math.max(CU.bestStreak||0,CU.streak); }
+  else { CU.lost+=Math.abs(profit); CU.streak=0; }
+  CU.history.unshift({ game, bet, result, profit, ts:Date.now() });
+  if (CU.history.length > 100) CU.history.pop();
   checkAndAwardBadges();
   await saveCurrentUser();
   updateUI();
 }
 
 function renderHistory() {
-  const list=document.getElementById('history-list');
-  if(!CU.history.length){list.innerHTML='<div style="color:var(--muted);padding:1rem;font-size:0.85rem">No bets yet.</div>';return;}
-  list.innerHTML=CU.history.map(h=>`<div class="history-item"><span class="h-game">${h.game}</span><span class="h-result">${h.result}</span><span style="color:var(--muted);font-size:0.78rem">◈${h.bet}</span><span class="h-amount ${h.profit>0?'win':'lose'}">${h.profit>0?'+':''}◈${Math.abs(h.profit)}</span></div>`).join('');
+  const list = document.getElementById('history-list');
+  if (!CU.history.length) { list.innerHTML='<div style="color:var(--muted);padding:1rem;font-size:0.85rem">No bets yet.</div>'; return; }
+  list.innerHTML = CU.history.map(h=>`<div class="history-item"><span class="h-game">${h.game}</span><span class="h-result">${h.result}</span><span style="color:var(--muted);font-size:0.78rem">◈${h.bet}</span><span class="h-amount ${h.profit>0?'win':'lose'}">${h.profit>0?'+':''}◈${Math.abs(h.profit)}</span></div>`).join('');
 }
 
 async function renderLeaderboard() {
-  const el=document.getElementById('lb-content');
-  el.innerHTML='<div style="color:var(--muted);padding:1rem">Loading...</div>';
+  const el = document.getElementById('lb-content');
+  el.innerHTML = '<div style="color:var(--muted);padding:1rem">Loading...</div>';
   try {
-    const lb=await getLeaderboard();
-    if(!lb.length){el.innerHTML='<div style="color:var(--muted)">No players yet.</div>';return;}
-    el.innerHTML=`<table class="lb-table"><thead><tr><th>Rank</th><th>Player</th><th>Total Won</th><th>Balance</th><th>Games</th></tr></thead><tbody>${lb.slice(0,100).map(u=>`<tr><td>${getRankBadge(u.rank)}</td><td><span style="font-weight:600">${u.username}</span>${u.username===CU?.username?'<span class="you-badge">you</span>':''}${getRankTag(u.rank)}</td><td style="color:var(--accent);font-weight:600">◈${(u.won||0).toLocaleString()}</td><td style="color:var(--gold)">◈${(u.balance||0).toLocaleString()}</td><td style="color:var(--muted)">${u.played||0}</td></tr>`).join('')}</tbody></table>`;
-  } catch(e){el.innerHTML='<div style="color:var(--muted)">Error loading leaderboard.</div>';}
+    const lb = await getLeaderboard();
+    if (!lb.length) { el.innerHTML='<div style="color:var(--muted)">No players yet.</div>'; return; }
+    el.innerHTML = `<table class="lb-table"><thead><tr><th>Rank</th><th>Player</th><th>Total Won</th><th>Balance</th><th>Games</th></tr></thead><tbody>${lb.slice(0,100).map(u=>`<tr><td>${getRankBadge(u.rank)}</td><td><span style="font-weight:600">${u.username}</span>${u.username===CU?.username?'<span class="you-badge">you</span>':''}${getRankTag(u.rank)}</td><td style="color:var(--accent);font-weight:600">◈${(u.won||0).toLocaleString()}</td><td style="color:var(--gold)">◈${(u.balance||0).toLocaleString()}</td><td style="color:var(--muted)">${u.played||0}</td></tr>`).join('')}</tbody></table>`;
+  } catch(e) { el.innerHTML='<div style="color:var(--muted)">Error loading leaderboard.</div>'; }
 }
 
 async function handleSearch(q) {
-  const dd=document.getElementById('search-dropdown');
-  if(!q.trim()){dd.classList.remove('show');return;}
+  const dd = document.getElementById('search-dropdown');
+  if (!q.trim()) { dd.classList.remove('show'); return; }
   try {
-    const users=await getUsers();
-    const lb=await getLeaderboard();
-    const results=Object.values(users).filter(u=>u.username.toLowerCase().includes(q.toLowerCase())).slice(0,6).map(u=>({...u,rank:lb.find(l=>l.username===u.username)?.rank}));
-    if(!results.length){dd.innerHTML='<div style="padding:0.75rem 1rem;font-size:0.82rem;color:var(--muted)">No players found</div>';dd.classList.add('show');return;}
-    dd.innerHTML=results.map(u=>`<div class="search-result" onmousedown="openProfile('${u.username}')"><span class="sr-name">${u.username}${u.rank&&u.rank<=100?` <span style="font-size:0.65rem;color:var(--gold)">#${u.rank}</span>`:''}</span><span class="sr-bal">◈${(u.balance||0).toLocaleString()}</span></div>`).join('');
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?username=ilike.*${encodeURIComponent(q)}*&select=*&limit=6`, { headers: sbHeaders });
+    const rows = await res.json();
+    if (!rows.length) { dd.innerHTML='<div style="padding:0.75rem 1rem;font-size:0.82rem;color:var(--muted)">No players found</div>'; dd.classList.add('show'); return; }
+    const lb = await getLeaderboard();
+    const results = rows.map(r => ({ ...r.data, rank: lb.find(l=>l.username===r.username)?.rank }));
+    dd.innerHTML = results.map(u=>`<div class="search-result" onmousedown="openProfile('${u.username}')"><span class="sr-name">${u.username}${u.rank&&u.rank<=100?` <span style="font-size:0.65rem;color:var(--gold)">#${u.rank}</span>`:''}</span><span class="sr-bal">◈${(u.balance||0).toLocaleString()}</span></div>`).join('');
     dd.classList.add('show');
-  } catch(e){dd.classList.remove('show');}
+  } catch(e) { dd.classList.remove('show'); }
 }
 
 async function openProfile(username) {
   closeSearch();
   try {
-    const users=await getUsers();
-    const u=users[username];if(!u)return;
-    const rank=await getRankOfUser(username);
-    const accent=u.accentColor||'#7c5cfc';
-
-    // populate card
-    document.getElementById('pc-avatar').textContent=username.slice(0,2).toUpperCase();
-    document.getElementById('pc-avatar').style.background=accent+'33';
-    document.getElementById('pc-avatar').style.color=accent;
-    document.getElementById('pc-avatar').style.borderColor=accent+'55';
-    document.getElementById('pc-topline').style.background=`linear-gradient(90deg,${accent},transparent)`;
-    document.getElementById('pm-name').innerHTML=username+(rank&&rank<=100?` <span style="font-size:0.75rem;color:var(--gold)">#${rank}</span>`:'')+' '+renderBadges(u,4);
-    document.getElementById('pm-rank').innerHTML=getRankTag(rank)||'<span style="color:rgba(255,255,255,0.35)">Unranked</span>';
-    document.getElementById('pm-badges').innerHTML=renderBadgeFull(u);
-    document.getElementById('pm-bal').textContent='◈'+(u.balance||0).toLocaleString();
-    document.getElementById('pm-won').textContent='◈'+(u.won||0).toLocaleString();
-    document.getElementById('pm-lost').textContent='◈'+(u.lost||0).toLocaleString();
-    document.getElementById('pm-streak').textContent=(u.bestStreak||u.streak||0)+' 🔥';
-    document.getElementById('pm-played').textContent=u.played||0;
-    const net=(u.won||0)-(u.lost||0);
-    const netEl=document.getElementById('pm-net');
-    netEl.textContent=(net>=0?'+':'')+' ◈'+net.toLocaleString();
-    netEl.style.color=net>=0?'var(--accent)':'var(--red)';
-
+    const u = await sbGetUser(username); if (!u) return;
+    const rank = await getRankOfUser(username);
+    const accent = u.accentColor || '#7c5cfc';
+    document.getElementById('pc-avatar').textContent = username.slice(0,2).toUpperCase();
+    document.getElementById('pc-avatar').style.background = accent+'33';
+    document.getElementById('pc-avatar').style.color = accent;
+    document.getElementById('pc-avatar').style.borderColor = accent+'55';
+    document.getElementById('pc-topline').style.background = `linear-gradient(90deg,${accent},transparent)`;
+    document.getElementById('pm-name').innerHTML = username+(rank&&rank<=100?` <span style="font-size:0.75rem;color:var(--gold)">#${rank}</span>`:'')+' '+renderBadges(u,4);
+    document.getElementById('pm-rank').innerHTML = getRankTag(rank)||'<span style="color:rgba(255,255,255,0.35)">Unranked</span>';
+    document.getElementById('pm-badges').innerHTML = renderBadgeFull(u);
+    document.getElementById('pm-bal').textContent = '◈'+(u.balance||0).toLocaleString();
+    document.getElementById('pm-won').textContent = '◈'+(u.won||0).toLocaleString();
+    document.getElementById('pm-lost').textContent = '◈'+(u.lost||0).toLocaleString();
+    document.getElementById('pm-streak').textContent = (u.bestStreak||u.streak||0)+' 🔥';
+    document.getElementById('pm-played').textContent = u.played||0;
+    const net = (u.won||0)-(u.lost||0);
+    const netEl = document.getElementById('pm-net');
+    netEl.textContent = (net>=0?'+':'')+' ◈'+net.toLocaleString();
+    netEl.style.color = net>=0?'var(--accent)':'var(--red)';
     document.getElementById('profile-modal').classList.add('show');
-
-    // parallax
-    const card=document.getElementById('profile-card');
-    const shine=document.getElementById('pc-shine');
-    card.onmousemove=e=>{
-      const r=card.getBoundingClientRect();
-      const dx=(e.clientX-r.left-r.width/2)/(r.width/2);
-      const dy=(e.clientY-r.top-r.height/2)/(r.height/2);
-      card.style.transform=`perspective(800px) rotateY(${dx*12}deg) rotateX(${-dy*12}deg) scale(1.02)`;
-      card.style.boxShadow=`${-dx*18}px ${dy*18}px 40px rgba(0,0,0,0.5)`;
+    const card = document.getElementById('profile-card');
+    const shine = document.getElementById('pc-shine');
+    card.onmousemove = e => {
+      const r = card.getBoundingClientRect();
+      const dx = (e.clientX-r.left-r.width/2)/(r.width/2);
+      const dy = (e.clientY-r.top-r.height/2)/(r.height/2);
+      card.style.transform = `perspective(800px) rotateY(${dx*12}deg) rotateX(${-dy*12}deg) scale(1.02)`;
+      card.style.boxShadow = `${-dx*18}px ${dy*18}px 40px rgba(0,0,0,0.5)`;
       shine.style.opacity='1';
       shine.style.background=`radial-gradient(circle at ${(dx+1)/2*100}% ${(dy+1)/2*100}%, rgba(255,255,255,0.09) 0%, transparent 55%)`;
     };
-    card.onmouseleave=()=>{card.style.transform='';card.style.boxShadow='';shine.style.opacity='0';};
-  } catch(e){console.error(e);}
+    card.onmouseleave = () => { card.style.transform=''; card.style.boxShadow=''; shine.style.opacity='0'; };
+  } catch(e) { console.error(e); }
 }
-function closeSearch(){document.getElementById('search-dropdown').classList.remove('show');document.getElementById('search-input').value='';}
-function closeProfile(){document.getElementById('profile-modal').classList.remove('show');}
-function showBustModal(){if(document.getElementById('bust-modal').classList.contains('show'))return;document.getElementById('bust-modal').classList.add('show');}
-async function claimFreeCoins(){CU.balance=500;await saveCurrentUser();updateUI();document.getElementById('bust-modal').classList.remove('show');showToast('◈500 added! Good luck 🍀','win');}
+
+function closeSearch() { document.getElementById('search-dropdown').classList.remove('show'); document.getElementById('search-input').value=''; }
+function closeProfile() { document.getElementById('profile-modal').classList.remove('show'); }
+function showBustModal() { if(document.getElementById('bust-modal').classList.contains('show'))return; document.getElementById('bust-modal').classList.add('show'); }
+async function claimFreeCoins() { CU.balance=500; await saveCurrentUser(); updateUI(); document.getElementById('bust-modal').classList.remove('show'); showToast('◈500 added! Good luck 🍀','win'); }
 
 function showPanel(id) {
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
-  const n=document.getElementById('nav-'+id);if(n)n.classList.add('active');
-  if(id==='history')renderHistory();
-  if(id==='leaderboard')renderLeaderboard();
-  if(id==='badges')renderBadgesPage();
-  if(id==='mines')buildMinesGrid();
-  if(id==='towers')buildTowersGrid();
-  if(id==='settings')initSettings();
-  if(id==='owner'&&!ownerUnlocked){document.getElementById('owner-lock').style.display='block';document.getElementById('owner-panel-content').style.display='none';document.getElementById('owner-pass-err').classList.remove('show');document.getElementById('owner-pass-input').value='';}
+  const n = document.getElementById('nav-'+id); if(n) n.classList.add('active');
+  if(id==='history') renderHistory();
+  if(id==='leaderboard') renderLeaderboard();
+  if(id==='badges') renderBadgesPage();
+  if(id==='mines') buildMinesGrid();
+  if(id==='towers') buildTowersGrid();
+  if(id==='settings') initSettings();
+  if(id==='owner'&&!ownerUnlocked) { document.getElementById('owner-lock').style.display='block'; document.getElementById('owner-panel-content').style.display='none'; document.getElementById('owner-pass-err').classList.remove('show'); document.getElementById('owner-pass-input').value=''; }
 }
 
 /* ================================================================
    UTILS
 ================================================================ */
-const getBet=id=>Math.max(1,parseInt(document.getElementById(id).value)||1);
-function setBet(id,mult){const el=document.getElementById(id);const cur=parseInt(el.value)||100;el.value=mult==='max'?CU.balance:Math.max(1,Math.floor(cur*mult));}
-function showToast(msg,type='info'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);}
-function setResult(id,msg,type){const el=document.getElementById(id);el.textContent=msg;el.className='result-banner '+type;}
+const getBet = id => Math.max(1, parseInt(document.getElementById(id).value)||1);
+function setBet(id, mult) { const el=document.getElementById(id); const cur=parseInt(el.value)||100; el.value=mult==='max'?CU.balance:Math.max(1,Math.floor(cur*mult)); }
+function showToast(msg, type='info') { const t=document.getElementById('toast'); t.textContent=msg; t.className='toast '+type+' show'; clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000); }
+function setResult(id, msg, type) { const el=document.getElementById(id); el.textContent=msg; el.className='result-banner '+type; }
 
 /* ================================================================
    COIN FLIP
 ================================================================ */
-let cfSide=null;
-function selectSide(s){cfSide=s;document.getElementById('btn-heads').className='coin-btn'+(s==='heads'?' sel-heads':'');document.getElementById('btn-tails').className='coin-btn'+(s==='tails'?' sel-tails':'');}
-function playCoinFlip(){
-  if(!cfSide){showToast('Pick heads or tails first!','info');return;}
-  const bet=getBet('cf-bet');if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
-  const btn=document.getElementById('cf-play');btn.disabled=true;
+let cfSide = null;
+function selectSide(s) { cfSide=s; document.getElementById('btn-heads').className='coin-btn'+(s==='heads'?' sel-heads':''); document.getElementById('btn-tails').className='coin-btn'+(s==='tails'?' sel-tails':''); }
+function playCoinFlip() {
+  if (!cfSide) { showToast('Pick heads or tails first!','info'); return; }
+  const bet=getBet('cf-bet'); if(bet>CU.balance){ showToast('Not enough balance!','lose'); return; }
+  const btn=document.getElementById('cf-play'); btn.disabled=true;
   document.getElementById('cf-result').className='result-banner';
   const result=Math.random()<0.5?'heads':'tails';
   const coin=document.getElementById('coin3d');
   const endRot=result==='tails'?1260:1080;
   coin.style.setProperty('--end-rot',endRot+'deg');
-  coin.classList.remove('flipping');void coin.offsetWidth;coin.classList.add('flipping');
+  coin.classList.remove('flipping'); void coin.offsetWidth; coin.classList.add('flipping');
   setTimeout(()=>{
-    coin.classList.remove('flipping');coin.style.transform=result==='tails'?'rotateY(180deg)':'rotateY(0deg)';
-    const won=result===cfSide;const profit=won?bet:-bet;
-    CU.balance+=profit;saveCurrentUser();updateUI();
+    coin.classList.remove('flipping'); coin.style.transform=result==='tails'?'rotateY(180deg)':'rotateY(0deg)';
+    const won=result===cfSide; const profit=won?bet:-bet;
+    CU.balance+=profit;
     setResult('cf-result',won?`✓ ${result.toUpperCase()}! +◈${bet}`:`✗ ${result.toUpperCase()}. -◈${bet}`,won?'win':'lose');
     showToast(won?`+◈${bet} 🎉`:`-◈${bet}`,won?'win':'lose');
-    addResult('Coin Flip',bet,result,profit);btn.disabled=false;
+    addResult('Coin Flip',bet,result,profit); btn.disabled=false;
   },1500);
 }
 
@@ -1186,7 +1126,7 @@ function startCrash(){
   if(crashRunning)return;
   const bet=getBet('cr-bet');if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
   crashBet=bet;crashMult=1;crashedOut=false;cHistory=[1];
-  CU.balance-=bet;saveCurrentUser();updateUI();
+  CU.balance-=bet;
   crashPoint=genCrashPoint();
   document.getElementById('cr-play').style.display='none';document.getElementById('cr-cashout').style.display='block';
   document.getElementById('cr-result').className='result-banner';document.getElementById('crash-multi').className='crash-multiplier';
@@ -1202,7 +1142,7 @@ function startCrash(){
 function cashOut(){
   if(!crashRunning||crashedOut)return;crashedOut=true;
   const profit=Math.floor(crashBet*crashMult)-crashBet;
-  CU.balance+=crashBet+profit;saveCurrentUser();updateUI();
+  CU.balance+=crashBet+profit;
   showToast(`Cashed out ${crashMult.toFixed(2)}× +◈${profit}`,'win');
   setResult('cr-result',`✓ ${crashMult.toFixed(2)}× +◈${profit}`,'win');
   addResult('Crash',crashBet,crashMult.toFixed(2)+'×',profit);
@@ -1238,7 +1178,7 @@ function spinSlots(){
     else if(a===b||b===c||a===c){mult=2;msg='Pair! 2×';}
     else{msg='No match';}
     const profit=mult>0?bet*mult-bet:-bet;
-    CU.balance+=profit;saveCurrentUser();updateUI();
+    CU.balance+=profit;
     if(mult>0){document.getElementById('slots-payline').classList.add('show');[0,1,2].forEach(i=>document.getElementById('reel-'+i).classList.add('win-reel'));}
     document.getElementById('slots-result').textContent=msg;
     setResult('sl-result',mult>0?`✓ ${msg} +◈${profit}`:`✗ No match. -◈${bet}`,mult>0?'win':'lose');
@@ -1259,7 +1199,7 @@ function buildMinesGrid(){
 function startMines(){
   const bet=getBet('mn-bet');mCount=Math.min(20,Math.max(1,parseInt(document.getElementById('mn-mines').value)||3));
   if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
-  mBet=bet;mRevealed=0;mActive=true;CU.balance-=bet;saveCurrentUser();updateUI();
+  mBet=bet;mRevealed=0;mActive=true;CU.balance-=bet;
   mBoard=Array(25).fill('gem');let p=0;while(p<mCount){const r=Math.floor(Math.random()*25);if(mBoard[r]==='gem'){mBoard[r]='bomb';p++;}}
   document.getElementById('mn-play').style.display='none';document.getElementById('mn-cashout').style.display='block';
   document.getElementById('mn-result').className='result-banner';document.getElementById('mines-mult').textContent='1.00×';
@@ -1287,7 +1227,7 @@ function revealCell(i){
 function cashOutMines(){
   if(!mActive)return;mActive=false;
   const mult=calcMult(mRevealed,mCount),win=Math.floor(mBet*mult),profit=win-mBet;
-  CU.balance+=win;saveCurrentUser();updateUI();
+  CU.balance+=win;
   setResult('mn-result',`✓ ${mult.toFixed(2)}× +◈${profit}`,'win');showToast(`+◈${profit} at ${mult.toFixed(2)}× 🎉`,'win');
   addResult('Mines',mBet,`${mRevealed} gems ${mult.toFixed(2)}×`,profit);
   document.getElementById('mn-play').style.display='block';document.getElementById('mn-cashout').style.display='none';
@@ -1315,7 +1255,7 @@ function twGetCells(row){return document.querySelectorAll(`.tw-cell[data-row="${
 function startTowers(){
   const bet=getBet('tw-bet');if(bet>CU.balance){showToast('Not enough balance!','lose');return;}
   const diffKey=document.getElementById('tw-diff').value;twDiff=TW_DIFF[diffKey];
-  twBet=bet;twFloor=0;twMult=1;twActive=true;CU.balance-=bet;saveCurrentUser();updateUI();
+  twBet=bet;twFloor=0;twMult=1;twActive=true;CU.balance-=bet;
   twBoard=[];for(let r=0;r<TW_FLOORS;r++){const row=Array(TW_COLS).fill('safe');let p=0;while(p<twDiff.bombs){const c=Math.floor(Math.random()*TW_COLS);if(row[c]==='safe'){row[c]='bomb';p++;}}twBoard.push(row);}
   document.getElementById('tw-play').style.display='none';document.getElementById('tw-cashout').style.display='block';
   document.getElementById('tw-result').className='result-banner';document.getElementById('tw-mult').textContent='1.00×';
@@ -1349,7 +1289,7 @@ function twPick(row,col){
 function cashOutTowers(topped=false){
   if(!twActive)return;twActive=false;
   const win=Math.floor(twBet*twMult),profit=win-twBet;
-  CU.balance+=win;saveCurrentUser();updateUI();
+  CU.balance+=win;
   const msg=topped?`🏆 TOPPED OUT! ${twMult.toFixed(2)}×`:`✓ Floor ${twFloor} cash out ${twMult.toFixed(2)}×`;
   setResult('tw-result',`${msg} +◈${profit}`,'win');showToast(`+◈${profit} at ${twMult.toFixed(2)}× 🎉`,'win');
   addResult('Towers',twBet,`${twFloor} floors ${twMult.toFixed(2)}×`,profit);
@@ -1370,7 +1310,7 @@ function initSettings(){
   ['set-username','set-username-pass','set-old-pass','set-new-pass','set-new-pass2'].forEach(id=>document.getElementById(id).value='');
   ['set-username-err','set-pass-err'].forEach(id=>document.getElementById(id).classList.remove('show'));
   if(!CU)return;
-  const rank=getRankOfUser(CU.username);const accent=CU.accentColor||'#00e676';
+  const accent=CU.accentColor||'#00e676';
   document.getElementById('sc-avatar').textContent=CU.username.slice(0,2).toUpperCase();
   document.getElementById('sc-avatar').style.background=accent+'33';document.getElementById('sc-avatar').style.color=accent;
   document.getElementById('sc-name').textContent=CU.username;
@@ -1379,13 +1319,14 @@ function initSettings(){
   document.getElementById('sc-streak').textContent=(CU.bestStreak||0)+' 🔥';
   document.getElementById('sc-played').textContent=CU.played||0;
   const net=(CU.won||0)-(CU.lost||0);document.getElementById('sc-net').textContent=(net>=0?'+':'')+' ◈'+net.toLocaleString();document.getElementById('sc-net').style.color=net>=0?'var(--accent)':'var(--red)';
-  // badges
   let scb=document.getElementById('sc-badges');
   if(!scb){scb=document.createElement('div');scb.id='sc-badges';scb.style.cssText='position:relative;z-index:2;';document.getElementById('sc-balance').parentElement.insertAdjacentElement('afterend',scb);}
   scb.innerHTML=renderBadgeFull(CU);
   const rankTag=document.getElementById('sc-rank-tag');const rankLabel=document.getElementById('sc-rank-label');
-  if(rank&&rank<=100){rankTag.style.display='inline-block';if(rank<=10){rankTag.textContent='Top 10';rankTag.style.background='rgba(255,215,64,0.15)';rankTag.style.color='var(--gold)';}else if(rank<=50){rankTag.textContent='Top 50';rankTag.style.background='rgba(0,230,118,0.1)';rankTag.style.color='var(--accent)';}else{rankTag.textContent='Top 100';rankTag.style.background='rgba(68,138,255,0.1)';rankTag.style.color='var(--blue)';}rankLabel.textContent='Leaderboard #'+rank;}
-  else{rankTag.style.display='none';rankLabel.textContent=rank?'Rank #'+rank:'Unranked';}
+  getRankOfUser(CU.username).then(rank=>{
+    if(rank&&rank<=100){rankTag.style.display='inline-block';if(rank<=10){rankTag.textContent='Top 10';rankTag.style.background='rgba(255,215,64,0.15)';rankTag.style.color='var(--gold)';}else if(rank<=50){rankTag.textContent='Top 50';rankTag.style.background='rgba(0,230,118,0.1)';rankTag.style.color='var(--accent)';}else{rankTag.textContent='Top 100';rankTag.style.background='rgba(68,138,255,0.1)';rankTag.style.color='var(--blue)';}rankLabel.textContent='Leaderboard #'+rank;}
+    else{rankTag.style.display='none';rankLabel.textContent=rank?'Rank #'+rank:'Unranked';}
+  });
   document.getElementById('sc-topline').style.background=`linear-gradient(90deg,${accent},transparent)`;
   document.getElementById('sc-avatar').style.borderColor=accent+'55';
   const card=document.getElementById('settings-card');const shine=document.getElementById('sc-shine');
@@ -1395,22 +1336,28 @@ function initSettings(){
 function applyAccent(colour){
   document.documentElement.style.setProperty('--accent',colour);document.documentElement.style.setProperty('--accent-dim',colour+'22');
   if(CU){CU.accentColor=colour;saveCurrentUser();}
-  document.querySelectorAll('.play-btn:not(.gold-btn):not(.red-btn)').forEach(b=>b.style.background=colour);
-  document.querySelectorAll('.auth-submit,.chat-send,.bust-btn').forEach(b=>b.style.background=colour);
   document.querySelectorAll('.colour-swatch').forEach(s=>s.classList.toggle('active',s.title===colour));
   document.getElementById('set-custom-colour').value=colour.startsWith('#')?colour:'#00e676';
   showToast('Accent colour updated!','info');
 }
 function applyCustomColour(){applyAccent(document.getElementById('set-custom-colour').value);}
+
 async function changeUsername(){
   const newName=document.getElementById('set-username').value.trim();const pass=document.getElementById('set-username-pass').value;
   const err=document.getElementById('set-username-err');err.classList.remove('show');
-  if(!newName||newName.length<3){err.textContent='Username must be 3+ chars';err.classList.add('show');return;}
+  const nameErr=validateUsername(newName);
+  if(nameErr){err.textContent=nameErr;err.classList.add('show');return;}
   if(CU.password!==pass){err.textContent='Wrong password';err.classList.add('show');return;}
-  const users=await getUsers();if(users[newName]&&newName!==CU.username){err.textContent='Username already taken';err.classList.add('show');return;}
-  delete users[CU.username];CU.username=newName;users[newName]=CU;dbCache={users};await saveDB({users});saveSession(newName);updateUI();
-  showToast('Username updated to '+newName+'!','win');document.getElementById('set-username').value='';document.getElementById('set-username-pass').value='';
+  const existing=await sbGetUser(newName);
+  if(existing&&newName!==CU.username){err.textContent='Username already taken';err.classList.add('show');return;}
+  await sbDeleteUser(CU.username);
+  CU.username=newName;
+  await sbSaveUser(CU);
+  saveSession(newName);updateUI();
+  showToast('Username updated to '+newName+'!','win');
+  document.getElementById('set-username').value='';document.getElementById('set-username-pass').value='';
 }
+
 async function changePassword(){
   const oldPass=document.getElementById('set-old-pass').value;const newPass=document.getElementById('set-new-pass').value;const newPass2=document.getElementById('set-new-pass2').value;
   const err=document.getElementById('set-pass-err');err.classList.remove('show');
@@ -1420,6 +1367,7 @@ async function changePassword(){
   CU.password=newPass;await saveCurrentUser();showToast('Password updated!','win');
   ['set-old-pass','set-new-pass','set-new-pass2'].forEach(id=>document.getElementById(id).value='');
 }
+
 async function resetBalance(){if(!confirm('Reset balance to ◈1,000?'))return;CU.balance=1000;await saveCurrentUser();updateUI();showToast('Balance reset to ◈1,000!','info');}
 
 /* ================================================================
@@ -1437,108 +1385,159 @@ function ownerLog(msg,type='info'){
   line.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;log.appendChild(line);log.scrollTop=log.scrollHeight;
 }
 async function runOwnerCmd(raw){
-  raw=raw.trim();
-  const cmd=raw.split(' ')[0].toLowerCase();
+  raw=raw.trim();const cmd=raw.split(' ')[0].toLowerCase();
   ownerLog('> '+raw,'system');
-
-  // helper: for commands like /givecash jarrah 1000 — last token is the value, middle is username
-  function parseUserAmt(raw,cmd){ const after=raw.slice(cmd.length).trim(); const lastSpace=after.lastIndexOf(' '); if(lastSpace===-1)return[after,null]; return[after.slice(0,lastSpace).trim(),after.slice(lastSpace+1).trim()]; }
-  function parseUser(raw,cmd){ return raw.slice(cmd.length).trim(); }
-  function parseUserUser(raw,cmd){ const after=raw.slice(cmd.length).trim(); const sp=after.indexOf(' '); if(sp===-1)return[after,null]; return[after.slice(0,sp).trim(),after.slice(sp+1).trim()]; }
+  function parseUserAmt(raw,cmd){const after=raw.slice(cmd.length).trim();const lastSpace=after.lastIndexOf(' ');if(lastSpace===-1)return[after,null];return[after.slice(0,lastSpace).trim(),after.slice(lastSpace+1).trim()];}
+  function parseUser(raw,cmd){return raw.slice(cmd.length).trim();}
+  function parseUserUser(raw,cmd){const after=raw.slice(cmd.length).trim();const sp=after.indexOf(' ');if(sp===-1)return[after,null];return[after.slice(0,sp).trim(),after.slice(sp+1).trim()];}
 
   if(cmd==='/clear'){document.getElementById('owner-log').innerHTML='';return;}
 
-  if(cmd==='/listusers'){const users=Object.values(getUsers());if(!users.length){ownerLog('No users.','error');return;}ownerLog(`--- ${users.length} users ---`,'success');users.forEach(u=>ownerLog(`  ${u.username} | ◈${(u.balance||0).toLocaleString()} | won:◈${u.won||0} | played:${u.played||0}`,'info'));return;}
+  if(cmd==='/listusers'){
+    const users=await sbGetAllUsers();const list=Object.values(users);
+    if(!list.length){ownerLog('No users.','error');return;}
+    ownerLog(`--- ${list.length} users ---`,'success');
+    list.forEach(u=>ownerLog(`  ${u.username} | ◈${(u.balance||0).toLocaleString()} | won:◈${u.won||0} | played:${u.played||0}`,'info'));return;
+  }
 
-  if(cmd==='/givecash'){const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /givecash [user] [amount]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}users[user].balance+=n;dbCache={users};await saveDB({users});if(CU?.username===user){CU.balance+=n;updateUI();}ownerLog(`✓ Gave ◈${n.toLocaleString()} to ${user}. New balance: ◈${users[user].balance.toLocaleString()}`,'success');return;}
+  if(cmd==='/givecash'){
+    const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /givecash [user] [amount]','error');return;}
+    const u=await sbGetUser(user);if(!u){ownerLog(`User "${user}" not found.`,'error');return;}
+    const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}
+    u.balance+=n;await sbSaveUser(u);if(CU?.username===user){CU.balance+=n;updateUI();}
+    ownerLog(`✓ Gave ◈${n.toLocaleString()} to ${user}. New balance: ◈${u.balance.toLocaleString()}`,'success');return;
+  }
 
-  if(cmd==='/setcash'){const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /setcash [user] [amount]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const n=parseInt(amt);if(isNaN(n)||n<0){ownerLog('Invalid amount.','error');return;}users[user].balance=n;dbCache={users};await saveDB({users});if(CU?.username===user){CU.balance=n;updateUI();}ownerLog(`✓ Set ${user} balance to ◈${n.toLocaleString()}`,'success');return;}
+  if(cmd==='/setcash'){
+    const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /setcash [user] [amount]','error');return;}
+    const u=await sbGetUser(user);if(!u){ownerLog(`User "${user}" not found.`,'error');return;}
+    const n=parseInt(amt);if(isNaN(n)||n<0){ownerLog('Invalid amount.','error');return;}
+    u.balance=n;await sbSaveUser(u);if(CU?.username===user){CU.balance=n;updateUI();}
+    ownerLog(`✓ Set ${user} balance to ◈${n.toLocaleString()}`,'success');return;
+  }
 
-  if(cmd==='/takecash'){const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /takecash [user] [amount]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}users[user].balance=Math.max(0,users[user].balance-n);dbCache={users};await saveDB({users});if(CU?.username===user){CU.balance=users[user].balance;updateUI();}ownerLog(`✓ Took ◈${n.toLocaleString()} from ${user}`,'success');return;}
+  if(cmd==='/takecash'){
+    const[user,amt]=parseUserAmt(raw,cmd);if(!user||!amt){ownerLog('Usage: /takecash [user] [amount]','error');return;}
+    const u=await sbGetUser(user);if(!u){ownerLog(`User "${user}" not found.`,'error');return;}
+    const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}
+    u.balance=Math.max(0,u.balance-n);await sbSaveUser(u);if(CU?.username===user){CU.balance=u.balance;updateUI();}
+    ownerLog(`✓ Took ◈${n.toLocaleString()} from ${user}`,'success');return;
+  }
 
-  if(cmd==='/resetuser'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /resetuser [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}users[user]={...users[user],balance:1000,won:0,lost:0,played:0,streak:0,bestStreak:0,history:[]};dbCache={users};await saveDB({users});if(CU?.username===user){CU=users[user];updateUI();}ownerLog(`✓ Reset ${user} to defaults.`,'success');return;}
-
-  if(cmd==='/resetstats'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /resetstats [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}users[user]={...users[user],balance:1000,won:0,lost:0,played:0,streak:0,bestStreak:0,history:[]};dbCache={users};await saveDB({users});if(CU?.username===user){CU=users[user];updateUI();}ownerLog(`✓ Reset all stats for ${user}.`,'success');return;}
+  if(cmd==='/resetuser'||cmd==='/resetstats'){
+    const user=parseUser(raw,cmd);if(!user){ownerLog(`Usage: ${cmd} [user]`,'error');return;}
+    const u=await sbGetUser(user);if(!u){ownerLog(`User "${user}" not found.`,'error');return;}
+    u.balance=1000;u.won=0;u.lost=0;u.played=0;u.streak=0;u.bestStreak=0;u.history=[];
+    await sbSaveUser(u);if(CU?.username===user){CU=u;updateUI();}
+    ownerLog(`✓ Reset ${user}`,'success');return;
+  }
 
   if(cmd==='/ban'){
-    const user=parseUser(raw,cmd);
-    if(!user){ownerLog('Usage: /ban [user]','error');return;}
+    const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /ban [user]','error');return;}
     if(user===CU?.username){ownerLog("Can't ban yourself.",'error');return;}
-    ownerLog(`Banning ${user}...`,'info');
-    const users=await getUsers();
-    if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}
-    delete users[user];
-    dbCache={users};
-    await saveDB({users});
-    // force logout via Ably
+    const u=await sbGetUser(user);if(!u){ownerLog(`User "${user}" not found.`,'error');return;}
+    await sbDeleteUser(user);
     if(chatChannel){chatChannel.publish('force-logout',{username:user});}
-    ownerLog(`✓ Banned and deleted: ${user}`,'success');
-    return;
+    ownerLog(`✓ Banned and deleted: ${user}`,'success');return;
   }
 
   if(cmd==='/rename'){
-    const[user,newname]=parseUserUser(raw,cmd);
-    if(!user||!newname){ownerLog('Usage: /rename [user] [newname]','error');return;}
-    const nameErr=validateUsername(newname);
-    if(nameErr){ownerLog('Invalid new name: '+nameErr,'error');return;}
-    ownerLog(`Renaming ${user} to ${newname}...`,'info');
-    const users=await getUsers();
-    if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}
-    if(users[newname]){ownerLog(`"${newname}" already taken.`,'error');return;}
-    users[newname]={...users[user],username:newname};
-    delete users[user];
-    dbCache={users};
-    await saveDB({users});
+    const[user,newname]=parseUserUser(raw,cmd);if(!user||!newname){ownerLog('Usage: /rename [user] [newname]','error');return;}
+    const nameErr=validateUsername(newname);if(nameErr){ownerLog('Invalid name: '+nameErr,'error');return;}
+    const u=await sbGetUser(user);if(!u){ownerLog(`User "${user}" not found.`,'error');return;}
+    const exists=await sbGetUser(newname);if(exists){ownerLog(`"${newname}" already taken.`,'error');return;}
+    await sbDeleteUser(user);u.username=newname;await sbSaveUser(u);
     if(chatChannel){chatChannel.publish('force-logout',{username:user});}
     if(CU?.username===user){CU.username=newname;saveSession(newname);updateUI();}
-    ownerLog(`✓ Renamed ${user} → ${newname}`,'success');
-    return;
+    ownerLog(`✓ Renamed ${user} → ${newname}`,'success');return;
   }
 
-  if(cmd==='/broadcast'){const message=raw.slice(cmd.length).trim();if(!message){ownerLog('Usage: /broadcast [message]','error');return;}if(chatChannel){chatChannel.publish('message',{username:'⚡ SYSTEM',text:message,ts:Date.now()});ownerLog(`✓ Broadcast: "${message}"`,'success');}else{ownerLog('Chat not connected.','error');}return;}
+  if(cmd==='/broadcast'||cmd==='/announce'){
+    const message=raw.slice(cmd.length).trim();if(!message){ownerLog(`Usage: ${cmd} [message]`,'error');return;}
+    if(chatChannel){chatChannel.publish('message',{username:cmd==='/announce'?'📢 ANNOUNCEMENT':'⚡ SYSTEM',text:cmd==='/announce'?'🔔 '+message:message,ts:Date.now()});ownerLog(`✓ Sent: "${message}"`,'success');}
+    else{ownerLog('Chat not connected.','error');}return;
+  }
 
-  if(cmd==='/announce'){const message=raw.slice(cmd.length).trim();if(!message){ownerLog('Usage: /announce [message]','error');return;}if(chatChannel){chatChannel.publish('message',{username:'📢 ANNOUNCEMENT',text:'🔔 '+message,ts:Date.now()});ownerLog(`✓ Announced: "${message}"`,'success');}else{ownerLog('Chat not connected.','error');}return;}
+  if(cmd==='/top5'){
+    const lb=await getLeaderboard();ownerLog('--- Top 5 ---','success');
+    lb.slice(0,5).forEach((u,i)=>ownerLog(`  ${i+1}. ${u.username} | won: ◈${(u.won||0).toLocaleString()} | bal: ◈${(u.balance||0).toLocaleString()}`,'info'));return;
+  }
 
-  if(cmd==='/top5'){const lb=getLeaderboard().slice(0,5);ownerLog('--- Top 5 ---','success');lb.forEach((u,i)=>ownerLog(`  ${i+1}. ${u.username} | won: ◈${(u.won||0).toLocaleString()} | bal: ◈${(u.balance||0).toLocaleString()}`,'info'));return;}
+  if(cmd==='/richest'){
+    const users=Object.values(await sbGetAllUsers());if(!users.length){ownerLog('No users.','error');return;}
+    const r=users.sort((a,b)=>b.balance-a.balance)[0];ownerLog(`💰 Richest: ${r.username} ◈${r.balance.toLocaleString()}`,'success');return;
+  }
 
-  if(cmd==='/richest'){const users=Object.values(getUsers());if(!users.length){ownerLog('No users.','error');return;}const r=users.sort((a,b)=>b.balance-a.balance)[0];ownerLog(`💰 Richest: ${r.username} ◈${r.balance.toLocaleString()}`,'success');return;}
+  if(cmd==='/broke'){
+    const users=Object.values(await sbGetAllUsers()).filter(u=>u.balance<=0);
+    if(!users.length){ownerLog('No broke players.','info');return;}
+    ownerLog(`--- ${users.length} broke ---`,'success');users.forEach(u=>ownerLog(`  ${u.username}`,'info'));return;
+  }
 
-  if(cmd==='/broke'){const users=Object.values(getUsers()).filter(u=>u.balance<=0);if(!users.length){ownerLog('No broke players.','info');return;}ownerLog(`--- ${users.length} broke ---`,'success');users.forEach(u=>ownerLog(`  ${u.username}`,'info'));return;}
+  if(cmd==='/givecashall'){
+    const amt=raw.slice(cmd.length).trim();if(!amt){ownerLog('Usage: /givecashall [amount]','error');return;}
+    const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}
+    const users=await sbGetAllUsers();let count=0;
+    await Promise.all(Object.values(users).map(u=>{u.balance+=n;count++;return sbSaveUser(u);}));
+    if(CU){CU.balance+=n;updateUI();}ownerLog(`✓ Gave ◈${n.toLocaleString()} to all ${count} users.`,'success');return;
+  }
 
-  if(cmd==='/givecashall'){const amt=raw.slice(cmd.length).trim();if(!amt){ownerLog('Usage: /givecashall [amount]','error');return;}const n=parseInt(amt);if(isNaN(n)||n<=0){ownerLog('Invalid amount.','error');return;}const users=await getUsers();let count=0;Object.keys(users).forEach(u=>{users[u].balance+=n;count++;});dbCache={users};await saveDB({users});if(CU){CU.balance+=n;updateUI();}ownerLog(`✓ Gave ◈${n.toLocaleString()} to all ${count} users.`,'success');return;}
+  if(cmd==='/totalstats'){
+    const users=Object.values(await sbGetAllUsers());
+    ownerLog(`--- Server Stats (${users.length} users) ---`,'success');
+    ownerLog(`  Balance in circulation: ◈${users.reduce((a,u)=>a+(u.balance||0),0).toLocaleString()}`,'info');
+    ownerLog(`  Total won: ◈${users.reduce((a,u)=>a+(u.won||0),0).toLocaleString()}`,'info');
+    ownerLog(`  Total lost: ◈${users.reduce((a,u)=>a+(u.lost||0),0).toLocaleString()}`,'info');
+    ownerLog(`  Games played: ${users.reduce((a,u)=>a+(u.played||0),0).toLocaleString()}`,'info');return;
+  }
 
-  if(cmd==='/totalstats'){const users=Object.values(getUsers());ownerLog(`--- Server Stats (${users.length} users) ---`,'success');ownerLog(`  Balance in circulation: ◈${users.reduce((a,u)=>a+(u.balance||0),0).toLocaleString()}`,'info');ownerLog(`  Total won: ◈${users.reduce((a,u)=>a+(u.won||0),0).toLocaleString()}`,'info');ownerLog(`  Total lost: ◈${users.reduce((a,u)=>a+(u.lost||0),0).toLocaleString()}`,'info');ownerLog(`  Games played: ${users.reduce((a,u)=>a+(u.played||0),0).toLocaleString()}`,'info');return;}
+  if(cmd==='/addmultiply'){
+    const[user,mult]=parseUserAmt(raw,cmd);if(!user||!mult){ownerLog('Usage: /addmultiply [user] [x]','error');return;}
+    const u=await sbGetUser(user);if(!u){ownerLog(`User "${user}" not found.`,'error');return;}
+    const m=parseFloat(mult);if(isNaN(m)||m<=0){ownerLog('Invalid multiplier.','error');return;}
+    u.balance=Math.floor(u.balance*m);await sbSaveUser(u);
+    if(CU?.username===user){CU.balance=u.balance;updateUI();}
+    ownerLog(`✓ Multiplied ${user} by ${m}× → ◈${u.balance.toLocaleString()}`,'success');return;
+  }
 
-  if(cmd==='/addmultiply'){const[user,mult]=parseUserAmt(raw,cmd);if(!user||!mult){ownerLog('Usage: /addmultiply [user] [multiplier]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const m=parseFloat(mult);if(isNaN(m)||m<=0){ownerLog('Invalid multiplier.','error');return;}const old=users[user].balance;users[user].balance=Math.floor(users[user].balance*m);dbCache={users};await saveDB({users});if(CU?.username===user){CU.balance=users[user].balance;updateUI();}ownerLog(`✓ Multiplied ${user} by ${m}× → ◈${users[user].balance.toLocaleString()}`,'success');return;}
+  if(cmd==='/stats'){
+    const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /stats [user]','error');return;}
+    const u=await sbGetUser(user);if(!u){ownerLog(`User "${user}" not found.`,'error');return;}
+    ownerLog(`--- ${user} ---`,'success');
+    ownerLog(`  Balance: ◈${(u.balance||0).toLocaleString()}`,'info');
+    ownerLog(`  Won: ◈${(u.won||0).toLocaleString()}`,'info');
+    ownerLog(`  Lost: ◈${(u.lost||0).toLocaleString()}`,'info');
+    ownerLog(`  Played: ${u.played||0}`,'info');
+    ownerLog(`  Streak: ${u.streak||0} 🔥`,'info');return;
+  }
 
-  if(cmd==='/stats'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /stats [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}const u=users[user];ownerLog(`--- ${user} ---`,'success');ownerLog(`  Balance: ◈${(u.balance||0).toLocaleString()}`,'info');ownerLog(`  Won: ◈${(u.won||0).toLocaleString()}`,'info');ownerLog(`  Lost: ◈${(u.lost||0).toLocaleString()}`,'info');ownerLog(`  Played: ${u.played||0}`,'info');ownerLog(`  Streak: ${u.streak||0} 🔥`,'info');return;}
+  if(cmd==='/clearhistory'){
+    const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /clearhistory [user]','error');return;}
+    const u=await sbGetUser(user);if(!u){ownerLog(`User "${user}" not found.`,'error');return;}
+    u.history=[];await sbSaveUser(u);if(CU?.username===user)CU.history=[];
+    ownerLog(`✓ Cleared history for ${user}`,'success');return;
+  }
 
-  if(cmd==='/clearhistory'){const user=parseUser(raw,cmd);if(!user){ownerLog('Usage: /clearhistory [user]','error');return;}const users=await getUsers();if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}users[user].history=[];dbCache={users};await saveDB({users});if(CU?.username===user)CU.history=[];ownerLog(`✓ Cleared history for ${user}`,'success');return;}
-
-  if(cmd==='/wipeall'){if(!raw.includes('CONFIRM')){ownerLog('⚠️ Type /wipeall CONFIRM to proceed.','error');return;}await saveUsers({});ownerLog('💥 All user data wiped.','success');logout();return;}
+  if(cmd==='/wipeall'){
+    if(!raw.includes('CONFIRM')){ownerLog('⚠️ Type /wipeall CONFIRM to proceed.','error');return;}
+    const users=await sbGetAllUsers();
+    await Promise.all(Object.keys(users).map(u=>sbDeleteUser(u)));
+    ownerLog('💥 All user data wiped.','success');logout();return;
+  }
 
   if(cmd==='/givebadge'){
-    const user=raw.slice(cmd.length).trim().split(' ')[0];
-    if(!user){ownerLog('Usage: /givebadge [user]','error');return;}
-    const users=await getUsers();
-    if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}
-    if(!users[user].badges)users[user].badges=[];
-    if(users[user].badges.includes('owner')){ownerLog(`${user} already has the owner badge.`,'error');return;}
-    users[user].badges.push('owner');
-    dbCache={users};await saveDB({users});
-    ownerLog(`✓ Gave 👑 Owner badge to ${user}`,'success');
-    return;
+    const user=raw.slice(cmd.length).trim().split(' ')[0];if(!user){ownerLog('Usage: /givebadge [user]','error');return;}
+    const u=await sbGetUser(user);if(!u){ownerLog(`User "${user}" not found.`,'error');return;}
+    if(!u.badges)u.badges=[];
+    if(u.badges.includes('owner')){ownerLog(`${user} already has the owner badge.`,'error');return;}
+    u.badges.push('owner');await sbSaveUser(u);ownerLog(`✓ Gave 👑 Owner badge to ${user}`,'success');return;
   }
 
   if(cmd==='/removebadge'){
-    const user=raw.slice(cmd.length).trim().split(' ')[0];
-    if(!user){ownerLog('Usage: /removebadge [user]','error');return;}
-    const users=await getUsers();
-    if(!users[user]){ownerLog(`User "${user}" not found.`,'error');return;}
-    users[user].badges=(users[user].badges||[]).filter(b=>b!=='owner');
-    dbCache={users};await saveDB({users});
-    ownerLog(`✓ Removed owner badge from ${user}`,'success');
-    return;
+    const user=raw.slice(cmd.length).trim().split(' ')[0];if(!user){ownerLog('Usage: /removebadge [user]','error');return;}
+    const u=await sbGetUser(user);if(!u){ownerLog(`User "${user}" not found.`,'error');return;}
+    u.badges=(u.badges||[]).filter(b=>b!=='owner');await sbSaveUser(u);
+    ownerLog(`✓ Removed owner badge from ${user}`,'success');return;
   }
 
   ownerLog(`Unknown command: ${cmd}`,'error');
@@ -1558,11 +1557,8 @@ function appendMsg(data,isSystem=false){
   const isMe=data.username===CU?.username;const div=document.createElement('div');
   if(isSystem){div.className='chat-msg system';div.innerHTML=`<div class="chat-msg-text">${data.text}</div>`;}
   else{
-    const users=JSON.parse(localStorage.getItem('dvc_users')||'{}');
-    const u=users[data.username];
-    const badgeHtml=u?renderBadges(u,3):'';
     div.className='chat-msg'+(isMe?' me':'');
-    div.innerHTML=`<div class="chat-msg-header"><span class="chat-msg-user${isMe?'':' other'}">${escapeHtml(data.username)}</span><span style="font-size:0.85rem">${badgeHtml}</span><span class="chat-msg-time">${fmtTime(data.ts)}</span></div><div class="chat-msg-text">${escapeHtml(data.text)}</div>`;
+    div.innerHTML=`<div class="chat-msg-header"><span class="chat-msg-user${isMe?'':' other'}">${escapeHtml(data.username)}</span><span class="chat-msg-time">${fmtTime(data.ts)}</span></div><div class="chat-msg-text">${escapeHtml(data.text)}</div>`;
   }
   msgs.appendChild(div);if(msgs.children.length>150)msgs.removeChild(msgs.children[0]);scrollChat();
   if(!chatOpen&&!isMe&&!isSystem)document.getElementById('chat-dot').classList.add('show');
@@ -1577,10 +1573,7 @@ function initChat(){
     ablyClient.connection.on('failed',()=>appendMsg({text:'Connection failed ❌'},true));
     chatChannel.subscribe('message',msg=>appendMsg(msg.data));
     chatChannel.subscribe('force-logout',msg=>{
-      if(msg.data.username===CU?.username){
-        showToast('Your account has been removed.','lose');
-        setTimeout(()=>logout(),1500);
-      }
+      if(msg.data.username===CU?.username){showToast('Your account has been removed.','lose');setTimeout(()=>logout(),1500);}
     });
     chatChannel.presence.enter({username:CU.username});
     chatChannel.presence.subscribe(()=>{chatChannel.presence.get((err,members)=>{if(!err)document.getElementById('online-count').textContent=members.length+' online';});});
@@ -1602,20 +1595,13 @@ document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key===
 document.getElementById('owner-cmd').addEventListener('keydown',e=>{if(e.key==='Enter'){const val=document.getElementById('owner-cmd').value.trim();if(val){runOwnerCmd(val);document.getElementById('owner-cmd').value='';}}}); 
 document.getElementById('owner-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')unlockOwner();});
 
-const session=getSession();
+// Auto-login from session
+const session = getSession();
 if(session){
-  fetchDB().then(db=>{
-    const users=db?.users||{};
-    if(users[session]){
-      loginUser(session);
-    } else {
-      // user not found in DB - could be new DB, don't wipe session, just show login
-      clearSession();
-    }
-  }).catch(e=>{
-    console.warn('Could not reach DB on load, staying logged out for safety');
-    // Don't clear session so they can try refreshing
-  });
+  sbGetUser(session).then(user => {
+    if(user){ loginUser(session); }
+    else { clearSession(); }
+  }).catch(() => clearSession());
 }
 </script>
 <script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
