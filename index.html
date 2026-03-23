@@ -1315,29 +1315,32 @@ const sbHeaders = {
   'Authorization': 'Bearer ' + SUPABASE_KEY
 };
 
-async function sbGetUser(username) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 6000);
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(username)}&select=*`, {
-      headers: sbHeaders, signal: controller.signal
-    });
-    clearTimeout(timeout);
-    const rows = await res.json();
-    if (!rows.length) return null;
-    const user = rows[0].data || {};
-    if (!user.username) user.username = rows[0].username;
-    return user;
-  } catch(e) {
-    clearTimeout(timeout);
-    if (e.name === 'AbortError') console.warn('sbGetUser timed out for', username);
-    return null;
+async function sbGetUser(username, retries=3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(username)}&select=*`, {
+        headers: sbHeaders, signal: controller.signal
+      });
+      clearTimeout(timeout);
+      const rows = await res.json();
+      if (!rows.length) return null; // user genuinely doesn't exist
+      const user = rows[0].data || {};
+      if (!user.username) user.username = rows[0].username;
+      return user;
+    } catch(e) {
+      clearTimeout(timeout);
+      console.warn(`sbGetUser attempt ${attempt}/${retries} failed:`, e.message);
+      if (attempt < retries) await new Promise(r => setTimeout(r, 1000 * attempt)); // wait 1s, 2s before retry
+    }
   }
+  return null; // all retries exhausted
 }
 
 async function sbGetAllUsers() {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), 15000);
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, {
       headers: sbHeaders, signal: controller.signal
@@ -1360,7 +1363,7 @@ async function sbGetAllUsers() {
 
 async function sbSaveUser(user) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 6000);
+  const timeout = setTimeout(() => controller.abort(), 15000);
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/users`, {
       method: 'POST',
@@ -1493,7 +1496,8 @@ async function doLogin() {
   try {
     const user = await sbGetUser(u);
     if (!user) {
-      err.textContent='Username not found'; err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
+      err.textContent='Could not reach server — please try again'; 
+      err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
     }
     if (user.password !== p) {
       err.textContent='Wrong password'; err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
