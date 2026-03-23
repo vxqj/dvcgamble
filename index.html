@@ -724,7 +724,12 @@ async function sbGetAllUsers() {
   });
   const rows = await res.json();
   const out = {};
-  rows.forEach(r => { out[r.username] = r.data; });
+  rows.forEach(r => {
+    // r.data is the jsonb column; make sure username is always set
+    const user = r.data || {};
+    if (!user.username) user.username = r.username;
+    out[r.username] = user;
+  });
   return out;
 }
 
@@ -1004,7 +1009,11 @@ async function handleSearch(q) {
     const rows = await res.json();
     if (!rows.length) { dd.innerHTML='<div style="padding:0.75rem 1rem;font-size:0.82rem;color:var(--muted)">No players found</div>'; dd.classList.add('show'); return; }
     const lb = await getLeaderboard();
-    const results = rows.map(r => ({ ...r.data, rank: lb.find(l=>l.username===r.username)?.rank }));
+    const results = rows.map(r => {
+      const user = r.data || {};
+      if (!user.username) user.username = r.username;
+      return { ...user, rank: lb.find(l=>l.username===r.username)?.rank };
+    });
     dd.innerHTML = results.map(u=>`<div class="search-result" onmousedown="openProfile('${u.username}')"><span class="sr-name">${u.username}${u.rank&&u.rank<=100?` <span style="font-size:0.65rem;color:var(--gold)">#${u.rank}</span>`:''}</span><span class="sr-bal">◈${(u.balance||0).toLocaleString()}</span></div>`).join('');
     dd.classList.add('show');
   } catch(e) { dd.classList.remove('show'); }
