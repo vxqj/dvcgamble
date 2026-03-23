@@ -1304,48 +1304,75 @@
 
 <script>
 /* ================================================================
-   SUPABASE CONFIG
+   TURSO DATABASE
 ================================================================ */
-const SUPABASE_URL = 'https://hjamzcqxomwnolgeofyh.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhqYW16Y3F4b213bm9sZ2VvZnloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NDMyNDMsImV4cCI6MjA4OTUxOTI0M30.0wbN-fzVhSSEhf21fjTbde-cOzyeDSHFfpZb_zbOEUI';
+const TURSO_URL = 'libsql://dvcgamble-vxqj.aws-ap-northeast-1.turso.io';
+const TURSO_TOKEN = 'eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3NzQyNjEzNTMsImlkIjoiMDE5ZDFhMzMtZmEwMS03N2YxLWJiZDEtYWY2MTk0ODAxZTUzIiwicmlkIjoiODUwZDBlN2UtY2IzYy00NGYzLTk3Y2YtNDdmZjhiNGZmYmUxIn0.q3I_KH-pDT0H54dD8ovMc-Org9Uc3SJDhdKlHQGQ3fv9PXAxeCOfkosCAaq4bAacOMnTzDsf-sQjlXdiyZtfAA';
 
-const sbHeaders = {
-  'Content-Type': 'application/json',
-  'apikey': SUPABASE_KEY,
-  'Authorization': 'Bearer ' + SUPABASE_KEY
-};
-
-async function sbGetUser(username, retries=4) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(username)}&select=*`,
-        { headers: sbHeaders }
-      );
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const rows = await res.json();
-      if (!rows.length) return null;
-      const user = rows[0].data || {};
-      if (!user.username) user.username = rows[0].username;
-      return user;
-    } catch(e) {
-      console.warn(`sbGetUser attempt ${attempt}/${retries} failed:`, e.message);
-      if (attempt < retries) await new Promise(r => setTimeout(r, 800 * attempt));
-    }
+async function tursoQuery(sql, args=[]) {
+  const res = await fetch(`${TURSO_URL}/v2/pipeline`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + TURSO_TOKEN,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      requests: [
+        { type: 'execute', stmt: { sql, args: args.map(v => {
+          if (v === null) return { type: 'null' };
+          if (typeof v === 'number') return { type: 'float', value: v };
+          return { type: 'text', value: String(v) };
+        }) } },
+        { type: 'close' }
+      ]
+    })
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error('Turso HTTP ' + res.status + ': ' + t);
   }
-  return null;
+  const json = await res.json();
+  if (json.results?.[0]?.type === 'error') {
+    throw new Error('Turso query error: ' + json.results[0].error?.message);
+  }
+  return json.results?.[0]?.response?.result;
+}
+
+function tursoRows(result) {
+  if (!result?.rows) return [];
+  const cols = result.cols.map(c => c.name);
+  return result.rows.map(row => {
+    const obj = {};
+    cols.forEach((c, i) => { obj[c] = row[i]?.value ?? null; });
+    return obj;
+  });
+}
+
+async function sbGetUser(username) {
+  try {
+    const result = await tursoQuery('SELECT data FROM users WHERE username = ?', [username]);
+    const rows = tursoRows(result);
+    if (!rows.length) return null;
+    const user = JSON.parse(rows[0].data);
+    if (!user.username) user.username = username;
+    return user;
+  } catch(e) {
+    console.warn('sbGetUser error:', e.message);
+    return null;
+  }
 }
 
 async function sbGetAllUsers() {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*`, { headers: sbHeaders });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const rows = await res.json();
+    const result = await tursoQuery('SELECT username, data FROM users');
+    const rows = tursoRows(result);
     const out = {};
     rows.forEach(r => {
-      const user = r.data || {};
-      if (!user.username) user.username = r.username;
-      out[r.username] = user;
+      try {
+        const user = JSON.parse(r.data);
+        if (!user.username) user.username = r.username;
+        out[r.username] = user;
+      } catch(e) {}
     });
     return out;
   } catch(e) {
@@ -1356,22 +1383,21 @@ async function sbGetAllUsers() {
 
 async function sbSaveUser(user) {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
-      method: 'POST',
-      headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
-      body: JSON.stringify({ username: user.username, data: user })
-    });
-    if (!res.ok) console.warn('sbSaveUser failed:', res.status);
+    await tursoQuery(
+      'INSERT INTO users (username, data) VALUES (?, ?) ON CONFLICT(username) DO UPDATE SET data = excluded.data',
+      [user.username, JSON.stringify(user)]
+    );
   } catch(e) {
-    console.warn('sbSaveUser error:', e.message);
+    console.error('sbSaveUser error:', e.message);
   }
 }
 
 async function sbDeleteUser(username) {
-  await fetch(`${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(username)}`, {
-    method: 'DELETE',
-    headers: sbHeaders
-  });
+  try {
+    await tursoQuery('DELETE FROM users WHERE username = ?', [username]);
+  } catch(e) {
+    console.warn('sbDeleteUser error:', e.message);
+  }
 }
 
 /* ================================================================
@@ -1466,47 +1492,47 @@ async function doSignup() {
     err.classList.add('show'); hideAuthLoading(btn,'Create account'); return;
   }
 
-  // Step 2: Save new user with retry
+  // Step 2: Save new user to Turso
   const newUser = { username:u, password:p, balance:1000, won:0, lost:0, played:0, streak:0, bestStreak:0, history:[], badges:[] };
   let saved = false;
   for (let i = 0; i < 3; i++) {
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
-        method: 'POST',
-        headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
-        body: JSON.stringify({ username: u, data: newUser })
-      });
-      if (res.ok || res.status === 201 || res.status === 200) { saved = true; break; }
-      console.warn('Save attempt', i+1, 'status:', res.status);
+      await tursoQuery(
+        'INSERT INTO users (username, data) VALUES (?, ?) ON CONFLICT(username) DO UPDATE SET data = excluded.data',
+        [u, JSON.stringify(newUser)]
+      );
+      saved = true;
+      break;
     } catch(e) {
-      console.warn('Save attempt', i+1, 'error:', e.message);
+      console.warn('Signup save attempt', i+1, 'error:', e.message);
+      if (i < 2) await new Promise(r => setTimeout(r, 800));
     }
-    await new Promise(r => setTimeout(r, 1000));
+  }
+  console.log('Signup save result:', saved ? 'SUCCESS' : 'FAILED');
+
+  // Step 3: Verify save worked by fetching back
+  showAuthLoading(btn, 'Verifying...');
+  let verified = null;
+  try { verified = await sbGetUser(u); } catch(e) {}
+
+  if (!verified) {
+    // Save may have worked — just log in with what we have
+    console.warn('Could not verify save, logging in with local data');
   }
 
-  if (!saved) {
-    // Try one more time with no error check — Supabase sometimes returns non-200 but still saves
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/users`, {
-        method: 'POST',
-        headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
-        body: JSON.stringify({ username: u, data: newUser })
-      });
-    } catch(e) {}
-  }
-
-  // Step 3: Log in regardless — if save worked, user exists
+  // Step 4: Log in
   showAuthLoading(btn, 'Logging in...');
   try {
-    await loginUser(u, newUser);
+    await loginUser(u, verified || newUser);
     showToast('Welcome! You start with ◈1,000 🎉', 'info');
   } catch(e) {
     console.error('Login after signup failed:', e);
-    err.textContent = 'Account created — please log in manually.';
+    err.textContent = 'Account created! Go to Log In tab and sign in.';
     err.classList.add('show');
     hideAuthLoading(btn, 'Create account');
     switchAuthTab('login');
     document.getElementById('login-user').value = u;
+    document.getElementById('login-pass').value = p;
   }
 }
 
@@ -1524,20 +1550,11 @@ async function doLogin() {
   let networkError = false;
   for (let i = 0; i < 4; i++) {
     try {
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/users?username=eq.${encodeURIComponent(u)}&select=*`,
-        { headers: sbHeaders }
-      );
-      if (!res.ok) { networkError = true; break; }
-      const rows = await res.json();
-      if (rows.length) {
-        user = rows[0].data || {};
-        if (!user.username) user.username = rows[0].username;
-      }
+      user = await sbGetUser(u);
       networkError = false;
-      break; // success
+      break;
     } catch(e) {
-      console.warn('Login fetch attempt', i+1, 'failed:', e.message);
+      console.warn('Login attempt', i+1, 'failed:', e.message);
       networkError = true;
       if (i < 3) await new Promise(r => setTimeout(r, 800 * (i+1)));
     }
@@ -1825,13 +1842,15 @@ async function handleSearch(q) {
   const dd = document.getElementById('search-dropdown');
   if (!q.trim()) { dd.classList.remove('show'); return; }
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?username=ilike.*${encodeURIComponent(q)}*&select=*&limit=6`, { headers: sbHeaders });
-    const rows = await res.json();
+    const result = await tursoQuery(
+      'SELECT username, data FROM users WHERE username LIKE ? LIMIT 6',
+      ['%' + q + '%']
+    );
+    const rows = tursoRows(result);
     if (!rows.length) { dd.innerHTML='<div style="padding:0.75rem 1rem;font-size:0.82rem;color:var(--muted)">No players found</div>'; dd.classList.add('show'); return; }
     const results = rows.map(r => {
-      const user = r.data || {};
-      if (!user.username) user.username = r.username;
-      return { ...user, rank: getRankFromCache(user.username) };
+      try { const u=JSON.parse(r.data); if(!u.username)u.username=r.username; return {...u, rank:getRankFromCache(u.username)}; }
+      catch(e){ return {username:r.username, balance:0, rank:null}; }
     });
     dd.innerHTML = results.map(u=>`<div class="search-result" onmousedown="openProfile('${u.username}')"><span class="sr-name">${u.username}${u.rank&&u.rank<=100?` <span style="font-size:0.65rem;color:var(--gold)">#${u.rank}</span>`:''}</span><span class="sr-bal">◈${(u.balance||0).toLocaleString()}</span></div>`).join('');
     dd.classList.add('show');
@@ -2446,32 +2465,36 @@ let ocfResultShown = false; // guard against double result
 
 // DB helpers
 async function ocfGetGame(id) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/coinflip_games?id=eq.${encodeURIComponent(id)}&select=*`, { headers: sbHeaders });
-  const rows = await res.json();
-  if (!rows.length) return null;
-  const g = rows[0].data || {};
-  if (!g.id) g.id = rows[0].id;
-  return g;
+  try {
+    const result = await tursoQuery('SELECT data FROM coinflip_games WHERE id = ?', [id]);
+    const rows = tursoRows(result);
+    if (!rows.length) return null;
+    const g = JSON.parse(rows[0].data);
+    if (!g.id) g.id = id;
+    return g;
+  } catch(e) { console.warn('ocfGetGame error:', e.message); return null; }
 }
 async function ocfSaveGame(game) {
-  await fetch(`${SUPABASE_URL}/rest/v1/coinflip_games`, {
-    method: 'POST',
-    headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
-    body: JSON.stringify({ id: game.id, data: game })
-  });
+  try {
+    await tursoQuery(
+      'INSERT INTO coinflip_games (id, data) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET data = excluded.data',
+      [game.id, JSON.stringify(game)]
+    );
+  } catch(e) { console.warn('ocfSaveGame error:', e.message); }
 }
 async function ocfDeleteGame(id) {
-  await fetch(`${SUPABASE_URL}/rest/v1/coinflip_games?id=eq.${encodeURIComponent(id)}`, {
-    method: 'DELETE', headers: sbHeaders
-  });
+  try {
+    await tursoQuery('DELETE FROM coinflip_games WHERE id = ?', [id]);
+  } catch(e) { console.warn('ocfDeleteGame error:', e.message); }
 }
 async function ocfGetOpenGames() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/coinflip_games?select=*`, { headers: sbHeaders });
-  const rows = await res.json();
-  if (!Array.isArray(rows)) return [];
-  return rows
-    .map(r => { const g = r.data||{}; if(!g.id) g.id=r.id; return g; })
-    .filter(g => g.status === 'waiting' && g.host); // only real waiting games
+  try {
+    const result = await tursoQuery('SELECT id, data FROM coinflip_games');
+    const rows = tursoRows(result);
+    return rows
+      .map(r => { try { const g=JSON.parse(r.data); if(!g.id)g.id=r.id; return g; } catch(e){return null;} })
+      .filter(g => g && g.status === 'waiting' && g.host);
+  } catch(e) { console.warn('ocfGetOpenGames error:', e.message); return []; }
 }
 
 function ocfShowView(view) {
@@ -2554,14 +2577,20 @@ async function ocfJoinGame(id) {
   if (game.host === CU.username) { showToast("You can't join your own game!", 'info'); return; }
   if (game.bet > CU.balance) { showToast('Not enough balance!', 'lose'); return; }
 
-  // Atomically claim spot — only update if status is STILL 'waiting'
-  const claimRes = await fetch(`${SUPABASE_URL}/rest/v1/coinflip_games?id=eq.${encodeURIComponent(id)}&data->>status=eq.waiting`, {
-    method: 'PATCH',
-    headers: { ...sbHeaders, 'Prefer': 'return=representation' },
-    body: JSON.stringify({ data: { ...game, status: 'picking', joiner: CU.username } })
-  });
-  const claimed = await claimRes.json();
-  if (!claimed || !claimed.length) { showToast('Someone else just joined!', 'lose'); ocfLoadLobby(); return; }
+  // Atomically claim spot using Turso
+  try {
+    await tursoQuery(
+      "UPDATE coinflip_games SET data = ? WHERE id = ? AND json_extract(data, '$.status') = 'waiting'",
+      [JSON.stringify({ ...game, status: 'picking', joiner: CU.username }), id]
+    );
+    // Verify claim succeeded
+    const check = await ocfGetGame(id);
+    if (!check || check.joiner !== CU.username) {
+      showToast('Someone else just joined!', 'lose'); ocfLoadLobby(); return;
+    }
+  } catch(e) {
+    showToast('Could not join game — try again', 'lose'); ocfLoadLobby(); return;
+  }
 
   CU.balance -= game.bet;
   await saveCurrentUser();
@@ -3796,18 +3825,19 @@ let updateBannerShown = false;
 
 async function getServerVersion() {
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/config?key=eq.version&select=*`, { headers: sbHeaders });
-    const rows = await res.json();
+    const result = await tursoQuery('SELECT value FROM config WHERE key = ?', ['version']);
+    const rows = tursoRows(result);
     return rows.length ? rows[0].value : null;
   } catch(e) { return null; }
 }
 
 async function setServerVersion(v) {
-  await fetch(`${SUPABASE_URL}/rest/v1/config`, {
-    method: 'POST',
-    headers: { ...sbHeaders, 'Prefer': 'resolution=merge-duplicates' },
-    body: JSON.stringify({ key: 'version', value: v })
-  });
+  try {
+    await tursoQuery(
+      'INSERT INTO config (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+      ['version', v]
+    );
+  } catch(e) { console.warn('setServerVersion error:', e.message); }
 }
 
 function triggerUpdateBanner(seconds=10, message=null) {
@@ -3874,6 +3904,9 @@ document.getElementById('profile-modal').addEventListener('click',e=>{if(e.targe
 document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key==='Enter')sendMessage();});
 document.getElementById('owner-cmd').addEventListener('keydown',e=>{if(e.key==='Enter'){const val=document.getElementById('owner-cmd').value.trim();if(val){runOwnerCmd(val);document.getElementById('owner-cmd').value='';}}}); 
 document.getElementById('owner-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')unlockOwner();});
+
+// Test Turso connection on load
+tursoQuery('SELECT 1').then(() => console.log('Turso connected ✓')).catch(e => console.error('Turso connection failed:', e.message));
 
 // Auto-login from session
 const session = getSession();
