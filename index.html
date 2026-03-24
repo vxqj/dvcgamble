@@ -1327,15 +1327,17 @@ async function tursoQuery(sql, args=[]) {
       ]
     })
   });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error('Turso HTTP ' + res.status + ': ' + t);
-  }
   const json = await res.json();
-  if (json.results?.[0]?.type === 'error') {
-    throw new Error('Turso query error: ' + json.results[0].error?.message);
+  if (!res.ok) {
+    console.error('Turso HTTP error', res.status, JSON.stringify(json));
+    throw new Error('Turso HTTP ' + res.status);
   }
-  return json.results?.[0]?.response?.result;
+  const r0 = json.results?.[0];
+  if (r0?.type === 'error') {
+    console.error('Turso query error:', r0.error?.message, 'SQL:', sql);
+    throw new Error('Turso: ' + r0.error?.message);
+  }
+  return r0?.response?.result;
 }
 
 function tursoRows(result) {
@@ -1610,28 +1612,52 @@ function logout() {
   document.getElementById('chat-messages').innerHTML='<div style="text-align:center;padding:1rem;font-size:0.8rem;color:var(--muted)" id="chat-connecting">Connecting...</div>';
 }
 
-// Debounced save — batches rapid saves into one write every 1.5s
+// Save current user — debounced to avoid hammering DB
 let _saveTimer = null;
-let _saveResolvers = [];
+let _pendingSave = false;
 function saveCurrentUser() {
   if (!CU) return Promise.resolve();
+  _pendingSave = true;
+  clearTimeout(_saveTimer);
   return new Promise(resolve => {
-    _saveResolvers.push(resolve);
-    clearTimeout(_saveTimer);
     _saveTimer = setTimeout(async () => {
-      const resolvers = _saveResolvers.splice(0);
-      try { await sbSaveUser(CU); } catch(e) { console.warn('Save failed:', e); }
-      resolvers.forEach(r => r());
-    }, 3000);
+      _pendingSave = false;
+      try { await sbSaveUser(CU); } catch(e) { console.warn('Save failed:', e.message); }
+      resolve();
+    }, 2000);
   });
 }
-// Force immediate save (for critical moments like cashout)
 async function saveCurrentUserNow() {
   if (!CU) return;
   clearTimeout(_saveTimer);
-  _saveResolvers.splice(0);
-  try { await sbSaveUser(CU); } catch(e) { console.warn('Save failed:', e); }
+  _pendingSave = false;
+  try { await sbSaveUser(CU); } catch(e) { console.warn('saveNow failed:', e.message); }
 }
+// Save immediately on page unload so refresh doesn't lose data
+window.addEventListener('beforeunload', () => {
+  if(!CU || !_pendingSave) return;
+  // Use sendBeacon for reliable unload saves
+  const payload = JSON.stringify({
+    requests: [
+      { type: 'execute', stmt: {
+        sql: 'INSERT INTO users (username, data) VALUES (?, ?) ON CONFLICT(username) DO UPDATE SET data = excluded.data',
+        args: [
+          { type: 'text', value: CU.username },
+          { type: 'text', value: JSON.stringify(CU) }
+        ]
+      }},
+      { type: 'close' }
+    ]
+  });
+  // XHR sync save on unload
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', TURSO_URL + '/v2/pipeline', false); // false = synchronous
+    xhr.setRequestHeader('Authorization', 'Bearer ' + TURSO_TOKEN);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send(payload);
+  } catch(e) {}
+});
 
 /* ================================================================
    BADGES
@@ -1823,12 +1849,18 @@ function renderHistory() {
 
 async function renderLeaderboard() {
   const el = document.getElementById('lb-content');
-  el.innerHTML = '<div style="color:var(--muted);padding:1rem">Loading...</div>';
+  el.innerHTML = '<div style="color:var(--muted);padding:1rem;display:flex;align-items:center;gap:0.5rem;"><span style="animation:spin 1s linear infinite;display:inline-block">🔄</span> Loading leaderboard...</div>';
   try {
-    const lb = await getLeaderboard(true); // force fresh on explicit open
-    if (!lb.length) { el.innerHTML='<div style="color:var(--muted)">No players yet.</div>'; return; }
+    const lb = await getLeaderboard(true);
+    if (!lb.length) {
+      el.innerHTML='<div style="color:var(--muted);padding:1rem">No players yet — be the first to play!</div>';
+      return;
+    }
     el.innerHTML = `<table class="lb-table"><thead><tr><th>Rank</th><th>Player</th><th>Total Won</th><th>Balance</th><th>Games</th></tr></thead><tbody>${lb.slice(0,100).map(u=>`<tr><td>${getRankBadge(u.rank)}</td><td><span style="font-weight:600">${u.username}</span>${u.username===CU?.username?'<span class="you-badge">you</span>':''}${getRankTag(u.rank)}</td><td style="color:var(--accent);font-weight:600">◈${(u.won||0).toLocaleString()}</td><td style="color:var(--gold)">◈${(u.balance||0).toLocaleString()}</td><td style="color:var(--muted)">${u.played||0}</td></tr>`).join('')}</tbody></table>`;
-  } catch(e) { el.innerHTML='<div style="color:var(--muted)">Error loading leaderboard.</div>'; }
+  } catch(e) {
+    console.error('Leaderboard error:', e);
+    el.innerHTML='<div style="color:var(--muted);padding:1rem">Error loading — <button onclick="renderLeaderboard()" style="background:none;border:none;color:var(--accent);cursor:pointer;text-decoration:underline;">retry</button></div>';
+  }
 }
 
 let _searchTimer = null;
@@ -3795,7 +3827,7 @@ function appendMsg(data,isSystem=false){
 function sendMessage(){const input=document.getElementById('chat-input');const text=input.value.trim();if(!text||!chatChannel||!CU)return;chatChannel.publish('message',{username:CU.username,text,ts:Date.now()});input.value='';}
 function initChat(){
   if(!CU||ablyClient)return;
-  if(typeof Ably==='undefined'){setTimeout(initChat,200);return;}
+  if(typeof Ably==='undefined'){setTimeout(initChat,300);return;}
   try{
     ablyClient=new Ably.Realtime({key:ABLY_KEY,clientId:CU.username});
     chatChannel=ablyClient.channels.get('dvcgamble-chat');
@@ -3905,8 +3937,14 @@ document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key===
 document.getElementById('owner-cmd').addEventListener('keydown',e=>{if(e.key==='Enter'){const val=document.getElementById('owner-cmd').value.trim();if(val){runOwnerCmd(val);document.getElementById('owner-cmd').value='';}}}); 
 document.getElementById('owner-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')unlockOwner();});
 
-// Test Turso connection on load
-tursoQuery('SELECT 1').then(() => console.log('Turso connected ✓')).catch(e => console.error('Turso connection failed:', e.message));
+// Test Turso connection + tables on load
+tursoQuery("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+  .then(r => {
+    const tables = r?.rows?.map(row => row[0]?.value) || [];
+    console.log('Turso connected ✓ Tables:', tables);
+    if(!tables.includes('users')) console.error('⚠️ users table missing! Run the CREATE TABLE SQL in Turso console.');
+  })
+  .catch(e => console.error('Turso connection failed:', e.message));
 
 // Auto-login from session
 const session = getSession();
