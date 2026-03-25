@@ -1419,9 +1419,19 @@ const LB_CACHE_TTL = 180000; // 3 minute cache
 
 async function getLeaderboard(force=false) {
   if (!force && _lbCache && (Date.now() - _lbCacheTime) < LB_CACHE_TTL) return _lbCache;
-  const users = await sbGetAllUsers();
-  _lbCache = Object.values(users).sort((a,b)=>(b.won||0)-(a.won||0)).map((u,i)=>({...u,rank:i+1}));
-  _lbCacheTime = Date.now();
+  try {
+    const users = await sbGetAllUsers();
+    const list = Object.values(users);
+    if (!list.length) return _lbCache || [];
+    _lbCache = list
+      .sort((a,b)=>(b.won||0)-(a.won||0))
+      .map((u,i)=>({...u, rank:i+1}));
+    _lbCacheTime = Date.now();
+    console.log('Leaderboard loaded:', _lbCache.length, 'players');
+  } catch(e) {
+    console.error('getLeaderboard error:', e.message);
+    return _lbCache || [];
+  }
   return _lbCache;
 }
 async function getRankOfUser(username) {
@@ -1486,56 +1496,36 @@ async function doSignup() {
 
   showAuthLoading(btn, 'Creating account...');
 
-  // Step 1: Check if username taken
-  let existing = null;
-  try { existing = await sbGetUser(u); } catch(e) { /* treat as not found */ }
+  // Make sure tables exist first
+  await initTurso();
+
+  // Check if username taken
+  const existing = await sbGetUser(u);
   if (existing) {
     err.textContent='Username already taken';
     err.classList.add('show'); hideAuthLoading(btn,'Create account'); return;
   }
 
-  // Step 2: Save new user to Turso
+  // Save new user
   const newUser = { username:u, password:p, balance:1000, won:0, lost:0, played:0, streak:0, bestStreak:0, history:[], badges:[] };
-  let saved = false;
-  for (let i = 0; i < 3; i++) {
-    try {
-      await tursoQuery(
-        'INSERT INTO users (username, data) VALUES (?, ?) ON CONFLICT(username) DO UPDATE SET data = excluded.data',
-        [u, JSON.stringify(newUser)]
-      );
-      saved = true;
-      break;
-    } catch(e) {
-      console.warn('Signup save attempt', i+1, 'error:', e.message);
-      if (i < 2) await new Promise(r => setTimeout(r, 800));
-    }
-  }
-  console.log('Signup save result:', saved ? 'SUCCESS' : 'FAILED');
-
-  // Step 3: Verify save worked by fetching back
-  showAuthLoading(btn, 'Verifying...');
-  let verified = null;
-  try { verified = await sbGetUser(u); } catch(e) {}
-
-  if (!verified) {
-    // Save may have worked — just log in with what we have
-    console.warn('Could not verify save, logging in with local data');
-  }
-
-  // Step 4: Log in
-  showAuthLoading(btn, 'Logging in...');
   try {
-    await loginUser(u, verified || newUser);
-    showToast('Welcome! You start with ◈1,000 🎉', 'info');
+    await sbSaveUser(newUser);
   } catch(e) {
-    console.error('Login after signup failed:', e);
-    err.textContent = 'Account created! Go to Log In tab and sign in.';
-    err.classList.add('show');
-    hideAuthLoading(btn, 'Create account');
-    switchAuthTab('login');
-    document.getElementById('login-user').value = u;
-    document.getElementById('login-pass').value = p;
+    console.error('Signup save failed:', e.message);
+    err.textContent = 'Could not save account: ' + e.message;
+    err.classList.add('show'); hideAuthLoading(btn,'Create account'); return;
   }
+
+  // Verify it saved
+  const saved = await sbGetUser(u);
+  if (!saved) {
+    err.textContent = 'Account save failed — tables may not exist in Turso yet';
+    err.classList.add('show'); hideAuthLoading(btn,'Create account'); return;
+  }
+
+  // Log in
+  await loginUser(u, saved);
+  showToast('Welcome to DVCGamble! You start with ◈1,000 🎉', 'info');
 }
 
 async function doLogin() {
@@ -1549,25 +1539,16 @@ async function doLogin() {
   showAuthLoading(btn, 'Logging in...');
 
   let user = null;
-  let networkError = false;
-  for (let i = 0; i < 4; i++) {
-    try {
-      user = await sbGetUser(u);
-      networkError = false;
-      break;
-    } catch(e) {
-      console.warn('Login attempt', i+1, 'failed:', e.message);
-      networkError = true;
-      if (i < 3) await new Promise(r => setTimeout(r, 800 * (i+1)));
-    }
-  }
-
-  if (networkError) {
-    err.textContent = 'Server unreachable — check your connection and try again';
+  try {
+    user = await sbGetUser(u);
+  } catch(e) {
+    console.error('Login fetch error:', e.message);
+    err.textContent = 'Connection error: ' + e.message;
     err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
   }
+
   if (!user) {
-    err.textContent = 'Username not found';
+    err.textContent = 'Username not found — did you sign up yet?';
     err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
   }
   if (user.password !== p) {
@@ -1575,14 +1556,8 @@ async function doLogin() {
     err.classList.add('show'); hideAuthLoading(btn,'Log in'); return;
   }
 
-  try {
-    await loginUser(u, user);
-    showToast('Welcome back, ' + u + '!', 'info');
-  } catch(e) {
-    console.error('loginUser error:', e);
-    err.textContent = 'Login failed — please try again';
-    err.classList.add('show'); hideAuthLoading(btn,'Log in');
-  }
+  await loginUser(u, user);
+  showToast('Welcome back, ' + u + '! 👋', 'info');
 }
 
 async function loginUser(username, userObj=null) {
@@ -3937,14 +3912,23 @@ document.getElementById('chat-input').addEventListener('keydown',e=>{if(e.key===
 document.getElementById('owner-cmd').addEventListener('keydown',e=>{if(e.key==='Enter'){const val=document.getElementById('owner-cmd').value.trim();if(val){runOwnerCmd(val);document.getElementById('owner-cmd').value='';}}}); 
 document.getElementById('owner-pass-input').addEventListener('keydown',e=>{if(e.key==='Enter')unlockOwner();});
 
-// Test Turso connection + tables on load
-tursoQuery("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
-  .then(r => {
+// Auto-create tables and test connection on load
+async function initTurso() {
+  try {
+    // Create all tables if they don't exist
+    await tursoQuery('CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, data TEXT NOT NULL)');
+    await tursoQuery('CREATE TABLE IF NOT EXISTS coinflip_games (id TEXT PRIMARY KEY, data TEXT NOT NULL)');
+    await tursoQuery('CREATE TABLE IF NOT EXISTS config (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+    const r = await tursoQuery("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
     const tables = r?.rows?.map(row => row[0]?.value) || [];
     console.log('Turso connected ✓ Tables:', tables);
-    if(!tables.includes('users')) console.error('⚠️ users table missing! Run the CREATE TABLE SQL in Turso console.');
-  })
-  .catch(e => console.error('Turso connection failed:', e.message));
+    return true;
+  } catch(e) {
+    console.error('Turso init failed:', e.message);
+    return false;
+  }
+}
+initTurso();
 
 // Auto-login from session
 const session = getSession();
