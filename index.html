@@ -8,13 +8,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-  --bg:#050505;--surface:#0a0a0a;--surface2:#101010;--surface3:#171717;
-  --border:rgba(0,255,136,0.08);--border2:rgba(0,255,136,0.18);
-  --fg:#f0f0f0;--muted:rgba(240,240,240,0.38);
-  --accent:#00ff88;--accent-dim:rgba(0,255,136,0.10);
-  --red:#ff5252;--red-dim:rgba(255,82,82,0.1);
-  --gold:#ffd740;--blue:#44d17a;--r:12px;
-}
+      --bg:#0d0d0d;--surface:#161616;--surface2:#1e1e1e;--surface3:#282828;
+      --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+      --fg:#f0f0f0;--muted:rgba(240,240,240,0.38);
+      --accent:#00e676;--accent-dim:rgba(0,230,118,0.1);
+      --red:#ff5252;--red-dim:rgba(255,82,82,0.1);
+      --gold:#ffd740;--blue:#448aff;--r:12px;
+    }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     body{background:var(--bg);color:var(--fg);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;}
     button{cursor:pointer;font-family:'Inter',sans-serif;border:none;outline:none;}
@@ -419,6 +419,40 @@
     .limbo-multiplier{font-size:4rem;font-weight:800;letter-spacing:-3px;transition:all 0.1s;}
     .limbo-bar{width:100%;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;margin:0.5rem 0;}
     .limbo-bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width 0.05s;}
+
+    /* CLICKER GAME */
+    .clicker-layout{display:grid;grid-template-columns:1fr 300px 280px;gap:1.25rem;height:calc(100vh - 200px);max-height:700px;}
+    .clicker-center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:2rem;}
+    .clicker-btn-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
+    #clicker-btn{width:160px;height:160px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#00ff88,#00cc66 55%,#009944);border:none;cursor:pointer;transition:transform 0.08s,box-shadow 0.08s;box-shadow:0 0 0 6px #00cc6655,0 0 30px #00ff8844,0 8px 32px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+    #clicker-btn:active{transform:scale(0.92);box-shadow:0 0 0 4px #00cc6633,0 0 15px #00ff8822,0 4px 16px rgba(0,0,0,0.5);}
+    #clicker-btn img{width:100px;height:100px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.4));pointer-events:none;}
+    #clicker-btn::before{content:'';position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,0.35),transparent 60%);}
+    .clicker-coins{font-size:2rem;font-weight:800;color:var(--gold);letter-spacing:-1px;}
+    .clicker-cps{font-size:0.82rem;color:var(--muted);}
+    .clicker-per-click{font-size:0.9rem;color:var(--accent);font-weight:600;}
+    .click-float{position:absolute;font-size:1rem;font-weight:800;color:var(--accent);pointer-events:none;animation:clickFloat 1s ease forwards;z-index:10;}
+    @keyframes clickFloat{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-80px) scale(0.7)}}
+    .upgrade-list{display:flex;flex-direction:column;gap:0.5rem;overflow-y:auto;flex:1;}
+    .upgrade-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.75rem;cursor:pointer;transition:all 0.15s;user-select:none;}
+    .upgrade-card:hover:not(.locked){border-color:var(--accent);background:rgba(0,255,136,0.04);}
+    .upgrade-card.locked{opacity:0.4;cursor:not-allowed;}
+    .upgrade-card.maxed{border-color:var(--gold);background:rgba(255,215,64,0.05);}
+    .upg-icon{font-size:1.5rem;width:36px;text-align:center;flex-shrink:0;}
+    .upg-info{flex:1;min-width:0;}
+    .upg-name{font-size:0.82rem;font-weight:700;margin-bottom:2px;}
+    .upg-desc{font-size:0.68rem;color:var(--muted);line-height:1.3;}
+    .upg-owned{font-size:0.65rem;color:var(--accent);margin-top:2px;}
+    .upg-cost{font-size:0.75rem;font-weight:700;color:var(--gold);text-align:right;flex-shrink:0;white-space:nowrap;}
+    .clicker-stats-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;display:flex;flex-direction:column;gap:0.75rem;overflow-y:auto;}
+    .clicker-stat{display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;}
+    .clicker-stat-label{color:var(--muted);}
+    .clicker-stat-val{font-weight:700;color:var(--fg);}
+    .clicker-milestone{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.85rem;font-size:0.75rem;display:flex;align-items:center;gap:0.5rem;}
+    .clicker-milestone.done{border-color:var(--gold);background:rgba(255,215,64,0.08);}
+    .cashout-btn{width:100%;padding:0.75rem;border-radius:10px;font-size:0.9rem;font-weight:700;background:linear-gradient(135deg,var(--gold),#ff9800);color:#0d0d0d;border:none;cursor:pointer;transition:opacity 0.2s,transform 0.2s;margin-top:auto;}
+    .cashout-btn:hover{opacity:0.9;transform:translateY(-1px);}
+    .cashout-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
   </style>
 </head>
 <body>
@@ -548,6 +582,7 @@
       <div class="nav-item" onclick="showPanel('videopoker')" id="nav-videopoker"><span class="icon">🂡</span> Video Poker</div>
       <div class="nav-item" onclick="showPanel('dragon')" id="nav-dragon"><span class="icon">🐉</span> Dragon Tower</div>
       <div class="nav-item" onclick="showPanel('limbo')" id="nav-limbo"><span class="icon">🎯</span> Limbo</div>
+      <div class="nav-item" onclick="showPanel('clicker')" id="nav-clicker"><span class="icon">🖱️</span> Clicker</div>
     </div>
     <!-- Fixed bottom: Community -->
     <div class="sidebar-bottom">
@@ -591,6 +626,7 @@
         <div class="game-card" onclick="showPanel('videopoker')"><div class="game-emoji">🂡</div><h3>Video Poker</h3><p>Classic Jacks or Better poker.</p></div>
         <div class="game-card" onclick="showPanel('dragon')"><div class="game-emoji">🐉</div><h3>Dragon Tower</h3><p>Climb the dragon's lair.</p></div>
         <div class="game-card" onclick="showPanel('limbo')"><div class="game-emoji">🎯</div><h3>Limbo</h3><p>Set a target. Beat the odds.</p></div>
+        <div class="game-card" onclick="showPanel('clicker')"><div class="game-emoji">🖱️</div><h3>DVC Clicker</h3><p>Click, upgrade, cash out for real ◈!</p></div>
       </div>
     </div>
 
@@ -1136,6 +1172,41 @@
       </div>
     </div>
 
+
+    <!-- DVC CLICKER -->
+    <div class="panel" id="panel-clicker">
+      <button class="back-btn" onclick="showPanel('home')">← Back</button>
+      <div class="section-title">🖱️ DVC Clicker</div>
+      <div class="clicker-layout">
+        <div class="clicker-center">
+          <div class="clicker-coins" id="ck-coins">⬡ 0</div>
+          <div class="clicker-cps" id="ck-cps">0 coins/sec</div>
+          <div class="clicker-btn-wrap" id="ck-btn-wrap">
+            <button id="clicker-btn" onclick="clickerClick(event)">
+              <img src="https://image2url.com/r2/default/images/1773815506643-1b4c0aa9-9a9b-4ec7-ae21-55d55ae08546.png" alt="DVC" />
+            </button>
+          </div>
+          <div class="clicker-per-click" id="ck-per-click">+1 per click</div>
+          <div style="font-size:0.75rem;color:var(--muted);text-align:center;line-height:1.6;">Click to earn coins, buy upgrades,<br>then cash out for real ◈!<br><span style="color:var(--accent);font-size:0.7rem;">1,000 coins = ◈1</span></div>
+          <button class="cashout-btn" id="ck-cashout" onclick="clickerCashOut()" disabled>💰 Cash Out — <span id="ck-cashout-val">0</span> ◈</button>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;display:flex;flex-direction:column;gap:0.75rem;overflow:hidden;">
+          <div style="font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);flex-shrink:0;">Upgrades</div>
+          <div class="upgrade-list" id="ck-upgrades"></div>
+        </div>
+        <div class="clicker-stats-panel">
+          <div style="font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">Stats</div>
+          <div class="clicker-stat"><span class="clicker-stat-label">Total clicks</span><span class="clicker-stat-val" id="ck-total-clicks">0</span></div>
+          <div class="clicker-stat"><span class="clicker-stat-label">Total earned</span><span class="clicker-stat-val" id="ck-total-earned">0</span></div>
+          <div class="clicker-stat"><span class="clicker-stat-label">Click power</span><span class="clicker-stat-val" id="ck-click-power">×1</span></div>
+          <div class="clicker-stat"><span class="clicker-stat-label">Coins/sec</span><span class="clicker-stat-val" id="ck-cps-stat">0</span></div>
+          <div class="clicker-stat"><span class="clicker-stat-label">Cash outs</span><span class="clicker-stat-val" id="ck-cashouts">0</span></div>
+          <div style="font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:0.5rem;">Milestones</div>
+          <div id="ck-milestones" style="display:flex;flex-direction:column;gap:0.4rem;overflow-y:auto;flex:1;"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- LEADERBOARD -->
     <div class="panel" id="panel-leaderboard">
       <div class="section-title">🏆 Leaderboard</div>
@@ -1351,77 +1422,41 @@ function tursoRows(result) {
 }
 
 async function sbGetUser(username) {
-  const LOCAL_USERS_KEY = 'dvc_local_users';
-  function readLocalUsers(){
-    try { return JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || '{}') || {}; }
-    catch(e){ return {}; }
-  }
-  function writeLocalUsers(users){
-    localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
-  }
-
+  // Always fetch from Turso — no localStorage fallback to avoid stale data across devices
   try {
     const result = await tursoQuery('SELECT data FROM users WHERE username = ?', [username]);
     const rows = tursoRows(result);
-    if (rows.length && rows[0].data) {
-      const user = JSON.parse(rows[0].data);
-      const localUsers = readLocalUsers();
-      localUsers[username] = user;
-      writeLocalUsers(localUsers);
-      return user;
-    }
+    if (!rows.length) return null;
+    const user = JSON.parse(rows[0].data);
+    if (!user.username) user.username = username;
+    return user;
   } catch(e) {
-    console.warn('sbGetUser Turso fallback:', e.message);
+    console.warn('sbGetUser Turso error:', e.message);
+    return null;
   }
-
-  const localUsers = readLocalUsers();
-  return localUsers[username] || null;
 }
 
 async function sbGetAllUsers() {
-  const LOCAL_USERS_KEY = 'dvc_local_users';
-  function readLocalUsers(){
-    try { return JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || '{}') || {}; }
-    catch(e){ return {}; }
-  }
-  function writeLocalUsers(users){
-    localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
-  }
-
-  const merged = readLocalUsers();
-
+  // Always fetch from Turso — never merge localStorage (causes stale data on leaderboard)
   try {
     const result = await tursoQuery('SELECT username, data FROM users');
     const rows = tursoRows(result);
+    const out = {};
     rows.forEach(r => {
       try {
         const user = JSON.parse(r.data);
         if (!user.username) user.username = r.username;
-        merged[r.username] = user;
+        out[r.username] = user;
       } catch(e) {}
     });
-    writeLocalUsers(merged);
+    return out;
   } catch(e) {
-    console.warn('sbGetAllUsers fallback:', e.message);
+    console.warn('sbGetAllUsers error:', e.message);
+    return {};
   }
-
-  return merged;
 }
 
 async function sbSaveUser(user) {
-  const LOCAL_USERS_KEY = 'dvc_local_users';
-  function readLocalUsers(){
-    try { return JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || '{}') || {}; }
-    catch(e){ return {}; }
-  }
-  function writeLocalUsers(users){
-    localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
-  }
-
-  const localUsers = readLocalUsers();
-  localUsers[user.username] = user;
-  writeLocalUsers(localUsers);
-
   try {
     await tursoQuery(
       'INSERT INTO users (username, data) VALUES (?, ?) ON CONFLICT(username) DO UPDATE SET data = excluded.data',
@@ -1429,34 +1464,16 @@ async function sbSaveUser(user) {
     );
   } catch(e) {
     console.error('sbSaveUser error:', e.message);
+    throw e; // re-throw so callers can handle
   }
-
-  _lbCache = null;
-  _lbCacheTime = 0;
 }
 
 async function sbDeleteUser(username) {
-  const LOCAL_USERS_KEY = 'dvc_local_users';
-  function readLocalUsers(){
-    try { return JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || '{}') || {}; }
-    catch(e){ return {}; }
-  }
-  function writeLocalUsers(users){
-    localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users));
-  }
-
-  const localUsers = readLocalUsers();
-  delete localUsers[username];
-  writeLocalUsers(localUsers);
-
   try {
     await tursoQuery('DELETE FROM users WHERE username = ?', [username]);
   } catch(e) {
     console.warn('sbDeleteUser error:', e.message);
   }
-
-  _lbCache = null;
-  _lbCacheTime = 0;
 }
 
 /* ================================================================
@@ -1472,28 +1489,24 @@ let CU = null;
 ================================================================ */
 let _lbCache = null;
 let _lbCacheTime = 0;
-const LB_CACHE_TTL = 15000; // 15 second cache
+const LB_CACHE_TTL = 180000; // 3 minute cache
 
 async function getLeaderboard(force=false) {
   if (!force && _lbCache && (Date.now() - _lbCacheTime) < LB_CACHE_TTL) return _lbCache;
   try {
     const users = await sbGetAllUsers();
-    const list = Object.values(users || {});
+    const list = Object.values(users);
     if (!list.length) return _lbCache || [];
     _lbCache = list
-      .sort((a,b)=>{
-        const bw = Number(b.won||0), aw = Number(a.won||0);
-        if (bw !== aw) return bw - aw;
-        return Number(b.balance||0) - Number(a.balance||0);
-      })
+      .sort((a,b)=>(b.won||0)-(a.won||0))
       .map((u,i)=>({...u, rank:i+1}));
     _lbCacheTime = Date.now();
     console.log('Leaderboard loaded:', _lbCache.length, 'players');
-    return _lbCache;
   } catch(e) {
     console.error('getLeaderboard error:', e.message);
     return _lbCache || [];
   }
+  return _lbCache;
 }
 async function getRankOfUser(username) {
   const lb = await getLeaderboard();
@@ -1885,17 +1898,25 @@ function renderHistory() {
 
 async function renderLeaderboard() {
   const el = document.getElementById('lb-content');
-  el.innerHTML = '<div style="color:var(--muted);padding:1rem;display:flex;align-items:center;gap:0.5rem;"><span style="animation:spin 1s linear infinite;display:inline-block">🔄</span> Loading leaderboard...</div>';
+  el.innerHTML = '<div style="color:var(--muted);padding:1rem;display:flex;align-items:center;gap:0.5rem;"><span style="animation:spin 1s linear infinite;display:inline-block">🔄</span> Fetching live data...</div>';
   try {
+    // Always force-fetch from Turso for leaderboard — never use stale cache
+    _lbCache = null;
     const lb = await getLeaderboard(true);
     if (!lb.length) {
       el.innerHTML='<div style="color:var(--muted);padding:1rem">No players yet — be the first to play!</div>';
       return;
     }
-    el.innerHTML = `<table class="lb-table"><thead><tr><th>Rank</th><th>Player</th><th>Total Won</th><th>Balance</th><th>Games</th></tr></thead><tbody>${lb.slice(0,100).map(u=>`<tr><td>${getRankBadge(u.rank)}</td><td><span style="font-weight:600">${u.username}</span>${u.username===CU?.username?'<span class="you-badge">you</span>':''}${getRankTag(u.rank)}</td><td style="color:var(--accent);font-weight:600">◈${(u.won||0).toLocaleString()}</td><td style="color:var(--gold)">◈${(u.balance||0).toLocaleString()}</td><td style="color:var(--muted)">${u.played||0}</td></tr>`).join('')}</tbody></table>`;
+    const now = new Date().toLocaleTimeString();
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div style="font-size:0.72rem;color:var(--muted);">Updated: ${now} — ${lb.length} players</div>
+        <button onclick="renderLeaderboard()" style="background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:0.3rem 0.75rem;font-size:0.72rem;color:var(--muted);cursor:pointer;transition:color 0.2s;" onmouseover="this.style.color='var(--fg)'" onmouseout="this.style.color='var(--muted)'">↻ Refresh</button>
+      </div>
+      <table class="lb-table"><thead><tr><th>Rank</th><th>Player</th><th>Total Won</th><th>Balance</th><th>Games</th></tr></thead><tbody>${lb.slice(0,100).map(u=>`<tr><td>${getRankBadge(u.rank)}</td><td><span style="font-weight:600">${u.username}</span>${u.username===CU?.username?'<span class="you-badge">you</span>':''}${getRankTag(u.rank)}</td><td style="color:var(--accent);font-weight:600">◈${(u.won||0).toLocaleString()}</td><td style="color:var(--gold)">◈${(u.balance||0).toLocaleString()}</td><td style="color:var(--muted)">${u.played||0}</td></tr>`).join('')}</tbody></table>`;
   } catch(e) {
     console.error('Leaderboard error:', e);
-    el.innerHTML='<div style="color:var(--muted);padding:1rem">Error loading — <button onclick="renderLeaderboard()" style="background:none;border:none;color:var(--accent);cursor:pointer;text-decoration:underline;">retry</button></div>';
+    el.innerHTML='<div style="color:var(--muted);padding:1rem">Error loading live data — <button onclick="renderLeaderboard()" style="background:none;border:none;color:var(--accent);cursor:pointer;text-decoration:underline;">retry</button></div>';
   }
 }
 
@@ -1967,6 +1988,8 @@ async function openProfile(username) {
 function closeSearch() { document.getElementById('search-dropdown').classList.remove('show'); document.getElementById('search-input').value=''; }
 function closeProfile() { document.getElementById('profile-modal').classList.remove('show'); }
 function showBustModal() {
+  // Don't show bust modal if a game is actively in progress
+  if(mActive || twActive || dtActive || hlActive || crashRunning) return;
   const m = document.getElementById('bust-modal');
   if(m.classList.contains('show')) return;
   m.classList.add('show');
@@ -1974,15 +1997,19 @@ function showBustModal() {
 }
 async function claimFreeCoins() {
   if(!CU) return;
+  const btn = document.querySelector('#bust-modal .bust-btn');
+  if(btn) { btn.disabled = true; btn.textContent = 'Claiming...'; }
   CU.balance = (CU.balance || 0) + 500;
-  CU.won = (CU.won || 0) + 500;
   if(!CU.badges) CU.badges = [];
   if(!CU.badges.includes('comeback')) CU.badges.push('comeback');
-  await saveCurrentUserNow();
   updateUI();
-  const modal = document.getElementById('bust-modal');
-  if(modal) modal.classList.remove('show');
+  // Close modal immediately so it doesn't feel frozen
+  const m = document.getElementById('bust-modal');
+  if(m) { m.classList.remove('show'); m.style.pointerEvents = 'none'; }
   showToast('◈500 added! Good luck 🍀','win');
+  // Save in background — don't await so UI is instant
+  saveCurrentUserNow().catch(e => console.warn('Claim save error:', e));
+  if(btn) { btn.disabled = false; btn.textContent = 'Claim ◈500'; }
 }
 
 async function showPanel(id) {
@@ -2004,6 +2031,7 @@ async function showPanel(id) {
   if(id==='keno') kenoInit();
   if(id==='videopoker') vpInit();
   if(id==='dragon') dtInit();
+  if(id==='clicker') initClicker();
   if(id==='ocf') ocfInit();
   else {
     if(ocfLobbyInterval){ clearInterval(ocfLobbyInterval); ocfLobbyInterval=null; }
@@ -2258,22 +2286,22 @@ function cashOutTowers(topped=false){
 ================================================================ */
 const PLINKO_MULTIPLIERS = {
   low: {
-    8:  [1.6,1.2,0.9,0.5,0.3,0.5,0.9,1.2,1.6],
-    12: [2.2,1.4,1.0,0.7,0.5,0.3,0.5,0.7,1.0,1.4,2.2],
-    16: [3.0,1.8,1.2,0.9,0.7,0.5,0.4,0.3,0.2,0.3,0.4,0.5,0.7,0.9,1.2,1.8,3.0],
-    32: [8,4,2.2,1.2,0.8,0.6,0.45,0.35,0.25,0.2,0.15,0.12,0.1,0.1,0.08,0.08,0.08,0.08,0.1,0.1,0.12,0.15,0.2,0.25,0.35,0.45,0.6,0.8,1.2,2.2,4,8]
+    8:  [2.5,1.5,1.1,0.8,0.5,0.8,1.1,1.5,2.5],
+    12: [4,2,1.3,1.0,0.8,0.5,0.8,1.0,1.3,2,4],
+    16: [6,3.5,2,1.4,1.0,0.8,0.6,0.4,0.3,0.4,0.6,0.8,1.0,1.4,2,3.5,6],
+    32: [50,20,8,4,2,1.4,1.1,0.9,0.7,0.6,0.5,0.4,0.3,0.3,0.2,0.2,0.2,0.2,0.3,0.3,0.4,0.5,0.6,0.7,0.9,1.1,1.4,2,4,8,20,50]
   },
   medium: {
-    8:  [3.5,1.6,0.9,0.4,0.2,0.4,0.9,1.6,3.5],
-    12: [6,2.5,1.2,0.6,0.3,0.15,0.1,0.15,0.3,0.6,1.2,2.5,6],
-    16: [10,4,1.8,0.9,0.45,0.25,0.15,0.1,0.08,0.1,0.15,0.25,0.45,0.9,1.8,4,10],
-    32: [30,12,5,2,0.9,0.45,0.25,0.15,0.1,0.08,0.06,0.05,0.04,0.03,0.02,0.02,0.02,0.02,0.03,0.04,0.05,0.06,0.08,0.1,0.15,0.25,0.45,0.9,2,5,12,30]
+    8:  [6,2.5,1.2,0.6,0.3,0.6,1.2,2.5,6],
+    12: [12,5,2.5,1.5,0.8,0.4,0.2,0.4,0.8,1.5,2.5,5,12],
+    16: [25,8,4,2.5,1.5,0.9,0.5,0.3,0.2,0.3,0.5,0.9,1.5,2.5,4,8,25],
+    32: [500,100,30,10,4,2,1.2,0.8,0.5,0.4,0.3,0.2,0.2,0.1,0.1,0.1,0.1,0.1,0.1,0.2,0.2,0.3,0.4,0.5,0.8,1.2,2,4,10,30,100,500]
   },
   high: {
-    8:  [6,2,0.7,0.15,0.05,0.15,0.7,2,6],
-    12: [12,4,1.2,0.35,0.12,0.06,0.03,0.06,0.12,0.35,1.2,4,12],
-    16: [20,6,2,0.6,0.2,0.08,0.04,0.03,0.02,0.03,0.04,0.08,0.2,0.6,2,6,20],
-    32: [100,30,8,2.5,0.8,0.25,0.12,0.08,0.05,0.03,0.02,0.015,0.01,0.01,0.008,0.008,0.008,0.008,0.01,0.01,0.015,0.02,0.03,0.05,0.08,0.12,0.25,0.8,2.5,8,30,100]
+    8:  [12,3,1.2,0.2,0.1,0.2,1.2,3,12],
+    12: [40,12,5,1.5,0.5,0.2,0.1,0.2,0.5,1.5,5,12,40],
+    16: [100,30,12,5,2.5,1.2,0.5,0.2,0.1,0.2,0.5,1.2,2.5,5,12,30,100],
+    32: [5000,1000,200,50,15,5,2,0.8,0.4,0.2,0.1,0.1,0.1,0.1,0.0,0.0,0.0,0.0,0.1,0.1,0.1,0.1,0.2,0.4,0.8,2,5,15,50,200,1000,5000]
   }
 };
 
@@ -2404,14 +2432,7 @@ function plAnimLoop(){
       plBalls.splice(i,1);
       const cols=rows+1;
       const bucketW=(W-padX*2)/cols;
-      let bucketIdx=Math.min(Math.floor((b.x-padX)/bucketW),mults.length-1);
-      bucketIdx=Math.max(0,bucketIdx);
-      const edgeDistance=Math.min(bucketIdx,(mults.length-1)-bucketIdx);
-      if(edgeDistance===0 && Math.random()<0.94){
-        bucketIdx = bucketIdx===0 ? 1 : mults.length-2;
-      }else if(edgeDistance===1 && Math.random()<0.82){
-        bucketIdx = bucketIdx<mults.length/2 ? 2 : mults.length-3;
-      }
+      const bucketIdx=Math.min(Math.floor((b.x-padX)/bucketW),mults.length-1);
       const safeIdx=Math.max(0,bucketIdx);
       const mult=mults[safeIdx]||1;
       const win=Math.floor(b.bet*mult);
@@ -2461,23 +2482,6 @@ function drawPlinko(){
 
 function dropPlinko(){
   if(!CU)return;
-  const now = Date.now();
-  window._plinkoNextDropAt = window._plinkoNextDropAt || 0;
-  if(now < window._plinkoNextDropAt) return;
-  window._plinkoNextDropAt = now + 900;
-
-  const btn = document.getElementById('pl-drop');
-  if(btn){
-    btn.disabled = true;
-    btn.style.opacity = '0.55';
-    setTimeout(()=>{
-      if(!plAutoRunning){
-        btn.disabled = false;
-        btn.style.opacity = '';
-      }
-    }, 900);
-  }
-
   const bet=getBet('pl-bet');
   if(bet>CU.balance-plInFlight){showToast('Not enough balance!','lose');return;}
   CU.balance-=bet;
@@ -3573,6 +3577,168 @@ function limboRoll(){
   }
 }
 
+
+/* ================================================================
+   DVC CLICKER GAME
+================================================================ */
+let ckCoins=0, ckTotalClicks=0, ckTotalEarned=0, ckClickMult=1, ckCashOuts=0, ckInterval=null;
+
+const CK_UPGRADES=[
+  {id:'intern',    icon:'👶', name:'Intern',          desc:'Earns 0.1 coins/sec',   baseCost:15,     cpsBonus:0.1,  clickBonus:0,   maxOwned:50},
+  {id:'analyst',   icon:'📊', name:'Analyst',         desc:'Earns 0.5 coins/sec',   baseCost:100,    cpsBonus:0.5,  clickBonus:0,   maxOwned:40},
+  {id:'trader',    icon:'📈', name:'Trader',          desc:'Earns 2 coins/sec',     baseCost:500,    cpsBonus:2,    clickBonus:0,   maxOwned:30},
+  {id:'dealer',    icon:'🎰', name:'Dealer',          desc:'Earns 8 coins/sec',     baseCost:2000,   cpsBonus:8,    clickBonus:0,   maxOwned:20},
+  {id:'manager',   icon:'🕴️',  name:'Manager',         desc:'Earns 25 coins/sec',    baseCost:8000,   cpsBonus:25,   clickBonus:0,   maxOwned:15},
+  {id:'gpufarm',   icon:'🖥️',  name:'GPU Farm',        desc:'Earns 100 coins/sec',   baseCost:30000,  cpsBonus:100,  clickBonus:0,   maxOwned:10},
+  {id:'casino',    icon:'🏦', name:'Casino Floor',    desc:'Earns 500 coins/sec',   baseCost:100000, cpsBonus:500,  clickBonus:0,   maxOwned:5},
+  {id:'empire',    icon:'👑', name:'Gambling Empire', desc:'Earns 2,000 coins/sec', baseCost:500000, cpsBonus:2000, clickBonus:0,   maxOwned:3},
+  {id:'mouse',     icon:'🖱️',  name:'Better Mouse',   desc:'+2 per click',          baseCost:50,     cpsBonus:0,    clickBonus:2,   maxOwned:1},
+  {id:'turbo',     icon:'⚡', name:'Turbo Click',     desc:'+5 per click',          baseCost:300,    cpsBonus:0,    clickBonus:5,   maxOwned:1},
+  {id:'autoclick', icon:'🤖', name:'Auto Clicker',    desc:'+15 per click',         baseCost:2000,   cpsBonus:0,    clickBonus:15,  maxOwned:1},
+  {id:'hyperspeed',icon:'🚀', name:'Hyperspeed',      desc:'+50 per click',         baseCost:15000,  cpsBonus:0,    clickBonus:50,  maxOwned:1},
+  {id:'quantum',   icon:'⚛️',  name:'Quantum Click',  desc:'+200 per click',        baseCost:100000, cpsBonus:0,    clickBonus:200, maxOwned:1},
+  {id:'coffee',    icon:'☕', name:'Coffee Break',    desc:'×2 click multiplier',   baseCost:1000,   cpsBonus:0,    clickBonus:0,   mult:2, maxOwned:1},
+  {id:'energy',    icon:'🔋', name:'Energy Drink',    desc:'×3 click multiplier',   baseCost:20000,  cpsBonus:0,    clickBonus:0,   mult:3, maxOwned:1},
+  {id:'luckystar', icon:'🌟', name:'Lucky Star',      desc:'×5 ALL income',         baseCost:250000, cpsBonus:0,    clickBonus:0,   mult:5, allMult:true, maxOwned:1},
+];
+
+let ckOwned={};
+CK_UPGRADES.forEach(u=>ckOwned[u.id]=0);
+
+const CK_MILESTONES=[
+  {id:'c100',  label:'100 coins earned',   goal:100,     type:'earned',   reward:'🌱'},
+  {id:'c1k',   label:'1,000 coins earned', goal:1000,    type:'earned',   reward:'🌿'},
+  {id:'c10k',  label:'10K coins earned',   goal:10000,   type:'earned',   reward:'🌳'},
+  {id:'c100k', label:'100K coins earned',  goal:100000,  type:'earned',   reward:'🏆'},
+  {id:'c1m',   label:'1M coins earned',    goal:1000000, type:'earned',   reward:'💎'},
+  {id:'t100',  label:'100 clicks',         goal:100,     type:'clicks',   reward:'👆'},
+  {id:'t1k',   label:'1,000 clicks',       goal:1000,    type:'clicks',   reward:'🖱️'},
+  {id:'t10k',  label:'10,000 clicks',      goal:10000,   type:'clicks',   reward:'⚡'},
+  {id:'cash1', label:'First cash out',     goal:1,       type:'cashouts', reward:'💰'},
+  {id:'cash5', label:'5 cash outs',        goal:5,       type:'cashouts', reward:'🤑'},
+];
+
+function ckGetClickValue(){
+  let base=1;
+  CK_UPGRADES.forEach(u=>{if(u.clickBonus&&ckOwned[u.id]>0)base+=u.clickBonus*ckOwned[u.id];});
+  let mult=ckClickMult;
+  CK_UPGRADES.forEach(u=>{if(u.allMult&&ckOwned[u.id]>0)mult*=u.mult;});
+  return Math.floor(base*mult);
+}
+function ckGetCPS(){
+  let cps=0;
+  CK_UPGRADES.forEach(u=>{if(u.cpsBonus&&ckOwned[u.id]>0)cps+=u.cpsBonus*ckOwned[u.id];});
+  let globalMult=1;
+  CK_UPGRADES.forEach(u=>{if(u.allMult&&ckOwned[u.id]>0)globalMult*=u.mult;});
+  return cps*globalMult;
+}
+function ckGetUpgradeCost(upg){return Math.floor(upg.baseCost*Math.pow(1.15,ckOwned[upg.id]));}
+function ckCashOutValue(){return Math.floor(ckTotalEarned/1000);}
+
+function clickerClick(e){
+  const val=ckGetClickValue();
+  ckCoins+=val;ckTotalClicks++;ckTotalEarned+=val;
+  const wrap=document.getElementById('ck-btn-wrap');
+  if(wrap){
+    const float=document.createElement('div');
+    float.className='click-float';
+    float.textContent='+'+val.toLocaleString();
+    float.style.left=(30+Math.random()*40)+'%';
+    float.style.top='10%';
+    wrap.appendChild(float);
+    setTimeout(()=>float.remove(),1000);
+  }
+  ckUpdateUI();
+}
+
+function clickerBuyUpgrade(id){
+  const upg=CK_UPGRADES.find(u=>u.id===id);if(!upg)return;
+  if(ckOwned[id]>=upg.maxOwned)return;
+  const cost=ckGetUpgradeCost(upg);
+  if(ckCoins<cost){showToast('Not enough coins!','info');return;}
+  ckCoins-=cost;
+  if(upg.mult&&!upg.allMult)ckClickMult*=upg.mult;
+  ckOwned[id]++;
+  ckUpdateUI();
+  showToast(upg.icon+' '+upg.name+' purchased!','win');
+}
+
+async function clickerCashOut(){
+  const val=ckCashOutValue();
+  if(val<=0){showToast('Need at least 1,000 coins!','info');return;}
+  if(!CU){showToast('Log in first!','info');return;}
+  ckCashOuts++;
+  CU.balance+=val;
+  ckTotalEarned=0;ckCoins=0;
+  CK_UPGRADES.forEach(u=>ckOwned[u.id]=0);
+  ckClickMult=1;
+  updateUI();
+  await saveCurrentUserNow();
+  showToast('💰 Cashed out +◈'+val.toLocaleString()+'!','win');
+  ckUpdateUI();
+}
+
+function ckUpdateUI(){
+  const cps=ckGetCPS();
+  const clickVal=ckGetClickValue();
+  const cashVal=ckCashOutValue();
+  const el=id=>document.getElementById(id);
+  if(el('ck-coins'))el('ck-coins').textContent='⬡ '+Math.floor(ckCoins).toLocaleString();
+  if(el('ck-cps'))el('ck-cps').textContent=cps.toFixed(1)+' coins/sec';
+  if(el('ck-per-click'))el('ck-per-click').textContent='+'+clickVal.toLocaleString()+' per click';
+  if(el('ck-total-clicks'))el('ck-total-clicks').textContent=ckTotalClicks.toLocaleString();
+  if(el('ck-total-earned'))el('ck-total-earned').textContent=Math.floor(ckTotalEarned).toLocaleString();
+  if(el('ck-click-power'))el('ck-click-power').textContent='×'+(ckClickMult * (CK_UPGRADES.find(u=>u.allMult&&ckOwned[u.id]>0)?CK_UPGRADES.find(u=>u.allMult&&ckOwned[u.id]>0).mult:1));
+  if(el('ck-cps-stat'))el('ck-cps-stat').textContent=cps.toFixed(1);
+  if(el('ck-cashouts'))el('ck-cashouts').textContent=ckCashOuts;
+  const cashBtn=el('ck-cashout');
+  if(cashBtn){el('ck-cashout-val').textContent=cashVal.toLocaleString();cashBtn.disabled=cashVal<=0;}
+  // Upgrades
+  const upgEl=el('ck-upgrades');
+  if(upgEl)upgEl.innerHTML=CK_UPGRADES.map(upg=>{
+    const owned=ckOwned[upg.id];
+    const maxed=owned>=upg.maxOwned;
+    const cost=ckGetUpgradeCost(upg);
+    const canAfford=ckCoins>=cost;
+    const locked=!canAfford&&!maxed;
+    return '<div class="upgrade-card '+(maxed?'maxed':locked?'locked':'')+'" onclick="'+(maxed?'':("clickerBuyUpgrade('"+upg.id+"')"))+'">'
+      +'<div class="upg-icon">'+upg.icon+'</div>'
+      +'<div class="upg-info">'
+      +'<div class="upg-name">'+upg.name+'</div>'
+      +'<div class="upg-desc">'+upg.desc+'</div>'
+      +(owned>0?('<div class="upg-owned">Owned: '+owned+(upg.maxOwned>1?' / '+upg.maxOwned:'')+'</div>'):'')
+      +'</div>'
+      +'<div class="upg-cost">'+(maxed?'✅ MAX':'⬡ '+cost.toLocaleString())+'</div>'
+      +'</div>';
+  }).join('');
+  // Milestones
+  const msEl=el('ck-milestones');
+  if(msEl)msEl.innerHTML=CK_MILESTONES.map(m=>{
+    let cur=0;
+    if(m.type==='earned')cur=ckTotalEarned;
+    else if(m.type==='clicks')cur=ckTotalClicks;
+    else if(m.type==='cashouts')cur=ckCashOuts;
+    const done=cur>=m.goal;
+    const pct=Math.min(100,(cur/m.goal*100)).toFixed(0);
+    return '<div class="clicker-milestone '+(done?'done':'craft">')
+      +'<span>'+m.reward+'</span>'
+      +'<div style="flex:1;">'
+      +'<div style="font-size:0.72rem;font-weight:600;'+(done?'color:var(--gold)':'')+'">'+m.label+'</div>'
+      +(done?'<div style="font-size:0.65rem;color:var(--gold)">COMPLETED ✓</div>'
+            :'<div style="height:3px;background:var(--surface3);border-radius:2px;margin-top:3px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:var(--accent);border-radius:2px;"></div></div>')
+      +'</div></div>';
+  }).join('');
+}
+
+function initClicker(){
+  if(ckInterval)clearInterval(ckInterval);
+  ckInterval=setInterval(()=>{
+    const cps=ckGetCPS();
+    if(cps>0){const gain=cps/20;ckCoins+=gain;ckTotalEarned+=gain;}
+    ckUpdateUI();
+  },50);
+  ckUpdateUI();
+}
 /* ================================================================
    SETTINGS
 ================================================================ */
@@ -3660,10 +3826,12 @@ async function resetBalance(){if(!confirm('Reset balance to ◈1,000?'))return;C
 /* ================================================================
    OWNER PANEL
 ================================================================ */
-const OWNER_PASS="7xQ!vZ9#Lm2$P@aR8^kD4&nWcYfT3*HsJ0bU%G1eXqV5oCz";let ownerUnlocked=false;
-function unlockOwner(){
+const _OP='fe06de8d8a87867f2e6a306208b82f0434a02e9e5cb35c1a1585b091f3989cfb';let ownerUnlocked=false;
+async function _hashStr(s){const b=new TextEncoder().encode(s);const h=await crypto.subtle.digest('SHA-256',b);return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+async function unlockOwner(){
   const input=document.getElementById('owner-pass-input');const err=document.getElementById('owner-pass-err');err.classList.remove('show');
-  if(input.value!==OWNER_PASS){err.textContent='Wrong password.';err.classList.add('show');input.value='';return;}
+  const h=await _hashStr(input.value);
+  if(h!==_OP){err.textContent='Wrong password.';err.classList.add('show');input.value='';return;}
   ownerUnlocked=true;document.getElementById('owner-lock').style.display='none';document.getElementById('owner-panel-content').style.display='block';
   ownerLog('Owner panel unlocked. 👑','system');ownerLog('Type /listusers to see all accounts.','info');
 }
