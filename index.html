@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DVC Clicker Pro · sharp edition</title>
+    <title>DVC Clicker Pro · sharp</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
     <style>
         /* ─── RESET ─── */
@@ -335,7 +335,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s ease;
+            transition: background 0.15s, border-color 0.15s;
             opacity: 0.5;
             pointer-events: none;
             cursor: default;
@@ -349,8 +349,6 @@
         .upgrade.can:hover {
             border-color: var(--primary);
             background: var(--surface3);
-            transform: translateX(3px);
-            box-shadow: 0 4px 20px rgba(124, 92, 252, 0.12);
         }
         .upgrade .info {
             display: flex;
@@ -541,7 +539,7 @@
 
     <script>
         /* ================================================================
-           DVC CLICKER PRO — SHARP EDITION
+           DVC CLICKER PRO — SHARP EDITION (no spaz, event delegation)
            ================================================================ */
 
         // ─── STATE ───
@@ -600,60 +598,72 @@
             return Math.floor(n).toString();
         }
 
-        let _updating = false;
+        // ─── DOM REFS ───
+        const upgradeList = document.getElementById('upgradeList');
+        let upgradeElements = {}; // id -> element
 
-        // ─── UI UPDATE ───
-        function updateUI() {
-            if (_updating) return;
-            _updating = true;
-            requestAnimationFrame(() => {
-                const cps = getTotalCPS();
-                const el = document.getElementById('cookieCount');
-                el.textContent = fmt(S.cookies);
-                el.classList.remove('pop');
-                void el.offsetWidth;
-                el.classList.add('pop');
-
-                document.getElementById('cpsDisplay').textContent = cps.toFixed(1);
-                document.getElementById('cpsLabel').textContent = '+' + cps.toFixed(1) + ' / sec';
-                document.getElementById('totalClicksDisplay').textContent = S.totalClicks;
-                const total = getTotalUpgrades();
-                document.getElementById('upgradeCount').textContent = total;
-                document.getElementById('upgradeCountDisplay').textContent = total;
-
-                renderUpgrades();
-                _updating = false;
-            });
-        }
-
-        function renderUpgrades() {
-            const list = document.getElementById('upgradeList');
-            list.innerHTML = '';
+        // ─── BUILD UPGRADE LIST ONCE ───
+        function buildUpgradeList() {
+            upgradeList.innerHTML = '';
             for (const u of UPGRADES) {
-                const owned = S.upgrades[u.id] || 0;
-                const cost = getCost(u);
-                const can = S.cookies >= cost && owned < u.max;
                 const div = document.createElement('div');
-                div.className = 'upgrade' + (can ? ' can' : '');
-                const add = (owned < u.max) ? u.cps : 0;
+                div.className = 'upgrade';
+                div.dataset.id = u.id;
                 div.innerHTML = `
               <div class="info">
-                <span class="name">${u.name} <span class="owned">${owned}</span></span>
+                <span class="name">${u.name} <span class="owned">0</span></span>
                 <span class="desc">${u.desc}</span>
               </div>
               <div class="right">
-                <div class="price">${cost === Infinity ? 'MAX' : '🍪 ' + fmt(cost)}</div>
-                ${add > 0 ? `<div class="add">+${add} CPS</div>` : ''}
+                <div class="price">🍪 ${fmt(u.baseCost)}</div>
+                <div class="add">+${u.cps} CPS</div>
               </div>
             `;
-                if (can) {
-                    div.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        purchase(u.id);
-                    });
-                }
-                list.appendChild(div);
+                upgradeList.appendChild(div);
+                upgradeElements[u.id] = div;
             }
+            // event delegation
+            upgradeList.addEventListener('click', function(e) {
+                const item = e.target.closest('.upgrade');
+                if (!item) return;
+                if (!item.classList.contains('can')) return;
+                const id = item.dataset.id;
+                purchase(id);
+            });
+        }
+
+        // ─── UPDATE UPGRADE LIST (in-place) ───
+        function updateUpgradeList() {
+            for (const u of UPGRADES) {
+                const el = upgradeElements[u.id];
+                if (!el) continue;
+                const owned = S.upgrades[u.id] || 0;
+                const cost = getCost(u);
+                const can = S.cookies >= cost && owned < u.max;
+                // Update owned count
+                const ownedSpan = el.querySelector('.owned');
+                if (ownedSpan) ownedSpan.textContent = owned;
+                // Update price
+                const priceDiv = el.querySelector('.price');
+                if (priceDiv) {
+                    priceDiv.innerHTML = cost === Infinity ? 'MAX' : '🍪 ' + fmt(cost);
+                }
+                // Update add CPS (only show if not maxed)
+                const addDiv = el.querySelector('.add');
+                if (addDiv) {
+                    if (owned < u.max) {
+                        addDiv.textContent = '+' + u.cps + ' CPS';
+                        addDiv.style.display = '';
+                    } else {
+                        addDiv.style.display = 'none';
+                    }
+                }
+                // Toggle can class
+                el.classList.toggle('can', can);
+            }
+            // Update total upgrade count
+            document.getElementById('upgradeCount').textContent = getTotalUpgrades();
+            document.getElementById('upgradeCountDisplay').textContent = getTotalUpgrades();
         }
 
         // ─── PURCHASE ───
@@ -668,10 +678,11 @@
             _purchasing = true;
             S.cookies -= cost;
             S.upgrades[id] = (S.upgrades[id] || 0) + 1;
+            // update everything
             updateUI();
             showToast(`✅ ${u.name} purchased!`);
             saveGame();
-            setTimeout(() => { _purchasing = false; }, 100);
+            setTimeout(() => { _purchasing = false; }, 120);
         }
 
         // ─── CLICK ───
@@ -706,6 +717,23 @@
             S.totalClicks++;
             updateUI();
             saveGame();
+        }
+
+        // ─── UI UPDATE ───
+        function updateUI() {
+            const cps = getTotalCPS();
+            const el = document.getElementById('cookieCount');
+            el.textContent = fmt(S.cookies);
+            el.classList.remove('pop');
+            void el.offsetWidth;
+            el.classList.add('pop');
+
+            document.getElementById('cpsDisplay').textContent = cps.toFixed(1);
+            document.getElementById('cpsLabel').textContent = '+' + cps.toFixed(1) + ' / sec';
+            document.getElementById('totalClicksDisplay').textContent = S.totalClicks;
+
+            // Update upgrade list in-place
+            updateUpgradeList();
         }
 
         // ─── SAVE / LOAD ───
@@ -770,6 +798,9 @@
 
         // ─── INIT ───
         function init() {
+            // Build upgrade DOM once
+            buildUpgradeList();
+
             const loaded = loadGame();
             for (const u of UPGRADES) {
                 if (!(u.id in S.upgrades)) S.upgrades[u.id] = 0;
