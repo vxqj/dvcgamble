@@ -22,6 +22,7 @@
             --gold: #ffc94a;
             --green: #39e58c;
             --red: #ff5d6c;
+            --combo-color: #ff6b6b;
         }
         html, body { height: 100%; overflow: hidden; font-family: 'Manrope', sans-serif; background: var(--bg); color: var(--fg); }
         ::-webkit-scrollbar { width: 4px; }
@@ -100,7 +101,7 @@
             background: radial-gradient(circle, var(--primary-glow), transparent 70%); opacity: 0.12; pointer-events: none;
         }
 
-        /* HEADER */
+        /* ─── HEADER ─── */
         .header {
             display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.6rem;
             border-bottom: 1px solid var(--border); margin-bottom: 1rem; flex-wrap: wrap; gap: 0.4rem;
@@ -127,6 +128,7 @@
         .stat .val.gold { color: var(--gold); }
         .stat .val.green { color: var(--green); }
         .stat .val.purple { color: var(--primary); }
+        .stat .val.red { color: var(--combo-color); }
         .user-badge {
             display: flex; align-items: center; gap: 0.3rem; background: var(--primary-dim);
             border: 1px solid rgba(124,92,252,0.2); padding: 0.1rem 0.5rem 0.1rem 0.7rem;
@@ -163,7 +165,7 @@
         @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } .game { padding: 0.8rem; max-height: none; overflow-y: auto; } }
 
         /* CLICKER */
-        .clicker-col { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.2rem 0; gap: 0.4rem; }
+        .clicker-col { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.2rem 0; gap: 0.4rem; position: relative; }
         .clicker-wrap {
             position: relative; width: 180px; height: 180px; cursor: pointer; user-select: none;
             -webkit-tap-highlight-color: transparent; transition: transform 0.08s ease;
@@ -186,8 +188,10 @@
         }
         .clicker-wrap .dvc.golden { border-color: var(--gold) !important; box-shadow: 0 0 80px rgba(255,201,74,0.6), inset 0 0 40px rgba(255,201,74,0.3) !important; animation: goldenPulse 0.8s ease-in-out infinite alternate; }
         .clicker-wrap .dvc.rainbow { border-color: #ff6b6b !important; box-shadow: 0 0 80px rgba(255,107,107,0.6), inset 0 0 40px rgba(255,107,107,0.3) !important; animation: rainbowPulse 1.2s ease-in-out infinite alternate; }
+        .clicker-wrap .dvc.combo-active { border-color: var(--combo-color) !important; box-shadow: 0 0 80px rgba(255,107,107,0.5), inset 0 0 40px rgba(255,107,107,0.2) !important; animation: comboPulse 0.4s ease-in-out infinite alternate; }
         @keyframes goldenPulse { 0% { transform: scale(1); box-shadow: 0 0 60px rgba(255,201,74,0.5); } 100% { transform: scale(1.04); box-shadow: 0 0 100px rgba(255,201,74,0.8); } }
         @keyframes rainbowPulse { 0% { transform: scale(1); filter: hue-rotate(0deg); } 100% { transform: scale(1.06); filter: hue-rotate(360deg); } }
+        @keyframes comboPulse { 0% { transform: scale(1); box-shadow: 0 0 40px rgba(255,107,107,0.3); } 100% { transform: scale(1.03); box-shadow: 0 0 80px rgba(255,107,107,0.6); } }
         .clicker-wrap .ripple {
             position: absolute; inset: -4px; border: 2px solid var(--primary); border-radius: 50%;
             opacity: 0; animation: rippleOut 0.7s ease-out forwards; pointer-events: none;
@@ -210,6 +214,17 @@
         .clicker-stats .label { font-size: 0.65rem; color: var(--muted); margin-top: 0.1rem; letter-spacing: 0.3px; }
         .clicker-stats .cps-badge { font-size: 0.7rem; color: var(--green); font-weight: 600; margin-top: 0.2rem; background: rgba(57,229,140,0.07); padding: 0.1rem 0.8rem; border: 1px solid rgba(57,229,140,0.12); display: inline-block; }
         .clicker-stats .click-mult { font-size: 0.65rem; color: var(--gold); margin-top: 0.15rem; }
+        .clicker-stats .combo-display {
+            font-size: 0.75rem; font-weight: 700; color: var(--combo-color); margin-top: 0.1rem;
+            opacity: 0; transition: opacity 0.3s; min-height: 1.2rem;
+        }
+        .clicker-stats .combo-display.active { opacity: 1; }
+        .clicker-stats .frenzy-display {
+            font-size: 0.7rem; font-weight: 700; color: var(--gold); margin-top: 0.1rem;
+            opacity: 0; transition: opacity 0.3s; min-height: 1.1rem;
+        }
+        .clicker-stats .frenzy-display.active { opacity: 1; }
+        .kb-hint { font-size: 0.45rem; color: var(--muted); opacity: 0.5; margin-top: 0.1rem; letter-spacing: 0.5px; }
 
         /* RIGHT PANEL */
         .panel-tabs {
@@ -258,6 +273,44 @@
         .upgrade .add { font-size: 0.45rem; color: var(--green); font-weight: 600; }
         .upgrade .prestige-cost { font-family: 'Space Grotesk', monospace; font-weight: 700; font-size: 0.6rem; color: var(--primary); }
 
+        /* ─── CHALLENGE MINI-GAME ─── */
+        .challenge-modal {
+            position: fixed; inset: 0; z-index: 99997; background: rgba(0,0,0,0.9);
+            display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .challenge-modal.show { opacity: 1; pointer-events: all; }
+        .challenge-box {
+            background: var(--surface); border: 1px solid var(--border2); padding: 2rem;
+            max-width: 420px; width: 100%; text-align: center;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+        }
+        .challenge-box h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; margin-bottom: 0.3rem; }
+        .challenge-box .sub { color: var(--muted); font-size: 0.75rem; margin-bottom: 1.2rem; }
+        .challenge-box .big-number {
+            font-family: 'Space Grotesk', monospace; font-size: 4rem; font-weight: 800;
+            color: var(--gold); margin: 0.5rem 0;
+        }
+        .challenge-box .timer {
+            font-size: 1.5rem; font-weight: 700; color: var(--primary);
+        }
+        .challenge-box .challenge-btn {
+            background: var(--primary); color: #fff; border: none;
+            padding: 0.6rem 2rem; font-size: 0.9rem; font-weight: 700;
+            font-family: 'Manrope', sans-serif; cursor: pointer; transition: 0.2s;
+            margin-top: 1rem; border-radius: 4px;
+        }
+        .challenge-box .challenge-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+        .challenge-box .challenge-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .challenge-box .result { font-size: 0.9rem; font-weight: 600; margin-top: 0.5rem; min-height: 1.5rem; }
+        .challenge-box .close-btn {
+            background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+            color: var(--muted); padding: 0.2rem 0.8rem; cursor: pointer; font-size: 0.7rem;
+            transition: 0.2s; font-family: 'Manrope', sans-serif; border-radius: 4px;
+            margin-top: 1rem;
+        }
+        .challenge-box .close-btn:hover { color: var(--fg); border-color: var(--border2); }
+
         /* LEADERBOARD */
         .lb-entry {
             display: flex; justify-content: space-between; padding: 0.25rem 0.2rem; border-bottom: 1px solid var(--border);
@@ -277,6 +330,7 @@
         .stats-grid .s-item .sv.gold { color: var(--gold); }
         .stats-grid .s-item .sv.green { color: var(--green); }
         .stats-grid .s-item .sv.purple { color: var(--primary); }
+        .stats-grid .s-item .sv.red { color: var(--combo-color); }
 
         /* ACHIEVEMENTS */
         .ach-item {
@@ -408,12 +462,8 @@
             .upgrade-panel { max-height: 300px; }
             .panel-tabs button { font-size: 0.4rem; padding: 0.15rem 0.3rem; }
             .modal-box { padding: 1rem; }
-        }
-
-        /* Keyboard shortcut hint */
-        .kb-hint {
-            font-size: 0.45rem; color: var(--muted); opacity: 0.5; margin-top: 0.1rem;
-            letter-spacing: 0.5px;
+            .challenge-box { padding: 1.2rem; }
+            .challenge-box .big-number { font-size: 3rem; }
         }
     </style>
 </head>
@@ -464,6 +514,21 @@
         </div>
     </div>
 
+    <!-- CHALLENGE MINI-GAME MODAL -->
+    <div class="challenge-modal" id="challengeModal">
+        <div class="challenge-box">
+            <h2>⚡ Click Challenge</h2>
+            <div class="sub">Click as fast as you can! Click the button below repeatedly.</div>
+            <div class="timer" id="challengeTimer">5s</div>
+            <div class="big-number" id="challengeScore">0</div>
+            <div class="sub">Clicks</div>
+            <div class="result" id="challengeResult"></div>
+            <button class="challenge-btn" id="challengeBtn" onclick="startChallenge()">▶ Start Challenge</button>
+            <br>
+            <button class="close-btn" onclick="closeChallenge()">✕ Close</button>
+        </div>
+    </div>
+
     <!-- NOTIFICATION BANNER -->
     <div class="notif-banner" id="notifBanner"><span id="notifText">🎉</span><span class="sub" id="notifSub"></span></div>
 
@@ -480,6 +545,7 @@
                         <div class="stat">📦 <span class="val" id="upgradeCountDisplay">0</span></div>
                         <div class="stat" onclick="openLevelDashboard()">⭐ LVL <span class="val purple" id="levelDisplay">1</span></div>
                         <div class="stat">🔮 PP <span class="val gold" id="prestigeDisplay">0</span></div>
+                        <div class="stat" onclick="openChallenge()">⚡ CH <span class="val red" id="challengeStat">0</span></div>
                     </div>
                     <div class="user-badge">
                         <span id="usernameDisplay">user</span>
@@ -501,6 +567,8 @@
                         <div class="label">DVC tokens</div>
                         <div class="cps-badge" id="cpsLabel">+0.0 / sec</div>
                         <div class="click-mult" id="clickMultLabel">×1.0 per click</div>
+                        <div class="combo-display" id="comboDisplay">🔥 Combo: x1</div>
+                        <div class="frenzy-display" id="frenzyDisplay">⚡ FRENZY ACTIVE!</div>
                         <div class="kb-hint">⌨️ Press <kbd>Space</kbd> to click</div>
                     </div>
                 </div>
@@ -601,6 +669,27 @@
         // ─── MUTE STATE ───
         let muted = false;
 
+        // ─── COMBO SYSTEM ───
+        let combo = 0;
+        let maxCombo = 0;
+        let lastClickTime = 0;
+        const COMBO_WINDOW = 1500; // ms
+        const COMBO_DECAY = 3000; // ms
+
+        // ─── FRENZY SYSTEM ───
+        let frenzyActive = false;
+        let frenzyEndTime = 0;
+        let frenzyMultiplier = 1;
+        const FRENZY_DURATION = 10000; // 10 seconds
+        const FRENZY_CHANCE = 0.008; // 0.8% per click
+
+        // ─── CHALLENGE ───
+        let challengeActive = false;
+        let challengeClicks = 0;
+        let challengeTimeLeft = 5;
+        let challengeInterval = null;
+        let challengeBest = 0;
+
         // ─── AUTH HELPERS ───
         function getUsers() { try { return JSON.parse(localStorage.getItem(AUTH_KEY)) || {}; } catch (_) { return {}; } }
         function saveUsers(users) { localStorage.setItem(AUTH_KEY, JSON.stringify(users)); }
@@ -641,6 +730,7 @@
                 cps: getTotalCPS(),
                 level: S.level,
                 prestige: S.prestigePoints,
+                combo: maxCombo,
                 date: Date.now()
             });
             saveLeaderboard();
@@ -652,6 +742,7 @@
                 prestige: S.prestigePoints,
                 level: S.level,
                 clicks: S.totalClicks,
+                combo: maxCombo,
                 date: Date.now()
             });
             savePPLB();
@@ -661,28 +752,19 @@
         }
 
         // ─── CROSS-DEVICE CLOUD SYNC ───
-        const hasCloudStorage = !!(window.storage && typeof window.storage.get === 'function' && typeof window.storage.set === 'function');
+        const hasCloudStorage = !!(window.storage && typeof window.storage.get === 'function' && typeof window.storage.set ===
+            'function');
         let cloudWarningShown = false;
         let leaderboardDirty = false;
         let lbAutoRefreshTimer = null;
         let lbSyncTimer = null;
 
         async function cloudGetArray(key) {
-            try {
-                const r = await window.storage.get(key, true);
-                return (r && r.value) ? JSON.parse(r.value) : [];
-            } catch (_) {
-                return [];
-            }
+            try { const r = await window.storage.get(key, true); return (r && r.value) ? JSON.parse(r.value) : []; } catch (_) { return []; }
         }
 
         async function cloudSetArray(key, arr) {
-            try {
-                await window.storage.set(key, JSON.stringify(arr), true);
-                return true;
-            } catch (_) {
-                return false;
-            }
+            try { await window.storage.set(key, JSON.stringify(arr), true); return true; } catch (_) { return false; }
         }
 
         async function refreshLeaderboardFromCloud() {
@@ -699,18 +781,14 @@
             const username = getSession();
             if (!username) return;
             if (!hasCloudStorage) {
-                if (!cloudWarningShown) {
-                    cloudWarningShown = true;
-                    showToast('ℹ️ No cloud sync here — leaderboard is local to this browser');
-                }
+                if (!cloudWarningShown) { cloudWarningShown = true;
+                    showToast('ℹ️ No cloud sync here — leaderboard is local to this browser'); }
                 return;
             }
             if (!force && !leaderboardDirty) return;
             leaderboardDirty = false;
-
             const myEntry = leaderboard.find(e => e.name === username);
             const myPP = ppLeaderboard.find(e => e.name === username);
-
             if (myEntry) {
                 let cloudLB = await cloudGetArray('global_leaderboard');
                 cloudLB = cloudLB.filter(e => e.name !== username);
@@ -731,14 +809,11 @@
             renderPPLB();
         }
 
-        function startLBAutoRefresh() {
-            stopLBAutoRefresh();
-            if (!hasCloudStorage) return;
-            lbAutoRefreshTimer = setInterval(refreshLeaderboardFromCloud, 12000);
-        }
-        function stopLBAutoRefresh() {
-            if (lbAutoRefreshTimer) { clearInterval(lbAutoRefreshTimer); lbAutoRefreshTimer = null; }
-        }
+        function startLBAutoRefresh() { stopLBAutoRefresh(); if (!hasCloudStorage) return;
+            lbAutoRefreshTimer = setInterval(refreshLeaderboardFromCloud, 12000); }
+
+        function stopLBAutoRefresh() { if (lbAutoRefreshTimer) { clearInterval(lbAutoRefreshTimer);
+                lbAutoRefreshTimer = null; } }
 
         function renderLeaderboard() {
             const list = document.getElementById('leaderboardList');
@@ -758,7 +833,7 @@
                 html += `<div class="lb-entry ${isMe ? 'me' : ''}">
                     <span class="rank">${rankDisplay}</span>
                     <span class="name">${entry.name} ${isMe ? '👈' : ''}</span>
-                    <span class="details">Lv.${entry.level || 1} · ${(entry.clicks || 0).toLocaleString()} clicks</span>
+                    <span class="details">Lv.${entry.level || 1} · ${(entry.clicks || 0).toLocaleString()} clicks · ${entry.combo || 0} combo</span>
                     <span class="score">🍪 ${formatNumber(entry.cookies)}</span>
                 </div>`;
             });
@@ -783,7 +858,7 @@
                 html += `<div class="lb-entry ${isMe ? 'me' : ''}">
                     <span class="rank">${rankDisplay}</span>
                     <span class="name">${entry.name} ${isMe ? '👈' : ''}</span>
-                    <span class="details">Lv.${entry.level || 1} · ${(entry.clicks || 0).toLocaleString()} clicks</span>
+                    <span class="details">Lv.${entry.level || 1} · ${(entry.clicks || 0).toLocaleString()} clicks · ${entry.combo || 0} combo</span>
                     <span class="score">🔮 ${entry.prestige}</span>
                 </div>`;
             });
@@ -897,6 +972,8 @@
             clicksAllTime: 0,
             goldenCollected: 0,
             bestCPS: 0,
+            bestCombo: 0,
+            challengeBest: 0,
             achievements: [],
             goldenBoost: { active: false, endTime: 0, multiplier: 1 },
             rainbowBoost: { active: false, endTime: 0, multiplier: 1 },
@@ -918,6 +995,8 @@
                 levelReq: 4 },
             { id: 'lv_prestige', name: '🔮 Prestige Boost', desc: '+2% PP earned', baseCost: 80, costMult: 1.5, max: 10,
                 levelReq: 8 },
+            { id: 'lv_combo', name: '🔥 Combo Master', desc: '+0.5 combo multiplier per level', baseCost: 60, costMult: 1.4,
+                max: 10, levelReq: 6 },
         ];
 
         // ─── CORE UPGRADES ───
@@ -948,7 +1027,7 @@
             { id: 'click4', name: '🔥 God Click', desc: '+5 click multiplier', baseCost: 100000000, mult: 1.8, max: 10 },
         ];
 
-        // ─── 🆕 CPS SPEED (MULTIPLIER) UPGRADES ───
+        // ─── CPS SPEED (MULTIPLIER) UPGRADES ───
         const CPS_MULT_UPGRADES = [
             { id: 'cps_mult1', name: '⚡ CPS Booster I', desc: '+10% total CPS', baseCost: 500000, mult: 1.6, max: 20 },
             { id: 'cps_mult2', name: '⚡ CPS Booster II', desc: '+20% total CPS', baseCost: 5000000, mult: 1.7, max: 15 },
@@ -956,19 +1035,19 @@
             { id: 'cps_mult4', name: '⚡ CPS Booster IV', desc: '+50% total CPS', baseCost: 500000000, mult: 1.9, max: 8 },
         ];
 
-        // ─── 🆕 GOLDEN COOKIE UPGRADES ───
+        // ─── GOLDEN COOKIE UPGRADES ───
         const GOLDEN_UPGRADES = [
             { id: 'golden_val1', name: '✨ Golden Value I', desc: '+15% golden cookie reward', baseCost: 200000, mult: 1.5,
                 max: 15 },
-            { id: 'golden_val2', name: '✨ Golden Value II', desc: '+30% golden cookie reward', baseCost: 2000000,
-                mult: 1.6, max: 10 },
+            { id: 'golden_val2', name: '✨ Golden Value II', desc: '+30% golden cookie reward', baseCost: 2000000, mult: 1.6,
+                max: 10 },
             { id: 'golden_val3', name: '✨ Golden Value III', desc: '+50% golden cookie reward', baseCost: 20000000,
                 mult: 1.7, max: 8 },
             { id: 'golden_freq', name: '⏱️ Golden Frequency', desc: '+10% golden cookie spawn rate', baseCost: 5000000,
                 mult: 1.5, max: 10 },
         ];
 
-        // ─── 🆕 BANK / INTEREST UPGRADES ───
+        // ─── BANK / INTEREST UPGRADES ───
         const BANK_UPGRADES = [
             { id: 'bank1', name: '🏦 Interest I', desc: '+0.5% interest per second on saved cookies', baseCost: 1000000,
                 mult: 1.4, max: 20 },
@@ -976,6 +1055,13 @@
                 max: 15 },
             { id: 'bank3', name: '🏦 Interest III', desc: '+2% interest per second', baseCost: 100000000, mult: 1.6,
                 max: 10 },
+        ];
+
+        // ─── COMBO UPGRADES ───
+        const COMBO_UPGRADES = [
+            { id: 'combo1', name: '🔥 Combo I', desc: 'Combo decays 5% slower', baseCost: 50000, mult: 1.5, max: 15 },
+            { id: 'combo2', name: '🔥 Combo II', desc: 'Combo decays 10% slower', baseCost: 500000, mult: 1.6, max: 12 },
+            { id: 'combo3', name: '🔥 Combo III', desc: 'Combo decays 20% slower', baseCost: 5000000, mult: 1.7, max: 10 },
         ];
 
         // ─── PRESTIGE UPGRADES ───
@@ -990,6 +1076,7 @@
             { id: 'p_bank', name: '🔮 Bank Interest', desc: '+0.2% permanent interest', baseCost: 12, mult: 1.3, max: 8 },
             { id: 'p_cps_mult', name: '🔮 CPS Multiplier', desc: '+5% permanent CPS multiplier', baseCost: 8, mult: 1.4,
                 max: 10 },
+            { id: 'p_combo', name: '🔮 Combo Master', desc: '+0.5 combo multiplier', baseCost: 6, mult: 1.3, max: 10 },
         ];
 
         // ─── SKILL TREE ───
@@ -1002,9 +1089,10 @@
             { id: 's_golden', name: '✨ Golden Affinity', desc: '+10% golden cookie value', cost: 2, max: 5 },
             { id: 's_cps_all', name: '🌀 All CPS', desc: '+10% all CPS per level', cost: 4, max: 3 },
             { id: 's_bank', name: '🏦 Bank Bonus', desc: '+0.5% interest', cost: 2, max: 5 },
+            { id: 's_combo', name: '🔥 Combo Bonus', desc: '+0.5 combo multiplier', cost: 2, max: 5 },
         ];
 
-        // ─── ACHIEVEMENT DEFINITIONS ─── (70+ achievements)
+        // ─── ACHIEVEMENT DEFINITIONS ─── (80+ achievements)
         const ACHIEVEMENTS = [
             // Click achievements
             { id: 'click_10', name: 'First Click', desc: 'Click 10 times', icon: '🖱️', check: () => S.totalClicks >= 10 },
@@ -1102,6 +1190,23 @@
                     for (const u of BANK_UPGRADES) count += (S.upgrades[u.id] || 0);
                     return count >= 5;
                 } },
+            // Combo achievements
+            { id: 'combo_10', name: '🔥 Combo Starter', desc: 'Reach 10 combo', icon: '🔥', check: () => combo >= 10 },
+            { id: 'combo_25', name: '🔥 Combo Master', desc: 'Reach 25 combo', icon: '🔥', check: () => combo >= 25 },
+            { id: 'combo_50', name: '🔥 Combo God', desc: 'Reach 50 combo', icon: '🔥', check: () => combo >= 50 },
+            { id: 'combo_100', name: '🔥 Combo Legend', desc: 'Reach 100 combo', icon: '🔥', check: () => combo >= 100 },
+            // Challenge achievements
+            { id: 'challenge_10', name: '⚡ Challenger', desc: 'Get 10 clicks in the challenge', icon: '⚡', check: () => S
+                    .challengeBest >= 10 },
+            { id: 'challenge_25', name: '⚡ Speedster', desc: 'Get 25 clicks in the challenge', icon: '⚡', check: () => S
+                    .challengeBest >= 25 },
+            { id: 'challenge_50', name: '⚡ Speed Demon', desc: 'Get 50 clicks in the challenge', icon: '⚡', check: () => S
+                    .challengeBest >= 50 },
+            { id: 'challenge_75', name: '⚡ Speed God', desc: 'Get 75 clicks in the challenge', icon: '⚡', check: () => S
+                    .challengeBest >= 75 },
+            // Frenzy achievements
+            { id: 'frenzy_1', name: '⚡ Frenzy!', desc: 'Trigger your first Frenzy', icon: '⚡', check: () => S
+                    ._frenzyTriggered },
             // Prestige achievements
             { id: 'prestige_1', name: 'Reborn', desc: 'Prestige once', icon: '🔮', check: () => S.totalPrestiges >= 1 },
             { id: 'prestige_2', name: 'Twice Reborn', desc: 'Prestige twice', icon: '🔮', check: () => S.totalPrestiges >=
@@ -1194,9 +1299,15 @@
                     cost += nextCost;
                     qty++;
                 }
+                // FIX: If can't afford even 1, return the cost of 1 as the "price"
+                if (qty === 0) {
+                    const oneCost = Math.floor(u.baseCost * Math.pow(u.mult, owned));
+                    return { qty: 0, cost: oneCost };
+                }
                 return { qty, cost };
             }
             const qty = Math.min(qtyMode, remaining);
+            if (qty === 0) return { qty: 0, cost: 0 };
             return { qty, cost: getBulkCost(u.baseCost, u.mult, owned, qty) };
         }
 
@@ -1233,11 +1344,38 @@
             return Math.floor(u.baseCost * Math.pow(u.costMult, owned));
         }
 
+        function getComboDecayBonus() {
+            let bonus = 1;
+            for (const u of COMBO_UPGRADES) {
+                const owned = S.upgrades[u.id] || 0;
+                if (owned > 0) {
+                    if (u.id === 'combo1') bonus -= owned * 0.05;
+                    else if (u.id === 'combo2') bonus -= owned * 0.10;
+                    else if (u.id === 'combo3') bonus -= owned * 0.20;
+                }
+            }
+            return Math.max(bonus, 0.1);
+        }
+
+        function getComboMultiplier() {
+            let base = 1 + (combo * 0.02); // 2% per combo level
+            // Level upgrade combo bonus
+            const lvCombo = S.levelUpgrades['lv_combo'] || 0;
+            base += lvCombo * 0.5;
+            // Skill combo bonus
+            const sCombo = S.skills['s_combo'] || 0;
+            base += sCombo * 0.5;
+            // Prestige combo bonus
+            const pCombo = S.prestigeUpgrades['p_combo'] || 0;
+            base += pCombo * 0.5;
+            if (frenzyActive) base *= frenzyMultiplier;
+            return Math.max(base, 1);
+        }
+
         function getTotalCPS() {
             let t = 0;
             for (const u of UPGRADES) t += (S.upgrades[u.id] || 0) * u.cps;
 
-            // CPS Multiplier upgrades (new)
             let cpsMult = 1;
             for (const u of CPS_MULT_UPGRADES) {
                 const owned = S.upgrades[u.id] || 0;
@@ -1249,7 +1387,6 @@
                 }
             }
 
-            // Prestige CPS boosts
             let prestigeMult = 1;
             for (const pu of PRESTIGE_UPGRADES) {
                 if (pu.id.startsWith('p_cps')) {
@@ -1266,7 +1403,6 @@
                 }
             }
 
-            // Skill CPS bonuses
             let skillMult = 1;
             for (const sk of SKILLS) {
                 const owned = S.skills[sk.id] || 0;
@@ -1311,6 +1447,8 @@
             const lvClick1 = S.levelUpgrades['lv_click1'] || 0;
             const lvClick2 = S.levelUpgrades['lv_click2'] || 0;
             mult += lvClick1 * 0.5 + lvClick2 * 1;
+            const comboMult = getComboMultiplier();
+            mult *= comboMult;
             if (S.goldenBoost.active) mult *= S.goldenBoost.multiplier;
             if (S.rainbowBoost.active) mult *= S.rainbowBoost.multiplier;
             return mult;
@@ -1351,9 +1489,7 @@
                     else if (u.id === 'bank3') rate += owned * 0.02;
                 }
             }
-            // Skill bank bonus
             rate += (S.skills['s_bank'] || 0) * 0.005;
-            // Prestige bank bonus
             rate += (S.prestigeUpgrades['p_bank'] || 0) * 0.002;
             return rate;
         }
@@ -1367,11 +1503,10 @@
 
         function getTotalUpgrades() {
             let c = 0;
-            for (const u of UPGRADES) c += (S.upgrades[u.id] || 0);
-            for (const cu of CLICK_MULT_UPGRADES) c += (S.upgrades[cu.id] || 0);
-            for (const cu of CPS_MULT_UPGRADES) c += (S.upgrades[cu.id] || 0);
-            for (const gu of GOLDEN_UPGRADES) c += (S.upgrades[gu.id] || 0);
-            for (const bu of BANK_UPGRADES) c += (S.upgrades[bu.id] || 0);
+            const all = [...UPGRADES, ...CLICK_MULT_UPGRADES, ...CPS_MULT_UPGRADES, ...GOLDEN_UPGRADES, ...BANK_UPGRADES,
+                ...COMBO_UPGRADES
+            ];
+            for (const u of all) c += (S.upgrades[u.id] || 0);
             return c;
         }
 
@@ -1380,6 +1515,7 @@
             { v: 1e24, s: 'Sp' }, { v: 1e21, s: 'Sx' }, { v: 1e18, s: 'Qi' },
             { v: 1e15, s: 'Qa' }, { v: 1e12, s: 'T' }, { v: 1e9, s: 'B' }, { v: 1e6, s: 'M' },
         ];
+
         function formatNumber(n) {
             if (!isFinite(n)) return '∞';
             for (const suf of NUM_SUFFIXES) {
@@ -1569,6 +1705,140 @@
             }, delay);
         }
 
+        // ─── COMBO SYSTEM ───
+        let comboDecayInterval = null;
+
+        function startComboSystem() {
+            if (comboDecayInterval) return;
+            comboDecayInterval = setInterval(() => {
+                if (combo > 0) {
+                    const now = Date.now();
+                    if (now - lastClickTime > COMBO_WINDOW) {
+                        const decayBonus = getComboDecayBonus();
+                        const decayAmount = Math.max(1, Math.floor(combo * 0.05 * decayBonus));
+                        combo = Math.max(0, combo - decayAmount);
+                        updateComboDisplay();
+                        if (combo === 0) {
+                            document.getElementById('dvcButton').classList.remove('combo-active');
+                        }
+                    }
+                }
+            }, 500);
+        }
+
+        function updateComboDisplay() {
+            const display = document.getElementById('comboDisplay');
+            if (combo > 0) {
+                display.textContent = `🔥 Combo: x${getComboMultiplier().toFixed(1)} (${combo})`;
+                display.classList.add('active');
+            } else {
+                display.classList.remove('active');
+            }
+        }
+
+        // ─── FRENZY SYSTEM ───
+        function triggerFrenzy() {
+            frenzyActive = true;
+            frenzyMultiplier = 2 + (S.prestigeUpgrades['p_combo'] || 0) * 0.1;
+            frenzyEndTime = Date.now() + FRENZY_DURATION;
+            S._frenzyTriggered = true;
+            document.getElementById('frenzyDisplay').classList.add('active');
+            showNotification('⚡ FRENZY!', `2× clicks for ${FRENZY_DURATION/1000} seconds!`);
+            playGoldenSound();
+            showToast('⚡ Frenzy activated! 2× clicks!');
+            setTimeout(() => {
+                frenzyActive = false;
+                document.getElementById('frenzyDisplay').classList.remove('active');
+                showNotification('⚡ Frenzy ended', 'Back to normal');
+            }, FRENZY_DURATION);
+        }
+
+        // ─── CHALLENGE MINI-GAME ───
+        function openChallenge() {
+            document.getElementById('challengeModal').classList.add('show');
+            document.getElementById('challengeScore').textContent = S.challengeBest || 0;
+            document.getElementById('challengeResult').textContent = S.challengeBest > 0 ? `Best: ${S.challengeBest} clicks` : '';
+            document.getElementById('challengeBtn').disabled = false;
+            document.getElementById('challengeBtn').textContent = '▶ Start Challenge';
+        }
+
+        function closeChallenge() {
+            document.getElementById('challengeModal').classList.remove('show');
+            if (challengeInterval) { clearInterval(challengeInterval);
+                challengeInterval = null; }
+            challengeActive = false;
+        }
+
+        function startChallenge() {
+            if (challengeActive) return;
+            challengeActive = true;
+            challengeClicks = 0;
+            challengeTimeLeft = 5;
+            const btn = document.getElementById('challengeBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Click!';
+            document.getElementById('challengeScore').textContent = '0';
+            document.getElementById('challengeResult').textContent = 'Click as fast as you can!';
+            document.getElementById('challengeTimer').textContent = '5s';
+
+            // Countdown
+            let timer = 5;
+            const timerInterval = setInterval(() => {
+                timer--;
+                document.getElementById('challengeTimer').textContent = timer + 's';
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    endChallenge();
+                }
+            }, 1000);
+
+            // Click counter
+            let clickHandler = null;
+            const clickFunc = () => {
+                if (!challengeActive) return;
+                challengeClicks++;
+                document.getElementById('challengeScore').textContent = challengeClicks;
+                playClickSound();
+            };
+            document.getElementById('clicker').addEventListener('click', clickHandler = clickFunc);
+
+            // Store cleanup
+            challengeInterval = {
+                timer: timerInterval,
+                handler: clickHandler
+            };
+
+            // Auto-end after 5 seconds
+            setTimeout(() => {
+                if (challengeActive) endChallenge();
+            }, 5000);
+        }
+
+        function endChallenge() {
+            if (!challengeActive) return;
+            challengeActive = false;
+            const btn = document.getElementById('challengeBtn');
+            btn.disabled = false;
+            btn.textContent = '▶ Start Challenge';
+
+            if (challengeInterval) {
+                clearInterval(challengeInterval.timer);
+                document.getElementById('clicker').removeEventListener('click', challengeInterval.handler);
+                challengeInterval = null;
+            }
+
+            if (challengeClicks > S.challengeBest) {
+                S.challengeBest = challengeClicks;
+                showToast(`🏆 New challenge best: ${challengeClicks} clicks!`);
+                playAchievementSound();
+                checkAchievements();
+            }
+            document.getElementById('challengeResult').textContent = `✅ ${challengeClicks} clicks! ${challengeClicks > S.challengeBest ? 'NEW BEST! 🏆' : ''}`;
+            document.getElementById('challengeTimer').textContent = 'Done!';
+            document.getElementById('challengeStat').textContent = S.challengeBest;
+            saveGame();
+        }
+
         // ─── PRESTIGE SYSTEM ───
         function getPrestigeReq() {
             return Math.floor(1000000 * Math.pow(1.8, S.totalPrestiges));
@@ -1699,13 +1969,22 @@
             document.getElementById('upgradeCountDisplay').textContent = totalUp;
             document.getElementById('prestigeCount').textContent = S.prestigePoints + ' PP';
 
+            // Combo display
+            updateComboDisplay();
+
+            // Frenzy display
+            if (frenzyActive) {
+                document.getElementById('frenzyDisplay').classList.add('active');
+            }
+
             // Update leaderboards if visible
             const lbTab = document.getElementById('tabLeaderboard');
             if (!lbTab.classList.contains('hidden')) renderLeaderboard();
             const pplbTab = document.getElementById('tabPPLB');
             if (!pplbTab.classList.contains('hidden')) renderPPLB();
 
-            // Bank interest (applied in loop)
+            // Challenge stat
+            document.getElementById('challengeStat').textContent = S.challengeBest || 0;
         }
 
         // ─── UPGRADE LIST ───
@@ -1714,29 +1993,30 @@
 
         function buildUpgradeList() {
             upgradeList.innerHTML = '';
-            const allUpgrades = [...UPGRADES, ...CLICK_MULT_UPGRADES, ...CPS_MULT_UPGRADES, ...GOLDEN_UPGRADES, ...BANK_UPGRADES];
+            const allUpgrades = [...UPGRADES, ...CLICK_MULT_UPGRADES, ...CPS_MULT_UPGRADES, ...GOLDEN_UPGRADES, ...BANK_UPGRADES,
+                ...COMBO_UPGRADES
+            ];
             for (const u of allUpgrades) {
                 const div = document.createElement('div');
                 div.className = 'upgrade';
                 div.dataset.id = u.id;
-                const isClickMult = CLICK_MULT_UPGRADES.some(c => c.id === u.id);
-                const isCPSMult = CPS_MULT_UPGRADES.some(c => c.id === u.id);
-                const isGolden = GOLDEN_UPGRADES.some(c => c.id === u.id);
-                const isBank = BANK_UPGRADES.some(c => c.id === u.id);
                 let addText = '';
-                if (isClickMult) {
+                if (CLICK_MULT_UPGRADES.some(c => c.id === u.id)) {
                     const val = u.name.includes('God') ? 5 : u.name.includes('Mega') ? 2 : u.name.includes('Power') ? 1 :
                         0.5;
                     addText = `+${val} click mult`;
-                } else if (isCPSMult) {
+                } else if (CPS_MULT_UPGRADES.some(c => c.id === u.id)) {
                     const pct = u.id === 'cps_mult1' ? 10 : u.id === 'cps_mult2' ? 20 : u.id === 'cps_mult3' ? 35 : 50;
                     addText = `+${pct}% CPS`;
-                } else if (isGolden) {
+                } else if (GOLDEN_UPGRADES.some(c => c.id === u.id)) {
                     if (u.id.includes('freq')) addText = '+10% spawn rate';
-                    else addText = `+${u.id.includes('val1') ? 15 : u.id.includes('val2') ? 30 : 50}% golden value`;
-                } else if (isBank) {
+                    else addText =
+                    `+${u.id.includes('val1') ? 15 : u.id.includes('val2') ? 30 : 50}% golden value`;
+                } else if (BANK_UPGRADES.some(c => c.id === u.id)) {
                     const pct = u.id === 'bank1' ? 0.5 : u.id === 'bank2' ? 1 : 2;
                     addText = `+${pct}% interest/s`;
+                } else if (COMBO_UPGRADES.some(c => c.id === u.id)) {
+                    addText = `+${u.id.includes('I') ? 5 : u.id.includes('II') ? 10 : 20}% slower decay`;
                 } else {
                     addText = `+${u.cps} CPS`;
                 }
@@ -1763,7 +2043,9 @@
         }
 
         function updateUpgradeList() {
-            const allUpgrades = [...UPGRADES, ...CLICK_MULT_UPGRADES, ...CPS_MULT_UPGRADES, ...GOLDEN_UPGRADES, ...BANK_UPGRADES];
+            const allUpgrades = [...UPGRADES, ...CLICK_MULT_UPGRADES, ...CPS_MULT_UPGRADES, ...GOLDEN_UPGRADES, ...BANK_UPGRADES,
+                ...COMBO_UPGRADES
+            ];
             for (const u of allUpgrades) {
                 const el = upgradeElements[u.id];
                 if (!el) continue;
@@ -1775,7 +2057,8 @@
                 if (maxedOut) {
                     el.querySelector('.price').innerHTML = 'MAX';
                 } else {
-                    const qtyLabel = (buyQty === 'max') ? (qty > 0 ? ` (x${qty})` : ' (can\'t afford)') : (qty > 1 ? ` (x${qty})` : '');
+                    const qtyLabel = (buyQty === 'max') ? (qty > 0 ? ` (x${qty})` : ' (can\'t afford)') : (qty > 1 ?
+                        ` (x${qty})` : '');
                     el.querySelector('.price').innerHTML = '🍪 ' + formatNumber(cost) + qtyLabel;
                 }
                 el.classList.toggle('can', can);
@@ -1783,7 +2066,9 @@
         }
 
         function purchaseAny(id) {
-            const allUpgrades = [...UPGRADES, ...CLICK_MULT_UPGRADES, ...CPS_MULT_UPGRADES, ...GOLDEN_UPGRADES, ...BANK_UPGRADES];
+            const allUpgrades = [...UPGRADES, ...CLICK_MULT_UPGRADES, ...CPS_MULT_UPGRADES, ...GOLDEN_UPGRADES, ...BANK_UPGRADES,
+                ...COMBO_UPGRADES
+            ];
             const u = allUpgrades.find(x => x.id === id);
             if (!u) return;
             const { qty, cost } = calcBulkPurchase(u, buyQty, S.cookies);
@@ -1975,6 +2260,8 @@
                 { label: 'Golden Collected', value: S.goldenCollected, cls: 'gold' },
                 { label: 'Click Multiplier', value: `×${getClickMultiplier().toFixed(1)}`, cls: 'gold' },
                 { label: 'Bank Interest', value: `${(bankRate * 100).toFixed(1)}%/s`, cls: 'green' },
+                { label: 'Best Combo', value: S.bestCombo, cls: 'red' },
+                { label: 'Challenge Best', value: S.challengeBest, cls: 'gold' },
                 { label: 'Total Upgrades', value: getTotalUpgrades(), cls: '' },
                 { label: 'Achievements', value: `${S.achievements.length}/${ACHIEVEMENTS.length}`, cls: 'gold' },
             ];
@@ -1986,6 +2273,28 @@
         // ─── CLICK HANDLER ───
         function handleClick(e) {
             const el = document.getElementById('clicker');
+
+            // Combo
+            const now = Date.now();
+            if (now - lastClickTime < COMBO_WINDOW) {
+                combo++;
+                if (combo > S.bestCombo) {
+                    S.bestCombo = combo;
+                    S._comboUpdated = true;
+                }
+                document.getElementById('dvcButton').classList.add('combo-active');
+            } else {
+                combo = 1;
+                document.getElementById('dvcButton').classList.add('combo-active');
+            }
+            lastClickTime = now;
+            updateComboDisplay();
+
+            // Frenzy chance
+            if (!frenzyActive && Math.random() < FRENZY_CHANCE) {
+                triggerFrenzy();
+            }
+
             const rip = document.createElement('div');
             rip.className = 'ripple';
             el.appendChild(rip);
@@ -2044,9 +2353,12 @@
                 clicksAllTime: S.clicksAllTime,
                 goldenCollected: S.goldenCollected,
                 bestCPS: S.bestCPS,
+                bestCombo: S.bestCombo,
+                challengeBest: S.challengeBest,
                 achievements: S.achievements,
                 _goldenTriggered: S._goldenTriggered || false,
                 _rainbowTriggered: S._rainbowTriggered || false,
+                _frenzyTriggered: S._frenzyTriggered || false,
             };
             saveUserData(username, userData);
             S.lastSave = Date.now();
@@ -2074,12 +2386,15 @@
                 S.clicksAllTime = d.clicksAllTime || 0;
                 S.goldenCollected = d.goldenCollected || 0;
                 S.bestCPS = d.bestCPS || 0;
+                S.bestCombo = d.bestCombo || 0;
+                S.challengeBest = d.challengeBest || 0;
                 S.achievements = d.achievements || [];
                 S._goldenTriggered = d._goldenTriggered || false;
                 S._rainbowTriggered = d._rainbowTriggered || false;
+                S._frenzyTriggered = d._frenzyTriggered || false;
                 const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id),
                     ...CPS_MULT_UPGRADES.map(u => u.id), ...GOLDEN_UPGRADES.map(u => u.id),
-                    ...BANK_UPGRADES.map(u => u.id)
+                    ...BANK_UPGRADES.map(u => u.id), ...COMBO_UPGRADES.map(u => u.id)
                 ];
                 for (const id of allUpgradeIds) {
                     if (!(id in S.upgrades)) S.upgrades[id] = 0;
@@ -2173,11 +2488,14 @@
                 S.cookiesAllTime = 0;
                 S.clicksAllTime = 0;
                 S.bestCPS = 0;
+                S.bestCombo = 0;
+                S.challengeBest = 0;
                 S._goldenTriggered = false;
                 S._rainbowTriggered = false;
+                S._frenzyTriggered = false;
                 const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id),
                     ...CPS_MULT_UPGRADES.map(u => u.id), ...GOLDEN_UPGRADES.map(u => u.id),
-                    ...BANK_UPGRADES.map(u => u.id)
+                    ...BANK_UPGRADES.map(u => u.id), ...COMBO_UPGRADES.map(u => u.id)
                 ];
                 for (const id of allUpgradeIds) {
                     if (!(id in S.upgrades)) S.upgrades[id] = 0;
@@ -2204,6 +2522,7 @@
             if (!gameStarted) {
                 gameStarted = true;
                 startBoostSystem();
+                startComboSystem();
                 scheduleGolden();
                 requestAnimationFrame(loop);
                 lbSyncTimer = setInterval(() => pushDirtyLeaderboardToCloud(false), 15000);
@@ -2247,14 +2566,17 @@
             S.cookiesAllTime = 0;
             S.clicksAllTime = 0;
             S.bestCPS = 0;
+            S.bestCombo = 0;
+            S.challengeBest = 0;
             S._goldenTriggered = false;
             S._rainbowTriggered = false;
+            S._frenzyTriggered = false;
             S.goldenBoost.active = false;
             S.rainbowBoost.active = false;
-            document.getElementById('dvcButton').classList.remove('golden', 'rainbow');
+            document.getElementById('dvcButton').classList.remove('golden', 'rainbow', 'combo-active');
             const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id),
                 ...CPS_MULT_UPGRADES.map(u => u.id), ...GOLDEN_UPGRADES.map(u => u.id),
-                ...BANK_UPGRADES.map(u => u.id)
+                ...BANK_UPGRADES.map(u => u.id), ...COMBO_UPGRADES.map(u => u.id)
             ];
             for (const id of allUpgradeIds) {
                 if (!(id in S.upgrades)) S.upgrades[id] = 0;
@@ -2388,7 +2710,6 @@
                     S.cookiesAllTime += cps * delta;
                     if (cps > S.bestCPS) S.bestCPS = cps;
 
-                    // Bank interest
                     const bankRate = getBankInterestRate();
                     if (bankRate > 0) {
                         const interest = S.cookies * bankRate * delta;
@@ -2444,6 +2765,9 @@
                 const btn = e.target.closest('.qty-btn');
                 if (!btn) return;
                 setBuyQty(btn.dataset.qty === 'max' ? 'max' : parseInt(btn.dataset.qty));
+            });
+            document.getElementById('challengeBtn').addEventListener('click', function(e) {
+                // handled inline
             });
             initTabs();
 
