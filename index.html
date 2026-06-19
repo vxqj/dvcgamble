@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DVC Clicker Pro · sharp</title>
+    <title>DVC Clicker Pro · Golden</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
     <style>
-        /* ─── RESET ─── */
+        /* ─── RESET & ROOT ─── */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
         :root {
-            --bg: #0a0a10;
-            --surface: #12121c;
-            --surface2: #1a1a2a;
+            --bg: #07070e;
+            --surface: #0f0f1a;
+            --surface2: #18182a;
             --surface3: #22223a;
             --border: rgba(255, 255, 255, 0.06);
-            --border2: rgba(255, 255, 255, 0.14);
+            --border2: rgba(255, 255, 255, 0.12);
             --fg: #f0f0f8;
             --muted: rgba(255, 255, 255, 0.45);
             --primary: #7c5cfc;
-            --primary-dim: rgba(124, 92, 252, 0.15);
+            --primary-dim: rgba(124, 92, 252, 0.12);
             --primary-glow: rgba(124, 92, 252, 0.35);
             --gold: #ffc94a;
             --green: #39e58c;
@@ -40,9 +40,10 @@
             justify-content: center;
             align-items: center;
             padding: 1.5rem;
-            background-image: radial-gradient(ellipse at 20% 20%, rgba(124, 92, 252, 0.07), transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(255, 201, 74, 0.04), transparent 50%);
+            background-image: radial-gradient(ellipse at 30% 20%, rgba(124, 92, 252, 0.08), transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(255, 201, 74, 0.04), transparent 50%);
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
         ::-webkit-scrollbar {
             width: 4px;
@@ -57,11 +58,11 @@
         /* ─── WRAPPER ─── */
         .game {
             width: 100%;
-            max-width: 1160px;
+            max-width: 1200px;
             background: var(--surface);
             border: 1px solid var(--border2);
             padding: 1.75rem 2rem 1.5rem;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8);
             position: relative;
             overflow: hidden;
         }
@@ -70,10 +71,10 @@
             position: absolute;
             top: -20%;
             right: -10%;
-            width: 500px;
-            height: 500px;
+            width: 600px;
+            height: 600px;
             background: radial-gradient(circle, var(--primary-glow), transparent 70%);
-            opacity: 0.2;
+            opacity: 0.15;
             pointer-events: none;
         }
 
@@ -112,26 +113,32 @@
             padding: 0.15rem 0.8rem;
             border: 1px solid var(--border);
         }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
         .stats {
             display: flex;
-            gap: 1rem;
+            gap: 0.8rem;
             flex-wrap: wrap;
         }
         .stat {
             background: var(--surface2);
-            padding: 0.4rem 1.1rem;
+            padding: 0.35rem 1rem;
             border: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
+            gap: 0.4rem;
+            font-size: 0.7rem;
             font-weight: 600;
             color: var(--muted);
         }
         .stat .val {
             color: var(--fg);
             font-family: 'Space Grotesk', monospace;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         .stat .val.gold {
             color: var(--gold);
@@ -143,12 +150,12 @@
         /* ─── MAIN GRID ─── */
         .grid {
             display: grid;
-            grid-template-columns: 1fr 360px;
+            grid-template-columns: 1fr 340px;
             gap: 2rem;
             position: relative;
             z-index: 2;
         }
-        @media (max-width: 780px) {
+        @media (max-width: 820px) {
             .grid {
                 grid-template-columns: 1fr;
             }
@@ -159,10 +166,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             padding: 0.5rem 0;
         }
-        .clicker {
+        .clicker-wrap {
             position: relative;
             width: 220px;
             height: 220px;
@@ -171,13 +178,13 @@
             -webkit-tap-highlight-color: transparent;
             transition: transform 0.08s ease;
         }
-        .clicker:active {
+        .clicker-wrap:active {
             transform: scale(0.92);
         }
-        .clicker .dvc {
+        .clicker-wrap .dvc {
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 30% 30%, #34236a, #120e22);
+            background: radial-gradient(circle at 30% 30%, #34236a, #0d0a1a);
             border: 2px solid var(--primary);
             box-shadow: 0 0 50px rgba(124, 92, 252, 0.25), inset 0 0 40px rgba(124, 92, 252, 0.08);
             display: flex;
@@ -193,10 +200,10 @@
             transition: box-shadow 0.3s;
             position: relative;
         }
-        .clicker .dvc:hover {
-            box-shadow: 0 0 70px rgba(124, 92, 252, 0.4), inset 0 0 40px rgba(124, 92, 252, 0.15);
+        .clicker-wrap .dvc:hover {
+            box-shadow: 0 0 70px rgba(124, 92, 252, 0.45), inset 0 0 40px rgba(124, 92, 252, 0.15);
         }
-        .clicker .dvc .sub {
+        .clicker-wrap .dvc .sub {
             font-size: 0.6rem;
             font-weight: 600;
             letter-spacing: 2px;
@@ -207,7 +214,7 @@
             border: 1px solid rgba(255, 201, 74, 0.12);
             margin-top: -2px;
         }
-        .clicker .ripple {
+        .clicker-wrap .ripple {
             position: absolute;
             inset: -4px;
             border: 2px solid var(--primary);
@@ -225,7 +232,7 @@
                 opacity: 0;
             }
         }
-        .clicker .part {
+        .clicker-wrap .part {
             position: absolute;
             pointer-events: none;
             font-size: 1.2rem;
@@ -249,6 +256,7 @@
         .clicker-stats {
             margin-top: 1.6rem;
             text-align: center;
+            width: 100%;
         }
         .clicker-stats .total {
             font-family: 'Space Grotesk', monospace;
@@ -292,21 +300,53 @@
             display: inline-block;
         }
 
-        /* ─── UPGRADES ─── */
+        /* ─── UPGRADES PANEL (with Tabs) ─── */
+        .panel-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 0.75rem;
+        }
+        .panel-tabs button {
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.4rem 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Manrope', sans-serif;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid transparent;
+        }
+        .panel-tabs button.active {
+            color: var(--fg);
+            border-bottom-color: var(--primary);
+        }
+        .panel-tabs button:hover {
+            color: var(--fg);
+        }
+
         .upgrade-panel {
             background: var(--surface);
             border: 1px solid var(--border);
             padding: 1.25rem;
             max-height: 540px;
-            overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
         }
-        .upgrade-panel::-webkit-scrollbar {
+        .upgrade-panel .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .upgrade-panel .tab-content.hidden {
+            display: none;
+        }
+        .upgrade-panel .tab-content::-webkit-scrollbar {
             width: 3px;
         }
-        .upgrade-panel::-webkit-scrollbar-thumb {
+        .upgrade-panel .tab-content::-webkit-scrollbar-thumb {
             background: var(--primary);
         }
 
@@ -315,13 +355,13 @@
             letter-spacing: 2px;
             text-transform: uppercase;
             color: var(--muted);
-            margin-bottom: 0.2rem;
             font-weight: 600;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding-bottom: 0.4rem;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
         }
         .panel-head span {
             color: var(--gold);
@@ -331,7 +371,7 @@
         .upgrade {
             background: var(--surface2);
             border: 1px solid var(--border);
-            padding: 0.7rem 0.9rem;
+            padding: 0.65rem 0.9rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -339,6 +379,7 @@
             opacity: 0.5;
             pointer-events: none;
             cursor: default;
+            margin-bottom: 0.3rem;
         }
         .upgrade.can {
             opacity: 1;
@@ -358,13 +399,13 @@
         }
         .upgrade .info .name {
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             display: flex;
             align-items: center;
             gap: 0.4rem;
         }
         .upgrade .info .name .owned {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             font-weight: 500;
             color: var(--muted);
             background: rgba(255, 255, 255, 0.05);
@@ -372,7 +413,7 @@
             border: 1px solid var(--border);
         }
         .upgrade .info .desc {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: var(--muted);
         }
         .upgrade .right {
@@ -386,18 +427,130 @@
         .upgrade .price {
             font-family: 'Space Grotesk', monospace;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--gold);
         }
-        .upgrade .price .unit {
-            font-size: 0.6rem;
-            font-weight: 400;
-            color: var(--muted);
-        }
         .upgrade .add {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: var(--green);
             font-weight: 600;
+        }
+
+        /* ─── LEADERBOARD TAB ─── */
+        .lb-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0.2rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+        .lb-entry .rank {
+            font-weight: 700;
+            color: var(--fg);
+            width: 24px;
+        }
+        .lb-entry .name {
+            flex: 1;
+            margin-left: 0.5rem;
+            font-weight: 600;
+            color: var(--fg);
+        }
+        .lb-entry .score {
+            font-family: 'Space Grotesk', monospace;
+            color: var(--gold);
+        }
+        .lb-entry.me {
+            background: var(--primary-dim);
+            border-color: var(--primary);
+        }
+
+        /* ─── GOLDEN COOKIE (dropping packages) ─── */
+        .golden-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+        .golden-cookie {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle at 30% 30%, #ffd966, #f0a500);
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 40px rgba(255, 201, 74, 0.7), inset 0 -4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #7a4a00;
+            cursor: pointer;
+            pointer-events: auto;
+            animation: goldenFloat 2s ease-in-out infinite;
+            transition: transform 0.15s;
+            text-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+            font-family: 'Space Grotesk', sans-serif;
+            user-select: none;
+        }
+        .golden-cookie::after {
+            content: '✨';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 1rem;
+        }
+        .golden-cookie:hover {
+            transform: scale(1.1);
+        }
+        .golden-cookie .label {
+            font-size: 0.5rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.1rem 0.4rem;
+            border-radius: 10px;
+            position: absolute;
+            bottom: -10px;
+        }
+        @keyframes goldenFloat {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-12px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .golden-popup {
+            position: fixed;
+            pointer-events: none;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--gold);
+            text-shadow: 0 0 30px var(--gold);
+            z-index: 1000;
+            animation: floatUpBig 1.2s ease-out forwards;
+            font-family: 'Space Grotesk', monospace;
+        }
+        @keyframes floatUpBig {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(0.6);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(1.8);
+            }
         }
 
         /* ─── FOOTER ─── */
@@ -407,7 +560,7 @@
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--muted);
             flex-wrap: wrap;
             gap: 0.6rem;
@@ -419,7 +572,7 @@
             border: 1px solid rgba(255, 93, 108, 0.18);
             padding: 0.2rem 1rem;
             color: var(--red);
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
@@ -440,11 +593,11 @@
             font-weight: 600;
             font-size: 0.85rem;
             color: var(--fg);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
             opacity: 0;
             transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: none;
-            z-index: 999;
+            z-index: 9999;
         }
         .toast.show {
             opacity: 1;
@@ -454,35 +607,43 @@
         /* ─── RESPONSIVE ─── */
         @media (max-width: 500px) {
             .game {
-                padding: 1rem 1rem 1.2rem;
+                padding: 1rem;
             }
-            .clicker {
+            .clicker-wrap {
                 width: 170px;
                 height: 170px;
             }
-            .clicker .dvc {
+            .clicker-wrap .dvc {
                 font-size: 3rem;
             }
             .clicker-stats .total {
                 font-size: 2.6rem;
             }
             .stats {
-                gap: 0.5rem;
+                gap: 0.4rem;
             }
             .stat {
-                padding: 0.25rem 0.7rem;
-                font-size: 0.65rem;
+                padding: 0.2rem 0.6rem;
+                font-size: 0.6rem;
             }
             .stat .val {
-                font-size: 0.75rem;
+                font-size: 0.7rem;
             }
             .grid {
                 gap: 1.2rem;
+            }
+            .golden-cookie {
+                width: 55px;
+                height: 55px;
+                font-size: 1.6rem;
             }
         }
     </style>
 </head>
 <body>
+
+    <!-- ─── GOLDEN CONTAINER ─── -->
+    <div class="golden-container" id="goldenContainer"></div>
 
     <!-- ─── GAME ─── -->
     <div class="game">
@@ -491,12 +652,14 @@
         <div class="header">
             <div class="logo">
                 DVC<span>Clicker</span>
-                <small>sharp</small>
+                <small>golden</small>
             </div>
-            <div class="stats">
-                <div class="stat">🍪 CPS <span class="val green" id="cpsDisplay">0.0</span></div>
-                <div class="stat">🖱️ Clicks <span class="val gold" id="totalClicksDisplay">0</span></div>
-                <div class="stat">📦 <span class="val" id="upgradeCountDisplay">0</span></div>
+            <div class="header-right">
+                <div class="stats">
+                    <div class="stat">🍪 CPS <span class="val green" id="cpsDisplay">0.0</span></div>
+                    <div class="stat">🖱️ Clicks <span class="val gold" id="totalClicksDisplay">0</span></div>
+                    <div class="stat">📦 <span class="val" id="upgradeCountDisplay">0</span></div>
+                </div>
             </div>
         </div>
 
@@ -505,7 +668,7 @@
 
             <!-- CLICKER COLUMN -->
             <div class="clicker-col">
-                <div class="clicker" id="clicker">
+                <div class="clicker-wrap" id="clicker">
                     <div class="dvc">
                         DVC
                         <span class="sub">College</span>
@@ -518,17 +681,31 @@
                 </div>
             </div>
 
-            <!-- UPGRADE PANEL -->
-            <div class="upgrade-panel" id="upgradePanel">
-                <div class="panel-head">🛠️ Upgrades <span id="upgradeCount">0</span></div>
-                <div id="upgradeList"></div>
+            <!-- RIGHT PANEL (Upgrades + Leaderboard) -->
+            <div class="upgrade-panel">
+                <div class="panel-tabs">
+                    <button class="active" data-tab="upgrades">⬆ Upgrades</button>
+                    <button data-tab="leaderboard">🏆 Leaderboard</button>
+                </div>
+
+                <!-- TAB: UPGRADES -->
+                <div class="tab-content" id="tabUpgrades">
+                    <div class="panel-head">🛠️ Purchases <span id="upgradeCount">0</span></div>
+                    <div id="upgradeList"></div>
+                </div>
+
+                <!-- TAB: LEADERBOARD -->
+                <div class="tab-content hidden" id="tabLeaderboard">
+                    <div class="panel-head">🏆 Top Scores</div>
+                    <div id="leaderboardList"></div>
+                </div>
             </div>
 
         </div>
 
         <!-- FOOTER -->
         <div class="footer">
-            <span>© DVC Clicker Pro · sharp edition</span>
+            <span>© DVC Clicker Pro · sharp & golden</span>
             <button class="reset" id="resetBtn">⟳ Reset</button>
         </div>
 
@@ -539,7 +716,7 @@
 
     <script>
         /* ================================================================
-           DVC CLICKER PRO — SHARP EDITION (no spaz, event delegation)
+           DVC CLICKER PRO — GOLDEN EDITION
            ================================================================ */
 
         // ─── STATE ───
@@ -569,6 +746,63 @@
                 mult: 1.06, max: 10 },
         ];
 
+        // ─── LEADERBOARD ───
+        let leaderboard = [];
+
+        function loadLeaderboard() {
+            try {
+                const raw = localStorage.getItem('dvcLB');
+                leaderboard = raw ? JSON.parse(raw) : [];
+            } catch (_) { leaderboard = []; }
+        }
+
+        function saveLeaderboard() {
+            try {
+                localStorage.setItem('dvcLB', JSON.stringify(leaderboard));
+            } catch (_) {}
+        }
+
+        function addLeaderboardEntry() {
+            const name = "DVC Player";
+            const entry = {
+                name: name,
+                cookies: S.cookies,
+                clicks: S.totalClicks,
+                cps: getTotalCPS(),
+                date: Date.now()
+            };
+            leaderboard.push(entry);
+            // Sort by cookies descending, keep top 50
+            leaderboard.sort((a, b) => b.cookies - a.cookies);
+            if (leaderboard.length > 50) leaderboard = leaderboard.slice(0, 50);
+            saveLeaderboard();
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const list = document.getElementById('leaderboardList');
+            if (!list) return;
+            if (leaderboard.length === 0) {
+                list.innerHTML = '<div style="color:var(--muted);padding:1rem 0;font-size:0.8rem;">No scores yet. Keep clicking!</div>';
+                return;
+            }
+            let html = '';
+            const top = leaderboard.slice(0, 10);
+            top.forEach((entry, i) => {
+                const rank = i + 1;
+                const medals = ['🥇', '🥈', '🥉'];
+                const rankDisplay = rank <= 3 ? medals[i] : `#${rank}`;
+                html += `
+              <div class="lb-entry">
+                <span class="rank">${rankDisplay}</span>
+                <span class="name">${entry.name}</span>
+                <span class="score">🍪 ${formatNumber(entry.cookies)}</span>
+              </div>
+            `;
+            });
+            list.innerHTML = html;
+        }
+
         // ─── HELPERS ───
         function getCost(u) {
             const owned = S.upgrades[u.id] || 0;
@@ -591,7 +825,7 @@
             return c;
         }
 
-        function fmt(n) {
+        function formatNumber(n) {
             if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
             if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
             if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
@@ -600,7 +834,7 @@
 
         // ─── DOM REFS ───
         const upgradeList = document.getElementById('upgradeList');
-        let upgradeElements = {}; // id -> element
+        let upgradeElements = {};
 
         // ─── BUILD UPGRADE LIST ONCE ───
         function buildUpgradeList() {
@@ -615,14 +849,14 @@
                 <span class="desc">${u.desc}</span>
               </div>
               <div class="right">
-                <div class="price">🍪 ${fmt(u.baseCost)}</div>
+                <div class="price">🍪 ${formatNumber(u.baseCost)}</div>
                 <div class="add">+${u.cps} CPS</div>
               </div>
             `;
                 upgradeList.appendChild(div);
                 upgradeElements[u.id] = div;
             }
-            // event delegation
+            // Event delegation
             upgradeList.addEventListener('click', function(e) {
                 const item = e.target.closest('.upgrade');
                 if (!item) return;
@@ -632,7 +866,7 @@
             });
         }
 
-        // ─── UPDATE UPGRADE LIST (in-place) ───
+        // ─── UPDATE UPGRADE LIST ───
         function updateUpgradeList() {
             for (const u of UPGRADES) {
                 const el = upgradeElements[u.id];
@@ -640,15 +874,15 @@
                 const owned = S.upgrades[u.id] || 0;
                 const cost = getCost(u);
                 const can = S.cookies >= cost && owned < u.max;
-                // Update owned count
+
                 const ownedSpan = el.querySelector('.owned');
                 if (ownedSpan) ownedSpan.textContent = owned;
-                // Update price
+
                 const priceDiv = el.querySelector('.price');
                 if (priceDiv) {
-                    priceDiv.innerHTML = cost === Infinity ? 'MAX' : '🍪 ' + fmt(cost);
+                    priceDiv.innerHTML = cost === Infinity ? 'MAX' : '🍪 ' + formatNumber(cost);
                 }
-                // Update add CPS (only show if not maxed)
+
                 const addDiv = el.querySelector('.add');
                 if (addDiv) {
                     if (owned < u.max) {
@@ -658,10 +892,8 @@
                         addDiv.style.display = 'none';
                     }
                 }
-                // Toggle can class
                 el.classList.toggle('can', can);
             }
-            // Update total upgrade count
             document.getElementById('upgradeCount').textContent = getTotalUpgrades();
             document.getElementById('upgradeCountDisplay').textContent = getTotalUpgrades();
         }
@@ -678,24 +910,22 @@
             _purchasing = true;
             S.cookies -= cost;
             S.upgrades[id] = (S.upgrades[id] || 0) + 1;
-            // update everything
             updateUI();
             showToast(`✅ ${u.name} purchased!`);
             saveGame();
+            // Update leaderboard after purchase (important stats changed)
+            addLeaderboardEntry();
             setTimeout(() => { _purchasing = false; }, 120);
         }
 
         // ─── CLICK ───
         function handleClick(e) {
             const el = document.getElementById('clicker');
-
-            // ripple
             const rip = document.createElement('div');
             rip.className = 'ripple';
             el.appendChild(rip);
             setTimeout(() => rip.remove(), 700);
 
-            // particle
             const rect = el.getBoundingClientRect();
             const cx = (e.clientX || e.touches?.[0]?.clientX || rect.left + rect.width / 2) - rect.left;
             const cy = (e.clientY || e.touches?.[0]?.clientY || rect.top + rect.height / 2) - rect.top;
@@ -719,11 +949,90 @@
             saveGame();
         }
 
+        // ─── GOLDEN COOKIE (dropping packages) ───
+        let goldenTimeout = null;
+
+        function spawnGoldenCookie() {
+            const container = document.getElementById('goldenContainer');
+            const el = document.createElement('div');
+            el.className = 'golden-cookie';
+            // Random position within viewport (avoid edges)
+            const left = 5 + Math.random() * 80;
+            const top = 10 + Math.random() * 75;
+            el.style.left = left + '%';
+            el.style.top = top + '%';
+            el.textContent = '🍪';
+            // Reward amount
+            const cps = getTotalCPS();
+            const reward = Math.max(50, Math.floor(cps * 12 + 150));
+            el.dataset.reward = reward;
+
+            el.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const rewardAmt = parseInt(this.dataset.reward) || 100;
+                S.cookies += rewardAmt;
+                S.totalClicks += 1; // counts as a click
+                updateUI();
+                saveGame();
+                // Show big popup
+                showGoldenPopup(e.clientX, e.clientY, `+${formatNumber(rewardAmt)} 🍪`);
+                this.remove();
+                showToast(`✨ Golden cookie! +${formatNumber(rewardAmt)} tokens`);
+                addLeaderboardEntry();
+                // Reschedule next spawn
+                scheduleGolden();
+            });
+
+            container.appendChild(el);
+
+            // Auto-remove after 15 seconds if not clicked
+            setTimeout(() => {
+                if (el.parentNode) {
+                    el.remove();
+                    // Reschedule if it expired
+                    scheduleGolden();
+                }
+            }, 15000);
+        }
+
+        function showGoldenPopup(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'golden-popup';
+            el.textContent = text;
+            const angle = Math.random() * 2 * Math.PI;
+            const dist = 80 + Math.random() * 120;
+            el.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+            el.style.setProperty('--ty', Math.sin(angle) * dist - 100 + 'px');
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1200);
+        }
+
+        let goldenScheduled = false;
+
+        function scheduleGolden() {
+            if (goldenScheduled) return;
+            goldenScheduled = true;
+            const delay = 8000 + Math.random() * 22000; // 8-30 seconds
+            clearTimeout(goldenTimeout);
+            goldenTimeout = setTimeout(() => {
+                goldenScheduled = false;
+                // Check if there are too many on screen (max 2)
+                const existing = document.querySelectorAll('.golden-cookie');
+                if (existing.length < 2) {
+                    spawnGoldenCookie();
+                }
+                // Reschedule regardless
+                scheduleGolden();
+            }, delay);
+        }
+
         // ─── UI UPDATE ───
         function updateUI() {
             const cps = getTotalCPS();
             const el = document.getElementById('cookieCount');
-            el.textContent = fmt(S.cookies);
+            el.textContent = formatNumber(S.cookies);
             el.classList.remove('pop');
             void el.offsetWidth;
             el.classList.add('pop');
@@ -732,14 +1041,18 @@
             document.getElementById('cpsLabel').textContent = '+' + cps.toFixed(1) + ' / sec';
             document.getElementById('totalClicksDisplay').textContent = S.totalClicks;
 
-            // Update upgrade list in-place
             updateUpgradeList();
+            // Update leaderboard if visible
+            const lbTab = document.getElementById('tabLeaderboard');
+            if (!lbTab.classList.contains('hidden')) {
+                renderLeaderboard();
+            }
         }
 
         // ─── SAVE / LOAD ───
         function saveGame() {
             try {
-                localStorage.setItem('dvcClickerSharp', JSON.stringify({
+                localStorage.setItem('dvcClickerGolden', JSON.stringify({
                     cookies: S.cookies,
                     totalClicks: S.totalClicks,
                     upgrades: S.upgrades
@@ -749,7 +1062,7 @@
 
         function loadGame() {
             try {
-                const raw = localStorage.getItem('dvcClickerSharp');
+                const raw = localStorage.getItem('dvcClickerGolden');
                 if (!raw) return false;
                 const data = JSON.parse(raw);
                 S.cookies = data.cookies || 0;
@@ -764,9 +1077,12 @@
             S.cookies = 0;
             S.totalClicks = 0;
             S.upgrades = {};
-            localStorage.removeItem('dvcClickerSharp');
+            localStorage.removeItem('dvcClickerGolden');
+            // Clean up golden cookies
+            document.querySelectorAll('.golden-cookie').forEach(el => el.remove());
             updateUI();
             showToast('↻ Reset complete.');
+            addLeaderboardEntry(); // save reset state
         }
 
         // ─── TOAST ───
@@ -775,7 +1091,31 @@
             t.textContent = msg;
             t.classList.add('show');
             clearTimeout(t._h);
-            t._h = setTimeout(() => t.classList.remove('show'), 2200);
+            t._h = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        // ─── TABS ───
+        function initTabs() {
+            const buttons = document.querySelectorAll('.panel-tabs button');
+            const contents = {
+                upgrades: document.getElementById('tabUpgrades'),
+                leaderboard: document.getElementById('tabLeaderboard')
+            };
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    const tab = this.dataset.tab;
+                    Object.keys(contents).forEach(key => {
+                        contents[key].classList.toggle('hidden', key !== tab);
+                    });
+                    if (tab === 'leaderboard') {
+                        loadLeaderboard();
+                        addLeaderboardEntry(); // Ensure current stats are in LB
+                        renderLeaderboard();
+                    }
+                });
+            });
         }
 
         // ─── LOOP ───
@@ -798,8 +1138,8 @@
 
         // ─── INIT ───
         function init() {
-            // Build upgrade DOM once
             buildUpgradeList();
+            loadLeaderboard();
 
             const loaded = loadGame();
             for (const u of UPGRADES) {
@@ -807,6 +1147,8 @@
             }
             updateUI();
             if (!loaded) showToast('🍪 Click the DVC logo to start!');
+            addLeaderboardEntry();
+            renderLeaderboard();
 
             const clicker = document.getElementById('clicker');
             clicker.addEventListener('click', handleClick);
@@ -816,6 +1158,11 @@
             }, { passive: false });
 
             document.getElementById('resetBtn').addEventListener('click', resetGame);
+
+            initTabs();
+
+            // Start golden cookie spawning
+            scheduleGolden();
 
             requestAnimationFrame(loop);
         }
