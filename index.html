@@ -91,13 +91,13 @@
         }
 
         /* GAME WRAPPER */
-        #gameRoot { width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; padding: 0.8rem; background-image: radial-gradient(ellipse at 30% 20%, rgba(124,92,252,0.08), transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(255,201,74,0.04), transparent 50%); }
+        #gameRoot { width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; padding: 0.6rem; background-image: radial-gradient(ellipse at 30% 20%, rgba(124,92,252,0.08), transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(255,201,74,0.04), transparent 50%); }
         #gameRoot.hidden { display: none; }
 
         .game {
             width: 100%; max-width: 1500px; background: var(--surface); border: 1px solid var(--border2);
-            padding: 0.8rem 1.2rem 0.8rem; box-shadow: 0 30px 80px rgba(0,0,0,0.8); position: relative; overflow: hidden;
-            max-height: 98vh; display: flex; flex-direction: column;
+            padding: 0.6rem 1rem 0.6rem; box-shadow: 0 30px 80px rgba(0,0,0,0.8); position: relative; overflow: hidden;
+            max-height: 99vh; display: flex; flex-direction: column;
         }
         .game::before {
             content: ''; position: absolute; top: -20%; right: -10%; width: 600px; height: 600px;
@@ -106,28 +106,29 @@
 
         /* HEADER */
         .header {
-            display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.4rem;
-            border-bottom: 1px solid var(--border); margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.3rem;
+            display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.35rem;
+            border-bottom: 1px solid var(--border); margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.2rem;
             position: relative; z-index: 2; flex-shrink: 0;
         }
         .logo {
             display: flex; align-items: center; gap: 0.3rem; font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px;
+            font-weight: 700; font-size: 1rem; letter-spacing: -0.5px;
         }
         .logo span { color: var(--primary); text-shadow: 0 0 24px var(--primary-glow); }
         .logo small {
-            font-size: 0.45rem; font-weight: 400; color: var(--muted); letter-spacing: 0.5px;
-            background: rgba(255,255,255,0.04); padding: 0.1rem 0.5rem; border: 1px solid var(--border);
+            font-size: 0.4rem; font-weight: 400; color: var(--muted); letter-spacing: 0.5px;
+            background: rgba(255,255,255,0.04); padding: 0.05rem 0.4rem; border: 1px solid var(--border);
         }
-        .header-right { display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap; }
-        .stats { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+        .header-right { display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap; }
+        .stats { display: flex; gap: 0.25rem; flex-wrap: wrap; }
         .stat {
-            background: var(--surface2); padding: 0.1rem 0.5rem; border: 1px solid var(--border);
-            display: flex; align-items: center; gap: 0.15rem; font-size: 0.5rem; font-weight: 600; color: var(--muted);
-            cursor: pointer; transition: 0.2s;
+            background: var(--surface2); padding: 0.08rem 0.4rem; border: 1px solid var(--border);
+            display: flex; align-items: center; gap: 0.12rem; font-size: 0.45rem; font-weight: 600; color: var(--muted);
+            cursor: pointer; transition: border-color 0.15s;
+            border-radius: 3px;
         }
         .stat:hover { border-color: var(--primary); color: var(--fg); }
-        .stat .val { color: var(--fg); font-family: 'Space Grotesk', monospace; font-size: 0.65rem; }
+        .stat .val { color: var(--fg); font-family: 'Space Grotesk', monospace; font-size: 0.6rem; }
         .stat .val.gold { color: var(--gold); }
         .stat .val.green { color: var(--green); }
         .stat .val.purple { color: var(--primary); }
@@ -137,60 +138,55 @@
         .stat .val.red { color: var(--combo-color); }
         .user-badge {
             display: flex; align-items: center; gap: 0.2rem; background: var(--primary-dim);
-            border: 1px solid rgba(124,92,252,0.2); padding: 0.1rem 0.4rem 0.1rem 0.6rem;
-            font-size: 0.6rem; font-weight: 600; color: var(--primary);
+            border: 1px solid rgba(124,92,252,0.2); padding: 0.05rem 0.35rem 0.05rem 0.5rem;
+            font-size: 0.55rem; font-weight: 600; color: var(--primary);
+            border-radius: 3px;
         }
         .user-badge .logout-btn {
             background: rgba(255,255,255,0.06); border: none; color: var(--muted); padding: 0.05rem 0.3rem;
-            font-size: 0.45rem; cursor: pointer; font-weight: 600; transition: 0.2s; font-family: 'Manrope', sans-serif;
+            font-size: 0.4rem; cursor: pointer; font-weight: 600; transition: 0.2s; font-family: 'Manrope', sans-serif;
+            border-radius: 3px;
         }
         .user-badge .logout-btn:hover { color: var(--red); background: rgba(255,93,108,0.1); }
         .mute-btn {
             background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--muted);
-            padding: 0.1rem 0.4rem; font-size: 0.5rem; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif;
-            border-radius: 4px;
+            padding: 0.05rem 0.35rem; font-size: 0.45rem; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif;
+            border-radius: 3px;
         }
         .mute-btn:hover { color: var(--fg); border-color: var(--border2); }
         .mute-btn.muted { color: var(--red); border-color: rgba(255,93,108,0.3); }
 
         /* BUY QUANTITY TOGGLE */
-        .buy-qty-toggle { display: flex; gap: 0.15rem; margin-bottom: 0.25rem; }
+        .buy-qty-toggle { display: flex; gap: 0.12rem; margin-bottom: 0.2rem; }
         .buy-qty-toggle .qty-btn {
             flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
-            font-size: 0.45rem; font-weight: 700; padding: 0.15rem 0.2rem; cursor: pointer; transition: 0.15s;
-            font-family: 'Manrope', sans-serif; border-radius: 4px;
+            font-size: 0.4rem; font-weight: 700; padding: 0.1rem 0.15rem; cursor: pointer; transition: 0.15s;
+            font-family: 'Manrope', sans-serif; border-radius: 3px;
         }
         .buy-qty-toggle .qty-btn:hover { color: var(--fg); border-color: var(--border2); }
         .buy-qty-toggle .qty-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-        /* TWO-COLUMN LAYOUT */
+        /* MAIN LAYOUT - FIXED HEIGHTS */
         .main-layout {
             display: grid;
-            grid-template-columns: 300px 1fr 320px;
-            gap: 0.8rem;
+            grid-template-columns: 260px 1fr 340px;
+            gap: 0.6rem;
             flex: 1;
             min-height: 0;
             position: relative;
             z-index: 2;
         }
-        @media (max-width: 1100px) {
-            .main-layout { grid-template-columns: 1fr 320px; }
-            .left-sidebar { display: none; }
-        }
-        @media (max-width: 820px) {
-            .main-layout { grid-template-columns: 1fr; }
-            .left-sidebar { display: none; }
-            .right-panel { max-height: 350px; }
-        }
+        @media (max-width: 1100px) { .main-layout { grid-template-columns: 1fr 340px; } .left-sidebar { display: none; } }
+        @media (max-width: 820px) { .main-layout { grid-template-columns: 1fr; } .left-sidebar { display: none; } .right-panel { max-height: 350px; } }
 
         /* ─── LEFT SIDEBAR ─── */
         .left-sidebar {
             background: var(--surface);
             border: 1px solid var(--border);
-            padding: 0.5rem;
+            padding: 0.4rem;
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: 0.3rem;
             max-height: 100%;
             overflow-y: auto;
         }
@@ -200,130 +196,142 @@
         .sidebar-section {
             background: var(--surface2);
             border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 0.3rem 0.4rem;
+            border-radius: 3px;
+            padding: 0.25rem 0.3rem;
+            flex-shrink: 0;
         }
         .sidebar-section .ss-title {
-            font-size: 0.5rem;
+            font-size: 0.45rem;
             font-weight: 700;
             color: var(--muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.15rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .sidebar-section .ss-title span { color: var(--gold); }
 
-        /* Pet display */
         .pet-display {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.2rem 0.3rem;
+            gap: 0.3rem;
+            padding: 0.15rem 0.25rem;
             background: var(--surface3);
-            border-radius: 4px;
+            border-radius: 3px;
             border: 1px solid var(--border);
         }
-        .pet-display .pet-emoji { font-size: 1.6rem; }
+        .pet-display .pet-emoji { font-size: 1.4rem; }
         .pet-display .pet-info { flex: 1; }
-        .pet-display .pet-info .pn { font-size: 0.6rem; font-weight: 700; }
-        .pet-display .pet-info .pl { font-size: 0.45rem; color: var(--muted); }
-        .pet-display .pet-xp { font-size: 0.4rem; color: var(--gold); }
+        .pet-display .pet-info .pn { font-size: 0.55rem; font-weight: 700; }
+        .pet-display .pet-info .pl { font-size: 0.4rem; color: var(--muted); }
+        .pet-display .pet-xp { font-size: 0.35rem; color: var(--gold); }
 
-        /* Quick actions */
         .quick-action {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.2rem;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.15rem;
         }
         .quick-action .qa-btn {
             background: var(--surface3);
             border: 1px solid var(--border);
             color: var(--muted);
-            padding: 0.2rem 0.3rem;
-            font-size: 0.45rem;
+            padding: 0.15rem 0.2rem;
+            font-size: 0.4rem;
             font-weight: 600;
             cursor: pointer;
             transition: 0.15s;
             font-family: 'Manrope', sans-serif;
-            border-radius: 4px;
+            border-radius: 3px;
             text-align: center;
         }
         .quick-action .qa-btn:hover { border-color: var(--primary); color: var(--fg); background: var(--primary-dim); }
-        .quick-action .qa-btn .qa-icon { font-size: 0.8rem; display: block; }
+        .quick-action .qa-btn .qa-icon { font-size: 0.7rem; display: block; }
 
-        /* Mini dashboard */
         .mini-stat {
             display: flex;
             justify-content: space-between;
-            padding: 0.1rem 0.2rem;
-            font-size: 0.5rem;
+            padding: 0.05rem 0.15rem;
+            font-size: 0.45rem;
             border-bottom: 1px solid var(--border);
         }
         .mini-stat:last-child { border-bottom: none; }
         .mini-stat .ms-label { color: var(--muted); }
         .mini-stat .ms-value { font-weight: 700; font-family: 'Space Grotesk', monospace; }
 
+        .boost-status {
+            font-size: 0.4rem;
+            color: var(--muted);
+            padding: 0.1rem 0.2rem;
+            text-align: center;
+        }
+        .boost-status .active { color: var(--green); font-weight: 700; }
+
         /* ─── RIGHT PANEL ─── */
         .right-panel {
             background: var(--surface);
             border: 1px solid var(--border);
-            padding: 0.4rem 0.5rem 0.4rem;
+            padding: 0.3rem 0.4rem 0.3rem;
             display: flex;
             flex-direction: column;
             max-height: 100%;
             min-height: 0;
+            overflow: hidden;
         }
         .panel-tabs {
             display: flex;
             border-bottom: 1px solid var(--border);
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.25rem;
             flex-shrink: 0;
             gap: 0;
             overflow-x: auto;
             flex-wrap: wrap;
         }
         .panel-tabs button {
-            background: transparent; border: none; color: var(--muted); font-weight: 600; font-size: 0.45rem;
-            padding: 0.15rem 0.4rem; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif;
+            background: transparent; border: none; color: var(--muted); font-weight: 600; font-size: 0.4rem;
+            padding: 0.12rem 0.35rem; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif;
             letter-spacing: 0.3px; border-bottom: 2px solid transparent; white-space: nowrap;
         }
         .panel-tabs button.active { color: var(--fg); border-bottom-color: var(--primary); }
         .panel-tabs button:hover { color: var(--fg); }
-        .panel-tabs button .badge { background: var(--primary-dim); color: var(--primary); font-size: 0.35rem; padding: 0.05rem 0.25rem; border-radius: 8px; margin-left: 2px; }
+        .panel-tabs button .badge { background: var(--primary-dim); color: var(--primary); font-size: 0.3rem; padding: 0.03rem 0.2rem; border-radius: 6px; margin-left: 2px; }
 
-        .tab-content { flex: 1; overflow-y: auto; padding-right: 3px; }
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 2px;
+            min-height: 0;
+        }
         .tab-content.hidden { display: none; }
         .tab-content::-webkit-scrollbar { width: 3px; }
         .tab-content::-webkit-scrollbar-thumb { background: var(--primary); }
 
         .panel-head {
-            font-size: 0.45rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted);
+            font-size: 0.4rem; letter-spacing: 1px; text-transform: uppercase; color: var(--muted);
             font-weight: 600; display: flex; justify-content: space-between; align-items: center;
-            padding-bottom: 0.15rem; border-bottom: 1px solid var(--border); margin-bottom: 0.2rem;
+            padding-bottom: 0.1rem; border-bottom: 1px solid var(--border); margin-bottom: 0.15rem;
             flex-shrink: 0;
         }
-        .panel-head span { color: var(--gold); font-size: 0.55rem; }
+        .panel-head span { color: var(--gold); font-size: 0.5rem; }
 
         .upgrade {
-            background: var(--surface2); border: 1px solid var(--border); padding: 0.2rem 0.4rem;
+            background: var(--surface2); border: 1px solid var(--border); padding: 0.15rem 0.3rem;
             display: flex; justify-content: space-between; align-items: center; transition: background 0.15s, border-color 0.15s;
-            opacity: 0.5; pointer-events: none; cursor: default; margin-bottom: 0.12rem; border-radius: 4px;
+            opacity: 0.5; pointer-events: none; cursor: default; margin-bottom: 0.1rem; border-radius: 3px;
         }
         .upgrade.can { opacity: 1; pointer-events: auto; cursor: pointer; border-color: rgba(124,92,252,0.25); }
         .upgrade.can:hover { border-color: var(--primary); background: var(--surface3); }
-        .upgrade .info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
-        .upgrade .info .name { font-weight: 700; font-size: 0.55rem; display: flex; align-items: center; gap: 0.15rem; }
-        .upgrade .info .name .owned { font-size: 0.4rem; font-weight: 500; color: var(--muted); background: rgba(255,255,255,0.05); padding: 0.05rem 0.25rem; border: 1px solid var(--border); }
-        .upgrade .info .desc { font-size: 0.4rem; color: var(--muted); }
-        .upgrade .right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.05rem; flex-shrink: 0; margin-left: 0.3rem; }
-        .upgrade .price { font-family: 'Space Grotesk', monospace; font-weight: 700; font-size: 0.5rem; color: var(--gold); }
-        .upgrade .add { font-size: 0.4rem; color: var(--green); font-weight: 600; }
-        .upgrade .prestige-cost { font-family: 'Space Grotesk', monospace; font-weight: 700; font-size: 0.5rem; color: var(--primary); }
-        .upgrade .gem-cost { font-family: 'Space Grotesk', monospace; font-weight: 700; font-size: 0.5rem; color: var(--cyan); }
-        .upgrade .star-cost { font-family: 'Space Grotesk', monospace; font-weight: 700; font-size: 0.5rem; color: var(--gold); }
+        .upgrade .info { display: flex; flex-direction: column; gap: 0px; flex: 1; min-width: 0; }
+        .upgrade .info .name { font-weight: 700; font-size: 0.5rem; display: flex; align-items: center; gap: 0.12rem; }
+        .upgrade .info .name .owned { font-size: 0.35rem; font-weight: 500; color: var(--muted); background: rgba(255,255,255,0.05); padding: 0.03rem 0.2rem; border: 1px solid var(--border); border-radius: 2px; }
+        .upgrade .info .desc { font-size: 0.38rem; color: var(--muted); }
+        .upgrade .right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.05rem; flex-shrink: 0; margin-left: 0.25rem; }
+        .upgrade .price { font-family: 'Space Grotesk', monospace; font-weight: 700; font-size: 0.45rem; color: var(--gold); }
+        .upgrade .add { font-size: 0.35rem; color: var(--green); font-weight: 600; }
+        .upgrade .prestige-cost { font-family: 'Space Grotesk', monospace; font-weight: 700; font-size: 0.45rem; color: var(--primary); }
+        .upgrade .gem-cost { font-family: 'Space Grotesk', monospace; font-weight: 700; font-size: 0.45rem; color: var(--cyan); }
+        .upgrade .star-cost { font-family: 'Space Grotesk', monospace; font-weight: 700; font-size: 0.45rem; color: var(--gold); }
 
         /* ─── CLICKER ─── */
         .clicker-col {
@@ -332,13 +340,13 @@
             align-items: center;
             justify-content: center;
             padding: 0.1rem 0;
-            gap: 0.2rem;
+            gap: 0.15rem;
             position: relative;
             background: var(--surface);
             border: 1px solid var(--border);
         }
         .clicker-wrap {
-            position: relative; width: 160px; height: 160px; cursor: pointer; user-select: none;
+            position: relative; width: 150px; height: 150px; cursor: pointer; user-select: none;
             -webkit-tap-highlight-color: transparent; transition: transform 0.08s ease;
         }
         .clicker-wrap:active { transform: scale(0.92); }
@@ -347,13 +355,13 @@
             border: 2px solid var(--primary); border-radius: 50%;
             box-shadow: 0 0 50px rgba(124,92,252,0.25), inset 0 0 40px rgba(124,92,252,0.08);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-family: 'Space Grotesk', sans-serif; font-size: 2.4rem; font-weight: 800; color: #fff;
+            font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; font-weight: 800; color: #fff;
             letter-spacing: 2px; text-shadow: 0 0 30px var(--primary-glow);
             transition: box-shadow 0.3s, border-color 0.3s, background 0.3s; position: relative;
         }
         .clicker-wrap .dvc:hover { box-shadow: 0 0 70px rgba(124,92,252,0.45), inset 0 0 40px rgba(124,92,252,0.15); }
         .clicker-wrap .dvc .sub {
-            font-size: 0.45rem; font-weight: 600; letter-spacing: 2px; color: var(--gold); opacity: 0.7;
+            font-size: 0.4rem; font-weight: 600; letter-spacing: 2px; color: var(--gold); opacity: 0.7;
             background: rgba(0,0,0,0.4); padding: 1px 8px; border: 1px solid rgba(255,201,74,0.12);
             margin-top: -2px; border-radius: 20px;
         }
@@ -369,33 +377,33 @@
         }
         @keyframes rippleOut { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(1.5); opacity: 0; } }
         .clicker-wrap .part {
-            position: absolute; pointer-events: none; font-size: 0.9rem; font-weight: 700; color: var(--gold);
+            position: absolute; pointer-events: none; font-size: 0.8rem; font-weight: 700; color: var(--gold);
             text-shadow: 0 0 16px var(--gold); animation: floatUp 0.9s ease-out forwards; font-family: 'Space Grotesk', monospace;
         }
         @keyframes floatUp { 0% { opacity: 1; transform: translate(0,0) scale(0.5); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1.5); } }
 
         .clicker-stats { text-align: center; width: 100%; }
         .clicker-stats .total {
-            font-family: 'Space Grotesk', monospace; font-size: 2.2rem; font-weight: 700; letter-spacing: -1px;
+            font-family: 'Space Grotesk', monospace; font-size: 2rem; font-weight: 700; letter-spacing: -1px;
             background: linear-gradient(135deg, var(--gold), #ffb347); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
             transition: transform 0.12s;
         }
         .clicker-stats .total.pop { animation: popNum 0.15s ease; }
         @keyframes popNum { 0% { transform: scale(1); } 50% { transform: scale(1.06); } 100% { transform: scale(1); } }
-        .clicker-stats .label { font-size: 0.55rem; color: var(--muted); margin-top: 0.05rem; letter-spacing: 0.3px; }
-        .clicker-stats .cps-badge { font-size: 0.6rem; color: var(--green); font-weight: 600; margin-top: 0.1rem; background: rgba(57,229,140,0.07); padding: 0.1rem 0.6rem; border: 1px solid rgba(57,229,140,0.12); display: inline-block; }
-        .clicker-stats .click-mult { font-size: 0.55rem; color: var(--gold); margin-top: 0.1rem; }
+        .clicker-stats .label { font-size: 0.5rem; color: var(--muted); margin-top: 0.05rem; letter-spacing: 0.3px; }
+        .clicker-stats .cps-badge { font-size: 0.55rem; color: var(--green); font-weight: 600; margin-top: 0.05rem; background: rgba(57,229,140,0.07); padding: 0.05rem 0.5rem; border: 1px solid rgba(57,229,140,0.12); display: inline-block; border-radius: 3px; }
+        .clicker-stats .click-mult { font-size: 0.5rem; color: var(--gold); margin-top: 0.05rem; }
         .clicker-stats .combo-display {
-            font-size: 0.65rem; font-weight: 700; color: var(--combo-color); margin-top: 0.05rem;
-            opacity: 0; transition: opacity 0.3s; min-height: 1rem;
+            font-size: 0.6rem; font-weight: 700; color: var(--combo-color); margin-top: 0.05rem;
+            opacity: 0; transition: opacity 0.3s; min-height: 0.9rem;
         }
         .clicker-stats .combo-display.active { opacity: 1; }
         .clicker-stats .frenzy-display {
-            font-size: 0.6rem; font-weight: 700; color: var(--gold); margin-top: 0.05rem;
-            opacity: 0; transition: opacity 0.3s; min-height: 1rem;
+            font-size: 0.55rem; font-weight: 700; color: var(--gold); margin-top: 0.05rem;
+            opacity: 0; transition: opacity 0.3s; min-height: 0.9rem;
         }
         .clicker-stats .frenzy-display.active { opacity: 1; }
-        .kb-hint { font-size: 0.4rem; color: var(--muted); opacity: 0.5; margin-top: 0.05rem; letter-spacing: 0.5px; }
+        .kb-hint { font-size: 0.35rem; color: var(--muted); opacity: 0.5; margin-top: 0.05rem; letter-spacing: 0.5px; }
 
         /* ─── CHALLENGE MODAL ─── */
         .challenge-modal {
@@ -408,6 +416,7 @@
             background: var(--surface); border: 1px solid var(--border2); padding: 2rem;
             max-width: 420px; width: 100%; text-align: center;
             box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+            border-radius: 8px;
         }
         .challenge-box h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; margin-bottom: 0.3rem; }
         .challenge-box .sub { color: var(--muted); font-size: 0.75rem; margin-bottom: 1.2rem; }
@@ -435,97 +444,62 @@
         }
         .challenge-box .close-btn:hover { color: var(--fg); border-color: var(--border2); }
 
-        /* ─── SHOP ITEMS ─── */
-        .shop-item {
-            background: var(--surface2); border: 1px solid var(--border); padding: 0.3rem 0.4rem;
-            border-radius: 4px; margin-bottom: 0.2rem; display: flex; justify-content: space-between; align-items: center;
+        /* ─── SHOP / PET / CRAFT ITEMS ─── */
+        .shop-item, .pet-item, .craft-item {
+            background: var(--surface2); border: 1px solid var(--border); padding: 0.2rem 0.3rem;
+            border-radius: 3px; margin-bottom: 0.1rem; display: flex; justify-content: space-between; align-items: center;
         }
-        .shop-item .si-info { flex: 1; }
-        .shop-item .si-info .sin { font-weight: 700; font-size: 0.6rem; }
-        .shop-item .si-info .sid { font-size: 0.45rem; color: var(--muted); }
-        .shop-item .si-price { font-size: 0.5rem; font-weight: 700; color: var(--gold); }
-        .shop-item .si-btn {
+        .shop-item .si-info, .pet-item .pi, .craft-item .ci-info { flex: 1; }
+        .shop-item .si-info .sin, .pet-item .pi .pn, .craft-item .ci-info .cin { font-weight: 700; font-size: 0.5rem; }
+        .shop-item .si-info .sid, .pet-item .pi .pd, .craft-item .ci-info .cid { font-size: 0.38rem; color: var(--muted); }
+        .shop-item .si-price, .craft-item .ci-cost { font-size: 0.45rem; font-weight: 700; color: var(--gold); }
+        .shop-item .si-btn, .craft-item .ci-btn, .pet-item .pbtn {
             background: var(--primary); color: #fff; border: none;
-            padding: 0.1rem 0.6rem; font-size: 0.45rem; font-weight: 600;
-            cursor: pointer; border-radius: 4px; font-family: 'Manrope', sans-serif;
+            padding: 0.05rem 0.4rem; font-size: 0.4rem; font-weight: 600;
+            cursor: pointer; border-radius: 3px; font-family: 'Manrope', sans-serif;
             transition: 0.15s;
         }
-        .shop-item .si-btn:hover { opacity: 0.85; }
-        .shop-item .si-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        /* ─── PET ITEMS ─── */
-        .pet-item {
-            background: var(--surface2); border: 1px solid var(--border); padding: 0.3rem 0.4rem;
-            border-radius: 4px; margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.4rem;
-        }
-        .pet-item .pe { font-size: 1.8rem; }
-        .pet-item .pi { flex: 1; }
-        .pet-item .pi .pn { font-weight: 700; font-size: 0.6rem; }
-        .pet-item .pi .pd { font-size: 0.45rem; color: var(--muted); }
-        .pet-item .pi .px { font-size: 0.4rem; color: var(--gold); }
-        .pet-item .pbtn {
-            background: var(--primary); color: #fff; border: none;
-            padding: 0.1rem 0.5rem; font-size: 0.4rem; font-weight: 600;
-            cursor: pointer; border-radius: 4px; font-family: 'Manrope', sans-serif;
-        }
-        .pet-item .pbtn:hover { opacity: 0.85; }
-        .pet-item .pbtn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .shop-item .si-btn:hover, .craft-item .ci-btn:hover, .pet-item .pbtn:hover { opacity: 0.85; }
+        .shop-item .si-btn:disabled, .craft-item .ci-btn:disabled, .pet-item .pbtn:disabled { opacity: 0.3; cursor: not-allowed; }
         .pet-item .pbtn.active-pet { background: var(--green); }
+        .pet-item .pe { font-size: 1.6rem; margin-right: 0.2rem; }
+        .pet-item .pi .px { font-size: 0.35rem; color: var(--gold); }
 
-        /* ─── CRAFTING ─── */
-        .craft-item {
-            background: var(--surface2); border: 1px solid var(--border); padding: 0.3rem 0.4rem;
-            border-radius: 4px; margin-bottom: 0.2rem; display: flex; justify-content: space-between; align-items: center;
-        }
-        .craft-item .ci-info { flex: 1; }
-        .craft-item .ci-info .cin { font-weight: 700; font-size: 0.6rem; }
-        .craft-item .ci-info .cid { font-size: 0.45rem; color: var(--muted); }
-        .craft-item .ci-cost { font-size: 0.45rem; color: var(--gold); }
-        .craft-item .ci-btn {
-            background: var(--primary); color: #fff; border: none;
-            padding: 0.1rem 0.5rem; font-size: 0.4rem; font-weight: 600;
-            cursor: pointer; border-radius: 4px; font-family: 'Manrope', sans-serif;
-        }
-        .craft-item .ci-btn:hover { opacity: 0.85; }
-        .craft-item .ci-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        /* ─── PROGRESS CHECKLIST ─── */
-        .progress-task {
-            display: flex; align-items: center; gap: 0.3rem;
-            padding: 0.15rem 0.3rem; background: var(--surface2); border-radius: 4px;
-            border: 1px solid var(--border); margin-bottom: 0.12rem;
-        }
-        .progress-task .pt-icon { font-size: 0.8rem; }
-        .progress-task .pt-label { font-size: 0.5rem; flex: 1; }
-        .progress-task .pt-done { color: var(--green); font-size: 0.6rem; }
-
-        /* ─── DAILY REWARDS ─── */
+        /* ─── DAILY / MILESTONE / PROGRESS ─── */
         .daily-box {
-            background: var(--surface2); border: 1px solid var(--border); border-radius: 4px;
-            padding: 0.4rem; text-align: center;
+            background: var(--surface2); border: 1px solid var(--border); border-radius: 3px;
+            padding: 0.3rem; text-align: center;
         }
-        .daily-box .db-streak { font-size: 0.7rem; font-weight: 700; color: var(--gold); }
-        .daily-box .db-reward { font-size: 0.6rem; color: var(--muted); }
+        .daily-box .db-streak { font-size: 0.65rem; font-weight: 700; color: var(--gold); }
+        .daily-box .db-reward { font-size: 0.5rem; color: var(--muted); }
         .daily-box .db-btn {
             background: var(--primary); color: #fff; border: none;
-            padding: 0.2rem 1rem; font-size: 0.55rem; font-weight: 600;
-            cursor: pointer; border-radius: 4px; font-family: 'Manrope', sans-serif;
-            margin-top: 0.2rem;
+            padding: 0.15rem 0.8rem; font-size: 0.5rem; font-weight: 600;
+            cursor: pointer; border-radius: 3px; font-family: 'Manrope', sans-serif;
+            margin-top: 0.15rem;
         }
         .daily-box .db-btn:hover { opacity: 0.85; }
         .daily-box .db-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        /* ─── MILESTONE ─── */
-        .milestone-item {
+        .milestone-item, .progress-task {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0.15rem 0.3rem; background: var(--surface2); border-radius: 4px;
-            border: 1px solid var(--border); margin-bottom: 0.12rem;
+            padding: 0.1rem 0.25rem; background: var(--surface2); border-radius: 3px;
+            border: 1px solid var(--border); margin-bottom: 0.08rem;
         }
-        .milestone-item .mi-label { font-size: 0.5rem; flex: 1; }
-        .milestone-item .mi-reward { font-size: 0.45rem; color: var(--gold); }
-        .milestone-item .mi-done { font-size: 0.6rem; color: var(--green); }
+        .milestone-item .mi-label, .progress-task .pt-label { font-size: 0.45rem; flex: 1; }
+        .milestone-item .mi-reward { font-size: 0.4rem; color: var(--gold); }
+        .milestone-item .mi-done, .progress-task .pt-done { font-size: 0.5rem; color: var(--green); }
+        .progress-task .pt-icon { font-size: 0.7rem; margin-right: 0.2rem; }
+        .milestone-item .mi-btn {
+            background: var(--primary); color: #fff; border: none;
+            padding: 0.05rem 0.4rem; font-size: 0.35rem; font-weight: 600;
+            cursor: pointer; border-radius: 3px; font-family: 'Manrope', sans-serif;
+            transition: 0.15s;
+        }
+        .milestone-item .mi-btn:hover { opacity: 0.85; }
+        .milestone-item .mi-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        /* ─── LEVEL DASHBOARD MODAL ─── */
+        /* ─── LEVEL MODAL ─── */
         .modal-overlay {
             position: fixed; inset: 0; z-index: 99998; background: rgba(0,0,0,0.85);
             display: flex; align-items: center; justify-content: center; padding: 1.5rem;
@@ -535,6 +509,7 @@
         .modal-box {
             width: 100%; max-width: 520px; background: var(--surface); border: 1px solid var(--border2);
             padding: 1.5rem; box-shadow: 0 40px 100px rgba(0,0,0,0.9); max-height: 85vh; overflow-y: auto;
+            border-radius: 8px;
         }
         .modal-box .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem; }
         .modal-box .modal-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; }
@@ -547,57 +522,94 @@
         .level-progress .lp-bar .lp-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--gold)); width: 0%; transition: width 0.3s; }
 
         .level-upgrade-item {
-            background: var(--surface2); border: 1px solid var(--border); padding: 0.3rem 0.5rem; border-radius: 4px;
-            margin-bottom: 0.2rem; display: flex; justify-content: space-between; align-items: center;
+            background: var(--surface2); border: 1px solid var(--border); padding: 0.25rem 0.4rem; border-radius: 3px;
+            margin-bottom: 0.15rem; display: flex; justify-content: space-between; align-items: center;
             opacity: 0.5; pointer-events: none; cursor: default;
         }
         .level-upgrade-item.can { opacity: 1; pointer-events: auto; cursor: pointer; border-color: rgba(124,92,252,0.25); }
         .level-upgrade-item.can:hover { border-color: var(--primary); background: var(--surface3); }
-        .level-upgrade-item .li { display: flex; flex-direction: column; gap: 1px; flex: 1; }
-        .level-upgrade-item .li .ln { font-weight: 700; font-size: 0.6rem; }
-        .level-upgrade-item .li .ld { font-size: 0.45rem; color: var(--muted); }
-        .level-upgrade-item .lr { display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; flex-shrink: 0; margin-left: 0.4rem; }
-        .level-upgrade-item .lr .lp { font-family: 'Space Grotesk', monospace; font-size: 0.5rem; color: var(--gold); }
-        .level-upgrade-item .lr .ll { font-size: 0.45rem; color: var(--primary); }
+        .level-upgrade-item .li { display: flex; flex-direction: column; gap: 0px; flex: 1; }
+        .level-upgrade-item .li .ln { font-weight: 700; font-size: 0.55rem; }
+        .level-upgrade-item .li .ld { font-size: 0.4rem; color: var(--muted); }
+        .level-upgrade-item .lr { display: flex; flex-direction: column; align-items: flex-end; gap: 0.05rem; flex-shrink: 0; margin-left: 0.3rem; }
+        .level-upgrade-item .lr .lp { font-family: 'Space Grotesk', monospace; font-size: 0.45rem; color: var(--gold); }
+        .level-upgrade-item .lr .ll { font-size: 0.4rem; color: var(--primary); }
 
         /* ─── GOLDEN CONTAINER ─── */
         .golden-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; overflow: hidden;
         }
         .golden-cookie {
-            position: absolute; width: 50px; height: 50px; background: radial-gradient(circle at 30% 30%, #ffd966, #f0a500);
+            position: absolute; width: 45px; height: 45px; background: radial-gradient(circle at 30% 30%, #ffd966, #f0a500);
             border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 40px rgba(255,201,74,0.7), inset 0 -4px 8px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 900; color: #7a4a00;
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 900; color: #7a4a00;
             cursor: pointer; pointer-events: auto; animation: goldenFloat 2s ease-in-out infinite;
             transition: transform 0.15s; text-shadow: 0 2px 4px rgba(255,215,0,0.3); font-family: 'Space Grotesk', sans-serif; user-select: none;
         }
-        .golden-cookie::after { content: '✨'; position: absolute; top: -4px; right: -4px; font-size: 0.6rem; }
+        .golden-cookie::after { content: '✨'; position: absolute; top: -3px; right: -3px; font-size: 0.5rem; }
         .golden-cookie:hover { transform: scale(1.1); }
         @keyframes goldenFloat { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         .golden-popup {
-            position: fixed; pointer-events: none; font-size: 1.2rem; font-weight: 800; color: var(--gold);
+            position: fixed; pointer-events: none; font-size: 1.1rem; font-weight: 800; color: var(--gold);
             text-shadow: 0 0 30px var(--gold); z-index: 1000; animation: floatUpBig 1.2s ease-out forwards; font-family: 'Space Grotesk', monospace;
         }
         @keyframes floatUpBig { 0% { opacity: 1; transform: translate(0,0) scale(0.6); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1.8); } }
 
+        /* ─── STATS GRID ─── */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.12rem; }
+        .stats-grid .s-item { background: var(--surface2); padding: 0.12rem 0.3rem; border: 1px solid var(--border); border-radius: 3px; }
+        .stats-grid .s-item .sl { font-size: 0.38rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.3px; }
+        .stats-grid .s-item .sv { font-family: 'Space Grotesk', monospace; font-size: 0.6rem; font-weight: 700; color: var(--fg); }
+        .stats-grid .s-item .sv.gold { color: var(--gold); }
+        .stats-grid .s-item .sv.green { color: var(--green); }
+        .stats-grid .s-item .sv.purple { color: var(--primary); }
+        .stats-grid .s-item .sv.cyan { color: var(--cyan); }
+        .stats-grid .s-item .sv.red { color: var(--combo-color); }
+        .stats-grid .s-item .sv.pink { color: var(--pink); }
+
+        /* ─── ACHIEVEMENTS ─── */
+        .ach-item {
+            display: flex; align-items: center; gap: 0.3rem; padding: 0.12rem 0.3rem; background: var(--surface2);
+            border: 1px solid var(--border); margin-bottom: 0.08rem; border-radius: 3px; opacity: 0.4; transition: 0.2s;
+        }
+        .ach-item.unlocked { opacity: 1; border-color: rgba(255,201,74,0.2); background: rgba(255,201,74,0.04); }
+        .ach-item .ae { font-size: 0.9rem; flex-shrink: 0; }
+        .ach-item .ai { flex: 1; }
+        .ach-item .ai .an { font-weight: 700; font-size: 0.5rem; }
+        .ach-item .ai .ad { font-size: 0.38rem; color: var(--muted); }
+        .ach-item .ap { font-size: 0.5rem; color: var(--gold); font-weight: 600; }
+
+        /* ─── SKILLS ─── */
+        .skill-item {
+            background: var(--surface2); border: 1px solid var(--border); padding: 0.2rem 0.3rem; border-radius: 3px;
+            margin-bottom: 0.08rem; display: flex; justify-content: space-between; align-items: center;
+            opacity: 0.4; pointer-events: none; cursor: default;
+        }
+        .skill-item.can { opacity: 1; pointer-events: auto; cursor: pointer; border-color: rgba(124,92,252,0.25); }
+        .skill-item.can:hover { border-color: var(--primary); background: var(--surface3); }
+        .skill-item .si { display: flex; flex-direction: column; gap: 0px; flex: 1; }
+        .skill-item .si .sn { font-weight: 700; font-size: 0.5rem; }
+        .skill-item .si .sd { font-size: 0.38rem; color: var(--muted); }
+        .skill-item .sc { font-family: 'Space Grotesk', monospace; font-size: 0.5rem; color: var(--gold); }
+
         /* ─── FOOTER ─── */
         .footer {
-            margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px solid var(--border);
-            display: flex; justify-content: space-between; font-size: 0.45rem; color: var(--muted);
-            flex-wrap: wrap; gap: 0.2rem; position: relative; z-index: 2; flex-shrink: 0;
+            margin-top: 0.35rem; padding-top: 0.3rem; border-top: 1px solid var(--border);
+            display: flex; justify-content: space-between; font-size: 0.4rem; color: var(--muted);
+            flex-wrap: wrap; gap: 0.15rem; position: relative; z-index: 2; flex-shrink: 0;
         }
         .footer .reset {
-            background: rgba(255,93,108,0.08); border: 1px solid rgba(255,93,108,0.18); padding: 0.1rem 0.5rem;
-            color: var(--red); font-size: 0.45rem; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif;
-            border-radius: 4px;
+            background: rgba(255,93,108,0.08); border: 1px solid rgba(255,93,108,0.18); padding: 0.05rem 0.4rem;
+            color: var(--red); font-size: 0.4rem; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif;
+            border-radius: 3px;
         }
         .footer .reset:hover { background: rgba(255,93,108,0.16); }
 
         /* ─── TOAST ─── */
         .toast {
             position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
-            background: var(--surface2); border: 1px solid var(--border2); padding: 0.3rem 1rem;
-            font-weight: 600; font-size: 0.7rem; color: var(--fg); box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+            background: var(--surface2); border: 1px solid var(--border2); padding: 0.25rem 0.8rem;
+            font-weight: 600; font-size: 0.65rem; color: var(--fg); box-shadow: 0 12px 40px rgba(0,0,0,0.7);
             opacity: 0; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; z-index: 9999;
             border-radius: 6px;
         }
@@ -605,33 +617,32 @@
 
         /* ─── NOTIFICATION BANNER ─── */
         .notif-banner {
-            position: fixed; top: 0.6rem; left: 50%; transform: translateX(-50%) translateY(-100px);
-            background: var(--surface2); border: 1px solid var(--border2); padding: 0.3rem 1rem;
-            font-weight: 700; font-size: 0.8rem; color: var(--gold); box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+            position: fixed; top: 0.5rem; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: var(--surface2); border: 1px solid var(--border2); padding: 0.25rem 0.8rem;
+            font-weight: 700; font-size: 0.7rem; color: var(--gold); box-shadow: 0 12px 40px rgba(0,0,0,0.7);
             z-index: 9998; transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1); border-radius: 6px;
             text-align: center; pointer-events: none;
         }
         .notif-banner.show { transform: translateX(-50%) translateY(0); }
-        .notif-banner .sub { font-size: 0.5rem; font-weight: 400; color: var(--muted); display: block; }
+        .notif-banner .sub { font-size: 0.45rem; font-weight: 400; color: var(--muted); display: block; }
 
         /* ─── RESPONSIVE ─── */
         @media (max-width: 500px) {
-            .game { padding: 0.4rem; max-height: none; }
-            .clicker-wrap { width: 120px; height: 120px; }
-            .clicker-wrap .dvc { font-size: 2rem; }
-            .clicker-stats .total { font-size: 1.8rem; }
-            .stats { gap: 0.15rem; }
-            .stat { padding: 0.05rem 0.3rem; font-size: 0.4rem; }
-            .stat .val { font-size: 0.5rem; }
-            .grid { gap: 0.4rem; }
-            .golden-cookie { width: 35px; height: 35px; font-size: 1rem; }
-            .auth-box { padding: 1rem 0.6rem; }
-            .auth-box .auth-logo { font-size: 1.1rem; }
-            .right-panel { max-height: 250px; }
+            .game { padding: 0.3rem; max-height: none; }
+            .clicker-wrap { width: 110px; height: 110px; }
+            .clicker-wrap .dvc { font-size: 1.6rem; }
+            .clicker-stats .total { font-size: 1.5rem; }
+            .stats { gap: 0.12rem; }
+            .stat { padding: 0.05rem 0.25rem; font-size: 0.35rem; }
+            .stat .val { font-size: 0.4rem; }
+            .golden-cookie { width: 30px; height: 30px; font-size: 0.8rem; }
+            .auth-box { padding: 0.8rem 0.5rem; }
+            .auth-box .auth-logo { font-size: 1rem; }
+            .right-panel { max-height: 220px; }
             .main-layout { grid-template-columns: 1fr; }
             .left-sidebar { display: none; }
-            .challenge-box { padding: 1rem; }
-            .challenge-box .big-number { font-size: 2.5rem; }
+            .challenge-box { padding: 0.8rem; }
+            .challenge-box .big-number { font-size: 2.2rem; }
         }
     </style>
 </head>
@@ -686,12 +697,12 @@
     <div class="challenge-modal" id="challengeModal">
         <div class="challenge-box">
             <h2>⚡ Click Challenge</h2>
-            <div class="sub">Click as fast as you can! Click the button below repeatedly.</div>
+            <div class="sub">Click the button below as fast as you can!</div>
             <div class="timer" id="challengeTimer">5s</div>
             <div class="big-number" id="challengeScore">0</div>
             <div class="sub">Clicks</div>
             <div class="result" id="challengeResult"></div>
-            <button class="challenge-btn" id="challengeBtn" onclick="startChallenge()">▶ Start Challenge</button>
+            <button class="challenge-btn" id="challengeBtn">▶ Start Challenge</button>
             <br>
             <button class="close-btn" onclick="closeChallenge()">✕ Close</button>
         </div>
@@ -734,7 +745,7 @@
                     <div class="sidebar-section">
                         <div class="ss-title">🐾 Pet <span id="petName">None</span></div>
                         <div id="petDisplay">
-                            <div style="text-align:center;padding:0.3rem;color:var(--muted);font-size:0.5rem;">Adopt a pet in the Pets tab!</div>
+                            <div style="text-align:center;padding:0.2rem;color:var(--muted);font-size:0.45rem;">No pet equipped</div>
                         </div>
                     </div>
 
@@ -742,8 +753,8 @@
                     <div class="sidebar-section">
                         <div class="ss-title">⚡ Quick Actions</div>
                         <div class="quick-action">
-                            <button class="qa-btn" onclick="quickBuy(1)"><span class="qa-icon">🖱️</span>Buy 1</button>
-                            <button class="qa-btn" onclick="quickBuy(10)"><span class="qa-icon">🖱️</span>Buy 10</button>
+                            <button class="qa-btn" onclick="quickBuy(1)"><span class="qa-icon">🖱️</span>x1</button>
+                            <button class="qa-btn" onclick="quickBuy(10)"><span class="qa-icon">🖱️</span>x10</button>
                             <button class="qa-btn" onclick="quickPrestige()"><span class="qa-icon">🔮</span>Prestige</button>
                             <button class="qa-btn" onclick="openChallenge()"><span class="qa-icon">⚡</span>Challenge</button>
                             <button class="qa-btn" onclick="quickCollect()"><span class="qa-icon">🎁</span>Collect</button>
@@ -751,28 +762,27 @@
                         </div>
                     </div>
 
-                    <!-- Mini Dashboard -->
+                    <!-- Dashboard -->
                     <div class="sidebar-section">
                         <div class="ss-title">📊 Dashboard</div>
                         <div id="miniDashboard">
-                            <div class="mini-stat"><span class="ms-label">Total Cookies</span><span class="ms-value" id="mdCookies">0</span></div>
+                            <div class="mini-stat"><span class="ms-label">Total</span><span class="ms-value" id="mdCookies">0</span></div>
                             <div class="mini-stat"><span class="ms-label">CPS</span><span class="ms-value" id="mdCps">0</span></div>
                             <div class="mini-stat"><span class="ms-label">Level</span><span class="ms-value" id="mdLevel">1</span></div>
                             <div class="mini-stat"><span class="ms-label">Combo</span><span class="ms-value" id="mdCombo">0</span></div>
                             <div class="mini-stat"><span class="ms-label">Prestige</span><span class="ms-value" id="mdPrestige">0</span></div>
+                            <div class="mini-stat"><span class="ms-label">Gems</span><span class="ms-value" id="mdGems">0</span></div>
                         </div>
                     </div>
 
-                    <!-- Boost Status -->
+                    <!-- Boosts -->
                     <div class="sidebar-section">
-                        <div class="ss-title">⚡ Boosts <span id="boostStatus">Inactive</span></div>
-                        <div id="boostDisplay" style="font-size:0.45rem;color:var(--muted);padding:0.1rem 0;">
-                            No active boosts
-                        </div>
+                        <div class="ss-title">⚡ Boosts <span id="boostStatus" style="color:var(--muted);">Inactive</span></div>
+                        <div class="boost-status" id="boostDisplay">No active boosts</div>
                     </div>
                 </div>
 
-                <!-- CLICKER COLUMN -->
+                <!-- CLICKER -->
                 <div class="clicker-col">
                     <div class="clicker-wrap" id="clicker">
                         <div class="dvc" id="dvcButton">DVC<span class="sub">College</span></div>
@@ -816,11 +826,11 @@
 
                     <div class="tab-content hidden" id="tabPrestige">
                         <div class="panel-head">🔮 Prestige <span id="prestigeCount">0 PP</span></div>
-                        <div id="prestigeInfo" style="font-size:0.55rem;color:var(--muted);margin-bottom:0.2rem;padding:0.2rem 0.4rem;background:var(--surface2);border-radius:4px;border:1px solid var(--border);">
-                            Prestige resets your cookies but gives <span style="color:var(--gold)">Prestige Points</span>.
+                        <div id="prestigeInfo" style="font-size:0.5rem;color:var(--muted);margin-bottom:0.15rem;padding:0.15rem 0.3rem;background:var(--surface2);border-radius:3px;border:1px solid var(--border);">
+                            Prestige resets cookies but gives <span style="color:var(--gold)">Prestige Points</span>.
                             <br>Requires: <span id="prestigeReq">1,000,000</span> cookies.
                             <br>Current: <span id="prestigeProgress">0</span> cookies
-                            <br><button class="auth-submit" style="font-size:0.55rem;padding:0.15rem;margin-top:0.15rem;" id="prestigeBtn" onclick="doPrestige()">✨ Prestige</button>
+                            <br><button class="auth-submit" style="font-size:0.5rem;padding:0.12rem;margin-top:0.12rem;border-radius:3px;" id="prestigeBtn" onclick="doPrestige()">✨ Prestige</button>
                         </div>
                         <div class="panel-head">Prestige Upgrades</div>
                         <div id="prestigeUpgradeList"></div>
@@ -828,11 +838,11 @@
 
                     <div class="tab-content hidden" id="tabSkills">
                         <div class="panel-head">🌳 Skill Tree <span id="rebirthPointsDisplay">0 RP</span></div>
-                        <div id="skillInfo" style="font-size:0.5rem;color:var(--muted);margin-bottom:0.2rem;padding:0.2rem 0.4rem;background:var(--surface2);border-radius:4px;border:1px solid var(--border);">
+                        <div id="skillInfo" style="font-size:0.45rem;color:var(--muted);margin-bottom:0.15rem;padding:0.1rem 0.3rem;background:var(--surface2);border-radius:3px;border:1px solid var(--border);">
                             Unlocked after your first Prestige!<br>
                             Spend <span style="color:var(--gold)">Rebirth Points</span> on permanent upgrades.
                         </div>
-                        <div id="skillLockedMsg" style="color:var(--muted);padding:0.2rem;font-size:0.55rem;">Prestige once to unlock!</div>
+                        <div id="skillLockedMsg" style="color:var(--muted);padding:0.15rem;font-size:0.5rem;">Prestige once to unlock!</div>
                         <div id="skillList"></div>
                     </div>
 
@@ -852,7 +862,7 @@
                     </div>
 
                     <div class="tab-content hidden" id="tabPets">
-                        <div class="panel-head">🐾 Pets <span id="petCount">0/5</span></div>
+                        <div class="panel-head">🐾 Pets <span id="petCount">0/10</span></div>
                         <div id="petContent"></div>
                     </div>
 
@@ -882,7 +892,7 @@
             <!-- FOOTER -->
             <div class="footer">
                 <span>© DVC Clicker · <span id="footerUsername">user</span></span>
-                <div style="display:flex;gap:0.2rem;">
+                <div style="display:flex;gap:0.15rem;">
                     <button class="reset" id="exportBtn" style="background:rgba(124,92,252,0.08);border-color:rgba(124,92,252,0.18);color:var(--primary);">⬇ Export</button>
                     <button class="reset" id="importBtn" style="background:rgba(57,229,140,0.08);border-color:rgba(57,229,140,0.18);color:var(--green);">⬆ Import</button>
                     <button class="reset" id="resetBtn">⟳ Reset</button>
@@ -897,17 +907,17 @@
 
     <script>
         /* ================================================================
-           DVC CLICKER — MEGA EDITION
+           DVC CLICKER — MEGA EDITION (ALL BUGS FIXED + TONS OF NEW STUFF)
            ================================================================ */
 
         // ─── CONSTANTS ───
         const AUTH_KEY = 'dvcAuthUsers';
         const SESSION_KEY = 'dvcSession';
 
-        // ─── MUTE STATE ───
+        // ─── MUTE ───
         let muted = false;
 
-        // ─── COMBO SYSTEM ───
+        // ─── COMBO ───
         let combo = 0;
         let maxCombo = 0;
         let lastClickTime = 0;
@@ -918,12 +928,11 @@
         let frenzyEndTime = 0;
         let frenzyMultiplier = 1;
         const FRENZY_DURATION = 10000;
-        const FRENZY_CHANCE = 0.008;
+        const FRENZY_CHANCE = 0.01;
 
         // ─── CHALLENGE ───
         let challengeActive = false;
         let challengeClicks = 0;
-        let challengeTimeLeft = 5;
         let challengeInterval = null;
         let challengeBest = 0;
 
@@ -956,20 +965,18 @@
             pets: [],
             activePet: null,
             petXP: {},
-            shopBoosts: { cpsBoost: 0, clickBoost: 0 },
-            goldenBoost: { active: false, endTime: 0, multiplier: 1 },
-            rainbowBoost: { active: false, endTime: 0, multiplier: 1 },
             lastSave: Date.now(),
             _goldenTriggered: false,
             _rainbowTriggered: false,
             _frenzyTriggered: false,
-            _comboUpdated: false,
-            clickBoostActive: false,
-            clickBoostEnd: 0,
-            clickBoostMult: 1,
             cpsBoostActive: false,
             cpsBoostEnd: 0,
             cpsBoostMult: 1,
+            clickBoostActive: false,
+            clickBoostEnd: 0,
+            clickBoostMult: 1,
+            goldenBoost: { active: false, endTime: 0, multiplier: 1 },
+            rainbowBoost: { active: false, endTime: 0, multiplier: 1 },
         };
 
         // ─── LEVEL UPGRADES ───
@@ -981,71 +988,74 @@
                 levelReq: 3 },
             { id: 'lv_click2', name: '💪 Click II', desc: '+1 click mult', baseCost: 100, costMult: 1.5, max: 8,
                 levelReq: 7 },
-            { id: 'lv_golden', name: '✨ Golden Affinity', desc: '+10% golden value', baseCost: 40, costMult: 1.3, max: 10,
+            { id: 'lv_golden', name: '✨ Golden', desc: '+10% golden value', baseCost: 40, costMult: 1.3, max: 10,
                 levelReq: 4 },
-            { id: 'lv_prestige', name: '🔮 Prestige Boost', desc: '+2% PP earned', baseCost: 80, costMult: 1.5, max: 10,
+            { id: 'lv_prestige', name: '🔮 Prestige', desc: '+2% PP earned', baseCost: 80, costMult: 1.5, max: 10,
                 levelReq: 8 },
-            { id: 'lv_combo', name: '🔥 Combo Master', desc: '+0.5 combo mult per level', baseCost: 60, costMult: 1.4,
-                max: 10, levelReq: 6 },
+            { id: 'lv_combo', name: '🔥 Combo', desc: '+0.5 combo mult per lvl', baseCost: 60, costMult: 1.4, max: 10,
+                levelReq: 6 },
             { id: 'lv_gems', name: '💎 Gem Finder', desc: '+1 gem per level', baseCost: 100, costMult: 1.5, max: 10,
                 levelReq: 12 },
+            { id: 'lv_click3', name: '🔥 Click III', desc: '+2 click mult', baseCost: 300, costMult: 1.5, max: 8,
+                levelReq: 15 },
+            { id: 'lv_cps4', name: '🌴 CPS IV', desc: '+50% CPS', baseCost: 400, costMult: 1.6, max: 5, levelReq: 20 },
         ];
 
         // ─── CORE UPGRADES ───
         const UPGRADES = [
-            { id: 'cursor', name: '🖱️ Cursor', desc: 'Auto-click every second', baseCost: 15, cps: 0.2, mult: 1.15,
-                max: 100 },
-            { id: 'grandma', name: '👵 Grandma', desc: 'Bakes cookies with love', baseCost: 100, cps: 1, mult: 1.15,
-                max: 80 },
-            { id: 'farm', name: '🌾 Farm', desc: 'Harvest fresh cookies', baseCost: 500, cps: 4, mult: 1.14, max: 60 },
-            { id: 'mine', name: '⛏️ Mine', desc: 'Dig up cookie ore', baseCost: 3000, cps: 12, mult: 1.13, max: 50 },
-            { id: 'factory', name: '🏭 Factory', desc: 'Mass-produce cookies', baseCost: 15000, cps: 40, mult: 1.12,
-                max: 40 },
-            { id: 'portal', name: '🌀 Portal', desc: 'Summon cookies from elsewhere', baseCost: 80000, cps: 150,
-                mult: 1.10, max: 30 },
-            { id: 'time', name: '⏳ Time Machine', desc: 'Bake cookies from the future', baseCost: 400000, cps: 500,
-                mult: 1.08, max: 20 },
-            { id: 'antimatter', name: '⚛️ Antimatter', desc: 'Annihilate into cookies', baseCost: 2000000, cps: 2000,
-                mult: 1.07, max: 15 },
-            { id: 'universe', name: '🌌 Universe', desc: 'Create a cookie universe', baseCost: 10000000, cps: 8000,
-                mult: 1.06, max: 10 },
-            { id: 'multiverse', name: '🌀 Multiverse', desc: 'Infinite cookie potential', baseCost: 100000000, cps: 50000,
+            { id: 'cursor', name: '🖱️ Cursor', desc: 'Auto-click', baseCost: 15, cps: 0.2, mult: 1.15, max: 100 },
+            { id: 'grandma', name: '👵 Grandma', desc: 'Bakes cookies', baseCost: 100, cps: 1, mult: 1.15, max: 80 },
+            { id: 'farm', name: '🌾 Farm', desc: 'Harvest cookies', baseCost: 500, cps: 4, mult: 1.14, max: 60 },
+            { id: 'mine', name: '⛏️ Mine', desc: 'Dig cookie ore', baseCost: 3000, cps: 12, mult: 1.13, max: 50 },
+            { id: 'factory', name: '🏭 Factory', desc: 'Mass produce', baseCost: 15000, cps: 40, mult: 1.12, max: 40 },
+            { id: 'portal', name: '🌀 Portal', desc: 'Summon cookies', baseCost: 80000, cps: 150, mult: 1.10, max: 30 },
+            { id: 'time', name: '⏳ Time Machine', desc: 'Future cookies', baseCost: 400000, cps: 500, mult: 1.08, max: 20 },
+            { id: 'antimatter', name: '⚛️ Antimatter', desc: 'Annihilate', baseCost: 2000000, cps: 2000, mult: 1.07,
+                max: 15 },
+            { id: 'universe', name: '🌌 Universe', desc: 'Cookie cosmos', baseCost: 10000000, cps: 8000, mult: 1.06,
+                max: 10 },
+            { id: 'multiverse', name: '🌀 Multiverse', desc: 'Infinite potential', baseCost: 100000000, cps: 50000,
                 mult: 1.05, max: 8 },
+            { id: 'dimension', name: '🌠 Dimension', desc: 'Cookie dimension', baseCost: 1000000000, cps: 300000,
+                mult: 1.04, max: 6 },
+            { id: 'celestial', name: '🌞 Celestial', desc: 'Celestial cookies', baseCost: 10000000000, cps: 2000000,
+                mult: 1.03, max: 5 },
         ];
 
-        // ─── CLICK MULTIPLIER UPGRADES ───
+        // ─── CLICK MULT ───
         const CLICK_MULT_UPGRADES = [
             { id: 'click1', name: '✊ Strong Click', desc: '+0.5 click mult', baseCost: 1000, mult: 1.5, max: 10 },
             { id: 'click2', name: '💪 Power Click', desc: '+1 click mult', baseCost: 50000, mult: 1.6, max: 10 },
             { id: 'click3', name: '⚡ Mega Click', desc: '+2 click mult', baseCost: 2000000, mult: 1.7, max: 10 },
             { id: 'click4', name: '🔥 God Click', desc: '+5 click mult', baseCost: 100000000, mult: 1.8, max: 10 },
+            { id: 'click5', name: '💥 Ultimate Click', desc: '+10 click mult', baseCost: 10000000000, mult: 1.9, max: 8 },
         ];
 
-        // ─── CPS MULTIPLIER UPGRADES ───
+        // ─── CPS MULT ───
         const CPS_MULT_UPGRADES = [
-            { id: 'cps_mult1', name: '⚡ CPS Booster I', desc: '+10% CPS', baseCost: 500000, mult: 1.6, max: 20 },
-            { id: 'cps_mult2', name: '⚡ CPS Booster II', desc: '+20% CPS', baseCost: 5000000, mult: 1.7, max: 15 },
-            { id: 'cps_mult3', name: '⚡ CPS Booster III', desc: '+35% CPS', baseCost: 50000000, mult: 1.8, max: 10 },
-            { id: 'cps_mult4', name: '⚡ CPS Booster IV', desc: '+50% CPS', baseCost: 500000000, mult: 1.9, max: 8 },
+            { id: 'cps_mult1', name: '⚡ Booster I', desc: '+10% CPS', baseCost: 500000, mult: 1.6, max: 20 },
+            { id: 'cps_mult2', name: '⚡ Booster II', desc: '+20% CPS', baseCost: 5000000, mult: 1.7, max: 15 },
+            { id: 'cps_mult3', name: '⚡ Booster III', desc: '+35% CPS', baseCost: 50000000, mult: 1.8, max: 10 },
+            { id: 'cps_mult4', name: '⚡ Booster IV', desc: '+50% CPS', baseCost: 500000000, mult: 1.9, max: 8 },
+            { id: 'cps_mult5', name: '⚡ Booster V', desc: '+75% CPS', baseCost: 5000000000, mult: 2.0, max: 6 },
         ];
 
         // ─── GOLDEN UPGRADES ───
         const GOLDEN_UPGRADES = [
-            { id: 'golden_val1', name: '✨ Golden Value I', desc: '+15% golden reward', baseCost: 200000, mult: 1.5,
-                max: 15 },
-            { id: 'golden_val2', name: '✨ Golden Value II', desc: '+30% golden reward', baseCost: 2000000, mult: 1.6,
-                max: 10 },
-            { id: 'golden_val3', name: '✨ Golden Value III', desc: '+50% golden reward', baseCost: 20000000, mult: 1.7,
-                max: 8 },
-            { id: 'golden_freq', name: '⏱️ Golden Frequency', desc: '+10% spawn rate', baseCost: 5000000, mult: 1.5,
-                max: 10 },
+            { id: 'golden_val1', name: '✨ Value I', desc: '+15% golden reward', baseCost: 200000, mult: 1.5, max: 15 },
+            { id: 'golden_val2', name: '✨ Value II', desc: '+30% golden reward', baseCost: 2000000, mult: 1.6, max: 10 },
+            { id: 'golden_val3', name: '✨ Value III', desc: '+50% golden reward', baseCost: 20000000, mult: 1.7, max: 8 },
+            { id: 'golden_freq', name: '⏱️ Frequency', desc: '+10% spawn rate', baseCost: 5000000, mult: 1.5, max: 10 },
+            { id: 'golden_super', name: '🌟 Super Golden', desc: '+100% golden reward', baseCost: 100000000, mult: 1.6,
+                max: 5 },
         ];
 
-        // ─── BANK UPGRADES ───
+        // ─── BANK ───
         const BANK_UPGRADES = [
             { id: 'bank1', name: '🏦 Interest I', desc: '+0.5% interest/s', baseCost: 1000000, mult: 1.4, max: 20 },
             { id: 'bank2', name: '🏦 Interest II', desc: '+1% interest/s', baseCost: 10000000, mult: 1.5, max: 15 },
             { id: 'bank3', name: '🏦 Interest III', desc: '+2% interest/s', baseCost: 100000000, mult: 1.6, max: 10 },
+            { id: 'bank4', name: '🏦 Interest IV', desc: '+3% interest/s', baseCost: 1000000000, mult: 1.7, max: 8 },
         ];
 
         // ─── COMBO UPGRADES ───
@@ -1053,6 +1063,7 @@
             { id: 'combo1', name: '🔥 Combo I', desc: '5% slower decay', baseCost: 50000, mult: 1.5, max: 15 },
             { id: 'combo2', name: '🔥 Combo II', desc: '10% slower decay', baseCost: 500000, mult: 1.6, max: 12 },
             { id: 'combo3', name: '🔥 Combo III', desc: '20% slower decay', baseCost: 5000000, mult: 1.7, max: 10 },
+            { id: 'combo4', name: '🔥 Combo IV', desc: '30% slower decay', baseCost: 50000000, mult: 1.8, max: 8 },
         ];
 
         // ─── PRESTIGE UPGRADES ───
@@ -1060,13 +1071,15 @@
             { id: 'p_cps1', name: '🔮 CPS I', desc: '+10% perm CPS', baseCost: 1, mult: 1.2, max: 10 },
             { id: 'p_cps2', name: '🔮 CPS II', desc: '+25% perm CPS', baseCost: 5, mult: 1.3, max: 8 },
             { id: 'p_cps3', name: '🔮 CPS III', desc: '+50% perm CPS', baseCost: 15, mult: 1.4, max: 6 },
-            { id: 'p_click', name: '🔮 Click Power', desc: '+0.5 perm click mult', baseCost: 3, mult: 1.3, max: 10 },
+            { id: 'p_click', name: '🔮 Click Power', desc: '+0.5 perm click', baseCost: 3, mult: 1.3, max: 10 },
             { id: 'p_golden', name: '🔮 Golden Touch', desc: '+5% golden chance', baseCost: 8, mult: 1.2, max: 10 },
             { id: 'p_start', name: '🔮 Head Start', desc: '+1000 start cookies', baseCost: 10, mult: 1.5, max: 5 },
-            { id: 'p_bank', name: '🔮 Bank Interest', desc: '+0.2% interest', baseCost: 12, mult: 1.3, max: 8 },
+            { id: 'p_bank', name: '🔮 Bank', desc: '+0.2% interest', baseCost: 12, mult: 1.3, max: 8 },
             { id: 'p_cps_mult', name: '🔮 CPS Mult', desc: '+5% CPS mult', baseCost: 8, mult: 1.4, max: 10 },
-            { id: 'p_combo', name: '🔮 Combo Master', desc: '+0.5 combo mult', baseCost: 6, mult: 1.3, max: 10 },
+            { id: 'p_combo', name: '🔮 Combo', desc: '+0.5 combo mult', baseCost: 6, mult: 1.3, max: 10 },
             { id: 'p_gems', name: '🔮 Gem Boost', desc: '+1 gem per prestige', baseCost: 12, mult: 1.4, max: 5 },
+            { id: 'p_stars', name: '🔮 Star Boost', desc: '+1 star per prestige', baseCost: 20, mult: 1.5, max: 3 },
+            { id: 'p_all', name: '🔮 All Boost', desc: '+10% all stats', baseCost: 25, mult: 1.6, max: 5 },
         ];
 
         // ─── SKILLS ───
@@ -1076,127 +1089,174 @@
             { id: 's_cps3', name: '🌳 CPS III', desc: '+50% CPS', cost: 5, max: 5, requires: 's_cps2' },
             { id: 's_click1', name: '👊 Click I', desc: '+0.5 click mult', cost: 1, max: 5 },
             { id: 's_click2', name: '💪 Click II', desc: '+1 click mult', cost: 3, max: 5, requires: 's_click1' },
-            { id: 's_golden', name: '✨ Golden Affinity', desc: '+10% golden value', cost: 2, max: 5 },
-            { id: 's_cps_all', name: '🌀 All CPS', desc: '+10% all CPS per level', cost: 4, max: 3 },
-            { id: 's_bank', name: '🏦 Bank Bonus', desc: '+0.5% interest', cost: 2, max: 5 },
-            { id: 's_combo', name: '🔥 Combo Bonus', desc: '+0.5 combo mult', cost: 2, max: 5 },
-            { id: 's_gems', name: '💎 Gem Finder', desc: '+1 gem per level', cost: 3, max: 3 },
+            { id: 's_golden', name: '✨ Golden', desc: '+10% golden value', cost: 2, max: 5 },
+            { id: 's_cps_all', name: '🌀 All CPS', desc: '+10% all CPS', cost: 4, max: 3 },
+            { id: 's_bank', name: '🏦 Bank', desc: '+0.5% interest', cost: 2, max: 5 },
+            { id: 's_combo', name: '🔥 Combo', desc: '+0.5 combo mult', cost: 2, max: 5 },
+            { id: 's_gems', name: '💎 Gems', desc: '+1 gem per lvl', cost: 3, max: 3 },
+            { id: 's_stars', name: '⭐ Stars', desc: '+1 star per lvl', cost: 4, max: 3 },
+            { id: 's_click3', name: '🔥 Click III', desc: '+2 click mult', cost: 5, max: 5, requires: 's_click2' },
+            { id: 's_cps4', name: '🌴 CPS IV', desc: '+75% CPS', cost: 6, max: 3, requires: 's_cps3' },
         ];
 
-        // ─── ACHIEVEMENTS ─── (many!)
+        // ─── ACHIEVEMENTS (100+) ───
         const ACHIEVEMENTS = [
             { id: 'click_10', name: 'First Click', desc: 'Click 10 times', icon: '🖱️', check: () => S.totalClicks >= 10 },
-            { id: 'click_100', name: 'Novice Clicker', desc: 'Click 100 times', icon: '🖱️', check: () => S.totalClicks >=
-                    100 },
-            { id: 'click_500', name: 'Clicker Apprentice', desc: 'Click 500 times', icon: '🖱️', check: () => S.totalClicks >=
-                    500 },
-            { id: 'click_1000', name: 'Clicker Pro', desc: 'Click 1K times', icon: '🖱️', check: () => S.totalClicks >=
-                    1000 },
-            { id: 'click_5000', name: 'Clicker Expert', desc: 'Click 5K times', icon: '🖱️', check: () => S.totalClicks >=
-                    5000 },
-            { id: 'click_10000', name: 'Click Master', desc: 'Click 10K times', icon: '🖱️', check: () => S.totalClicks >=
-                    10000 },
-            { id: 'click_50000', name: 'Click Legend', desc: 'Click 50K times', icon: '🖱️', check: () => S.totalClicks >=
-                    50000 },
+            { id: 'click_100', name: 'Novice', desc: 'Click 100 times', icon: '🖱️', check: () => S.totalClicks >= 100 },
+            { id: 'click_500', name: 'Apprentice', desc: 'Click 500 times', icon: '🖱️', check: () => S.totalClicks >= 500 },
+            { id: 'click_1000', name: 'Pro', desc: 'Click 1K times', icon: '🖱️', check: () => S.totalClicks >= 1000 },
+            { id: 'click_5000', name: 'Expert', desc: 'Click 5K times', icon: '🖱️', check: () => S.totalClicks >= 5000 },
+            { id: 'click_10000', name: 'Master', desc: 'Click 10K times', icon: '🖱️', check: () => S.totalClicks >= 10000 },
+            { id: 'click_50000', name: 'Legend', desc: 'Click 50K times', icon: '🖱️', check: () => S.totalClicks >= 50000 },
             { id: 'click_100000', name: 'Click God', desc: 'Click 100K times', icon: '🖱️', check: () => S.totalClicks >=
                     100000 },
             { id: 'click_1m', name: 'Click Deity', desc: 'Click 1M times', icon: '🖱️', check: () => S.totalClicks >=
                     1000000 },
+            { id: 'click_10m', name: 'Click Titan', desc: 'Click 10M times', icon: '🖱️', check: () => S.totalClicks >=
+                    10000000 },
             { id: 'cps_1', name: 'CPS Novice', desc: 'Reach 1 CPS', icon: '⚡', check: () => getTotalCPS() >= 1 },
             { id: 'cps_5', name: 'CPS Learner', desc: 'Reach 5 CPS', icon: '⚡', check: () => getTotalCPS() >= 5 },
             { id: 'cps_10', name: 'Speed Demon', desc: 'Reach 10 CPS', icon: '⚡', check: () => getTotalCPS() >= 10 },
-            { id: 'cps_50', name: 'Turbo Charged', desc: 'Reach 50 CPS', icon: '⚡', check: () => getTotalCPS() >= 50 },
+            { id: 'cps_50', name: 'Turbo', desc: 'Reach 50 CPS', icon: '⚡', check: () => getTotalCPS() >= 50 },
             { id: 'cps_100', name: 'Turbo Master', desc: 'Reach 100 CPS', icon: '⚡', check: () => getTotalCPS() >= 100 },
             { id: 'cps_500', name: 'Speed Legend', desc: 'Reach 500 CPS', icon: '⚡', check: () => getTotalCPS() >= 500 },
-            { id: 'cps_1000', name: 'Infinite Power', desc: 'Reach 1K CPS', icon: '⚡', check: () => getTotalCPS() >=
-                    1000 },
+            { id: 'cps_1000', name: 'Infinite', desc: 'Reach 1K CPS', icon: '⚡', check: () => getTotalCPS() >= 1000 },
             { id: 'cps_5000', name: 'CPS God', desc: 'Reach 5K CPS', icon: '⚡', check: () => getTotalCPS() >= 5000 },
             { id: 'cps_10000', name: 'CPS Deity', desc: 'Reach 10K CPS', icon: '⚡', check: () => getTotalCPS() >= 10000 },
+            { id: 'cps_50000', name: 'CPS Titan', desc: 'Reach 50K CPS', icon: '⚡', check: () => getTotalCPS() >= 50000 },
             { id: 'golden_1', name: 'Golden Touch', desc: 'Collect 1 golden', icon: '✨', check: () => S.goldenCollected >=
                     1 },
-            { id: 'golden_5', name: 'Golden Apprentice', desc: 'Collect 5 golden', icon: '✨', check: () => S
-                    .goldenCollected >= 5 },
-            { id: 'golden_10', name: 'Golden God', desc: 'Collect 10 golden', icon: '✨', check: () => S.goldenCollected >=
-                    10 },
-            { id: 'golden_25', name: 'Golden Master', desc: 'Collect 25 golden', icon: '✨', check: () => S
-                    .goldenCollected >= 25 },
-            { id: 'golden_50', name: 'Golden Legend', desc: 'Collect 50 golden', icon: '✨', check: () => S
-                    .goldenCollected >= 50 },
-            { id: 'golden_100', name: 'Golden Deity', desc: 'Collect 100 golden', icon: '✨', check: () => S
-                    .goldenCollected >= 100 },
-            { id: 'cookies_100', name: 'Cookie Starter', desc: 'Have 100 cookies', icon: '🍪', check: () => S.cookies >=
-                    100 },
-            { id: 'cookies_1k', name: 'Cookie Novice', desc: 'Have 1K cookies', icon: '🍪', check: () => S.cookies >=
-                    1000 },
-            { id: 'cookies_10k', name: 'Cookie Collector', desc: 'Have 10K cookies', icon: '🍪', check: () => S.cookies >=
-                    10000 },
-            { id: 'cookies_100k', name: 'Cookie Hoarder', desc: 'Have 100K cookies', icon: '🍪', check: () => S.cookies >=
-                    100000 },
-            { id: 'cookies_1m', name: 'Cookie Millionaire', desc: 'Have 1M cookies', icon: '🍪', check: () => S.cookies >=
-                    1000000 },
-            { id: 'cookies_10m', name: 'Cookie Tycoon', desc: 'Have 10M cookies', icon: '🍪', check: () => S.cookies >=
-                    10000000 },
-            { id: 'cookies_100m', name: 'Cookie Baron', desc: 'Have 100M cookies', icon: '🍪', check: () => S.cookies >=
-                    100000000 },
-            { id: 'cookies_1b', name: 'Cookie Billionaire', desc: 'Have 1B cookies', icon: '🍪', check: () => S.cookies >=
-                    1000000000 },
-            { id: 'upgrade_5', name: 'Upgrade Novice', desc: 'Buy 5 upgrades', icon: '📦', check: () => getTotalUpgrades() >=
+            { id: 'golden_5', name: 'Golden Apprentice', desc: 'Collect 5', icon: '✨', check: () => S.goldenCollected >=
                     5 },
-            { id: 'upgrade_10', name: 'Collector', desc: 'Buy 10 upgrades', icon: '📦', check: () => getTotalUpgrades() >=
-                    10 },
-            { id: 'upgrade_25', name: 'Upgrade Master', desc: 'Buy 25 upgrades', icon: '📦', check: () => getTotalUpgrades() >=
+            { id: 'golden_10', name: 'Golden God', desc: 'Collect 10', icon: '✨', check: () => S.goldenCollected >= 10 },
+            { id: 'golden_25', name: 'Golden Master', desc: 'Collect 25', icon: '✨', check: () => S.goldenCollected >=
                     25 },
-            { id: 'upgrade_50', name: 'Hoarder', desc: 'Buy 50 upgrades', icon: '📦', check: () => getTotalUpgrades() >=
+            { id: 'golden_50', name: 'Golden Legend', desc: 'Collect 50', icon: '✨', check: () => S.goldenCollected >=
                     50 },
-            { id: 'upgrade_100', name: 'Completionist', desc: 'Buy 100 upgrades', icon: '📦', check: () => getTotalUpgrades() >=
+            { id: 'golden_100', name: 'Golden Deity', desc: 'Collect 100', icon: '✨', check: () => S.goldenCollected >=
                     100 },
-            { id: 'combo_10', name: '🔥 Combo Starter', desc: 'Reach 10 combo', icon: '🔥', check: () => combo >= 10 },
-            { id: 'combo_25', name: '🔥 Combo Master', desc: 'Reach 25 combo', icon: '🔥', check: () => combo >= 25 },
-            { id: 'combo_50', name: '🔥 Combo God', desc: 'Reach 50 combo', icon: '🔥', check: () => combo >= 50 },
-            { id: 'combo_100', name: '🔥 Combo Legend', desc: 'Reach 100 combo', icon: '🔥', check: () => combo >= 100 },
-            { id: 'challenge_10', name: '⚡ Challenger', desc: '10 clicks in challenge', icon: '⚡', check: () => S
-                    .challengeBest >= 10 },
-            { id: 'challenge_25', name: '⚡ Speedster', desc: '25 clicks in challenge', icon: '⚡', check: () => S
-                    .challengeBest >= 25 },
-            { id: 'challenge_50', name: '⚡ Speed Demon', desc: '50 clicks in challenge', icon: '⚡', check: () => S
-                    .challengeBest >= 50 },
-            { id: 'frenzy_1', name: '⚡ Frenzy!', desc: 'Trigger Frenzy', icon: '⚡', check: () => S._frenzyTriggered },
-            { id: 'prestige_1', name: 'Reborn', desc: 'Prestige once', icon: '🔮', check: () => S.totalPrestiges >= 1 },
-            { id: 'prestige_5', name: 'Enlightened', desc: 'Prestige 5 times', icon: '🔮', check: () => S.totalPrestiges >=
-                    5 },
-            { id: 'prestige_10', name: 'Transcendent', desc: 'Prestige 10 times', icon: '🔮', check: () => S.totalPrestiges >=
+            { id: 'golden_250', name: 'Golden Titan', desc: 'Collect 250', icon: '✨', check: () => S.goldenCollected >=
+                    250 },
+            { id: 'cookies_100', name: 'Cookie Starter', desc: 'Have 100', icon: '🍪', check: () => S.cookies >= 100 },
+            { id: 'cookies_1k', name: 'Cookie Novice', desc: 'Have 1K', icon: '🍪', check: () => S.cookies >= 1000 },
+            { id: 'cookies_10k', name: 'Collector', desc: 'Have 10K', icon: '🍪', check: () => S.cookies >= 10000 },
+            { id: 'cookies_100k', name: 'Hoarder', desc: 'Have 100K', icon: '🍪', check: () => S.cookies >= 100000 },
+            { id: 'cookies_1m', name: 'Millionaire', desc: 'Have 1M', icon: '🍪', check: () => S.cookies >= 1000000 },
+            { id: 'cookies_10m', name: 'Tycoon', desc: 'Have 10M', icon: '🍪', check: () => S.cookies >= 10000000 },
+            { id: 'cookies_100m', name: 'Baron', desc: 'Have 100M', icon: '🍪', check: () => S.cookies >= 100000000 },
+            { id: 'cookies_1b', name: 'Billionaire', desc: 'Have 1B', icon: '🍪', check: () => S.cookies >= 1000000000 },
+            { id: 'cookies_10b', name: 'Trillionaire', desc: 'Have 10B', icon: '🍪', check: () => S.cookies >= 10000000000 },
+            { id: 'upgrade_5', name: 'Upgrade Novice', desc: 'Buy 5', icon: '📦', check: () => getTotalUpgrades() >= 5 },
+            { id: 'upgrade_10', name: 'Collector', desc: 'Buy 10', icon: '📦', check: () => getTotalUpgrades() >= 10 },
+            { id: 'upgrade_25', name: 'Master', desc: 'Buy 25', icon: '📦', check: () => getTotalUpgrades() >= 25 },
+            { id: 'upgrade_50', name: 'Hoarder', desc: 'Buy 50', icon: '📦', check: () => getTotalUpgrades() >= 50 },
+            { id: 'upgrade_100', name: 'Completionist', desc: 'Buy 100', icon: '📦', check: () => getTotalUpgrades() >=
+                    100 },
+            { id: 'upgrade_250', name: 'Upgrade God', desc: 'Buy 250', icon: '📦', check: () => getTotalUpgrades() >= 250 },
+            { id: 'combo_10', name: '🔥 Starter', desc: '10 combo', icon: '🔥', check: () => combo >= 10 },
+            { id: 'combo_25', name: '🔥 Master', desc: '25 combo', icon: '🔥', check: () => combo >= 25 },
+            { id: 'combo_50', name: '🔥 God', desc: '50 combo', icon: '🔥', check: () => combo >= 50 },
+            { id: 'combo_100', name: '🔥 Legend', desc: '100 combo', icon: '🔥', check: () => combo >= 100 },
+            { id: 'combo_250', name: '🔥 Titan', desc: '250 combo', icon: '🔥', check: () => combo >= 250 },
+            { id: 'challenge_10', name: '⚡ Challenger', desc: '10 in challenge', icon: '⚡', check: () => S.challengeBest >=
                     10 },
-            { id: 'level_5', name: 'Leveling Up!', desc: 'Reach level 5', icon: '⭐', check: () => S.level >= 5 },
+            { id: 'challenge_25', name: '⚡ Speedster', desc: '25 in challenge', icon: '⚡', check: () => S.challengeBest >=
+                    25 },
+            { id: 'challenge_50', name: '⚡ Speed Demon', desc: '50 in challenge', icon: '⚡', check: () => S.challengeBest >=
+                    50 },
+            { id: 'challenge_75', name: '⚡ Speed God', desc: '75 in challenge', icon: '⚡', check: () => S.challengeBest >=
+                    75 },
+            { id: 'challenge_100', name: '⚡ Speed Titan', desc: '100 in challenge', icon: '⚡', check: () => S
+                    .challengeBest >= 100 },
+            { id: 'frenzy_1', name: '⚡ Frenzy!', desc: 'Trigger frenzy', icon: '⚡', check: () => S._frenzyTriggered },
+            { id: 'prestige_1', name: 'Reborn', desc: 'Prestige once', icon: '🔮', check: () => S.totalPrestiges >= 1 },
+            { id: 'prestige_5', name: 'Enlightened', desc: 'Prestige 5', icon: '🔮', check: () => S.totalPrestiges >= 5 },
+            { id: 'prestige_10', name: 'Transcendent', desc: 'Prestige 10', icon: '🔮', check: () => S.totalPrestiges >=
+                    10 },
+            { id: 'prestige_25', name: 'Ascended', desc: 'Prestige 25', icon: '🔮', check: () => S.totalPrestiges >= 25 },
+            { id: 'prestige_50', name: 'Eternal', desc: 'Prestige 50', icon: '🔮', check: () => S.totalPrestiges >= 50 },
+            { id: 'level_5', name: 'Leveling!', desc: 'Reach level 5', icon: '⭐', check: () => S.level >= 5 },
             { id: 'level_10', name: 'Level Up!', desc: 'Reach level 10', icon: '⭐', check: () => S.level >= 10 },
             { id: 'level_25', name: 'Advanced', desc: 'Reach level 25', icon: '⭐', check: () => S.level >= 25 },
             { id: 'level_50', name: 'Master', desc: 'Reach level 50', icon: '⭐', check: () => S.level >= 50 },
+            { id: 'level_75', name: 'Grandmaster', desc: 'Reach level 75', icon: '⭐', check: () => S.level >= 75 },
             { id: 'level_100', name: 'Legend', desc: 'Reach level 100', icon: '⭐', check: () => S.level >= 100 },
-            { id: 'rainbow_1', name: '🌈 Rainbow', desc: 'Get rainbow boost', icon: '🌈', check: () => S.rainbowBoost
+            { id: 'level_250', name: 'Mythic', desc: 'Reach level 250', icon: '⭐', check: () => S.level >= 250 },
+            { id: 'level_500', name: 'Godlike', desc: 'Reach level 500', icon: '⭐', check: () => S.level >= 500 },
+            { id: 'rainbow_1', name: '🌈 Rainbow!', desc: 'Get rainbow boost', icon: '🌈', check: () => S.rainbowBoost
                     .active || S._rainbowTriggered },
-            { id: 'golden_boost_1', name: '💛 Golden Rush', desc: 'Get golden boost', icon: '💛', check: () => S
-                    .goldenBoost.active || S._goldenTriggered },
-            { id: 'all_skills', name: '🌳 Skill Master', desc: 'Buy 1 of every skill', icon: '🌳', check: () => {
+            { id: 'golden_boost_1', name: '💛 Golden!', desc: 'Get golden boost', icon: '💛', check: () => S.goldenBoost
+                    .active || S._goldenTriggered },
+            { id: 'skill_1', name: 'Skill Novice', desc: 'Buy 1 skill', icon: '🌳', check: () => Object.values(S.skills)
+                    .some(v => v > 0) },
+            { id: 'skill_5', name: 'Skill Collector', desc: 'Buy 5 skills', icon: '🌳', check: () => {
+                    let c = 0;
+                    for (const k in S.skills) c += S.skills[k];
+                    return c >= 5;
+                } },
+            { id: 'skill_10', name: 'Skill Master', desc: 'Buy 10 skills', icon: '🌳', check: () => {
+                    let c = 0;
+                    for (const k in S.skills) c += S.skills[k];
+                    return c >= 10;
+                } },
+            { id: 'all_skills', name: '🌳 Skill Master', desc: 'Buy all skills', icon: '🌳', check: () => {
                     const bought = Object.keys(S.skills).filter(k => S.skills[k] > 0).length;
                     return bought >= SKILLS.length;
                 } },
-            { id: 'pet_1', name: '🐾 Pet Lover', desc: 'Adopt your first pet', icon: '🐾', check: () => (S.pets || [])
-                    .length >= 1 },
-            { id: 'pet_5', name: '🐾 Pet Master', desc: 'Adopt all pets', icon: '🐾', check: () => (S.pets || []).length >=
+            { id: 'prestige_upgrade_1', name: '🔮 Prestige Pro', desc: 'Buy prestige upgrade', icon: '🔮', check: () =>
+                    Object.values(S.prestigeUpgrades).some(v => v > 0) },
+            { id: 'prestige_upgrade_5', name: '🔮 Prestige Master', desc: 'Buy 5 prestige upgrades', icon: '🔮', check: () => {
+                    let c = 0;
+                    for (const k in S.prestigeUpgrades) c += S.prestigeUpgrades[k];
+                    return c >= 5;
+                } },
+            { id: 'level_upgrade_1', name: '📈 Upgraded', desc: 'Buy level upgrade', icon: '📈', check: () => Object.values(
+                    S.levelUpgrades).some(v => v > 0) },
+            { id: 'level_upgrade_5', name: '📈 Master', desc: 'Buy 5 level upgrades', icon: '📈', check: () => {
+                    let c = 0;
+                    for (const k in S.levelUpgrades) c += S.levelUpgrades[k];
+                    return c >= 5;
+                } },
+            { id: 'alltime_1m', name: 'Lifetime Million', desc: 'Earn 1M total', icon: '💰', check: () => S.cookiesAllTime >=
+                    1000000 },
+            { id: 'alltime_10m', name: 'Lifetime 10M', desc: 'Earn 10M total', icon: '💰', check: () => S.cookiesAllTime >=
+                    10000000 },
+            { id: 'alltime_100m', name: 'Lifetime 100M', desc: 'Earn 100M total', icon: '💰', check: () => S.cookiesAllTime >=
+                    100000000 },
+            { id: 'alltime_1b', name: 'Lifetime Billion', desc: 'Earn 1B total', icon: '💰', check: () => S.cookiesAllTime >=
+                    1000000000 },
+            { id: 'alltime_10b', name: 'Lifetime 10B', desc: 'Earn 10B total', icon: '💰', check: () => S.cookiesAllTime >=
+                    10000000000 },
+            { id: 'pet_1', name: '🐾 Pet Lover', desc: 'Adopt a pet', icon: '🐾', check: () => (S.pets || []).length >= 1 },
+            { id: 'pet_3', name: '🐾 Pet Collector', desc: 'Adopt 3 pets', icon: '🐾', check: () => (S.pets || []).length >=
+                    3 },
+            { id: 'pet_5', name: '🐾 Pet Master', desc: 'Adopt 5 pets', icon: '🐾', check: () => (S.pets || []).length >=
                     5 },
+            { id: 'pet_8', name: '🐾 Pet Legend', desc: 'Adopt 8 pets', icon: '🐾', check: () => (S.pets || []).length >=
+                    8 },
+            { id: 'gems_5', name: '💎 Gem Novice', desc: 'Collect 5 gems', icon: '💎', check: () => S.gems >= 5 },
             { id: 'gems_10', name: '💎 Gem Collector', desc: 'Collect 10 gems', icon: '💎', check: () => S.gems >= 10 },
-            { id: 'gems_50', name: '💎 Gem Hoarder', desc: 'Collect 50 gems', icon: '💎', check: () => S.gems >= 50 },
-            { id: 'gems_100', name: '💎 Gem Lord', desc: 'Collect 100 gems', icon: '💎', check: () => S.gems >= 100 },
+            { id: 'gems_25', name: '💎 Gem Hoarder', desc: 'Collect 25 gems', icon: '💎', check: () => S.gems >= 25 },
+            { id: 'gems_50', name: '💎 Gem Lord', desc: 'Collect 50 gems', icon: '💎', check: () => S.gems >= 50 },
+            { id: 'gems_100', name: '💎 Gem Deity', desc: 'Collect 100 gems', icon: '💎', check: () => S.gems >= 100 },
+            { id: 'stars_5', name: '⭐ Star Novice', desc: 'Collect 5 stars', icon: '⭐', check: () => S.stars >= 5 },
             { id: 'stars_10', name: '⭐ Star Collector', desc: 'Collect 10 stars', icon: '⭐', check: () => S.stars >= 10 },
-            { id: 'stars_50', name: '⭐ Star Hoarder', desc: 'Collect 50 stars', icon: '⭐', check: () => S.stars >= 50 },
+            { id: 'stars_25', name: '⭐ Star Hoarder', desc: 'Collect 25 stars', icon: '⭐', check: () => S.stars >= 25 },
+            { id: 'stars_50', name: '⭐ Star Lord', desc: 'Collect 50 stars', icon: '⭐', check: () => S.stars >= 50 },
         ];
 
-        // ─── PETS ───
+        // ─── PETS (10 pets) ───
         const PETS = [
             { id: 'cat', name: '🐱 Cat', desc: '+5% CPS', cost: 10000, bonus: { cps: 1.05 } },
             { id: 'dog', name: '🐶 Dog', desc: '+5% click mult', cost: 25000, bonus: { click: 1.05 } },
             { id: 'dragon', name: '🐉 Dragon', desc: '+10% CPS + click', cost: 100000, bonus: { cps: 1.10, click: 1.10 } },
             { id: 'phoenix', name: '🔥 Phoenix', desc: '+15% golden value', cost: 500000, bonus: { golden: 1.15 } },
             { id: 'unicorn', name: '🦄 Unicorn', desc: '+20% all bonuses', cost: 2000000, bonus: { all: 1.20 } },
+            { id: 'griffin', name: '🦅 Griffin', desc: '+15% CPS', cost: 5000000, bonus: { cps: 1.15 } },
+            { id: 'mermaid', name: '🧜 Mermaid', desc: '+15% click mult', cost: 10000000, bonus: { click: 1.15 } },
+            { id: 'basilisk', name: '🐍 Basilisk', desc: '+25% golden value', cost: 25000000, bonus: { golden: 1.25 } },
+            { id: 'titan', name: '🗿 Titan', desc: '+30% all stats', cost: 100000000, bonus: { all: 1.30 } },
+            { id: 'cosmic', name: '🌌 Cosmic', desc: '+50% all stats', cost: 500000000, bonus: { all: 1.50 } },
         ];
 
         // ─── CRAFTING ───
@@ -1205,26 +1265,34 @@
                 result: { gems: 1 } },
             { id: 'star_cookie', name: '⭐ Star Cookie', desc: 'Craft 1 star from 5M cookies', cost: { cookies: 5000000 },
                 result: { stars: 1 } },
-            { id: 'pet_treat', name: '🍖 Pet Treat', desc: 'Craft a treat for +10 pet XP', cost: { cookies: 200000 },
-                result: { petXp: 10 } },
-            { id: 'boost_potion', name: '🧪 Boost Potion', desc: 'Craft a 30s 2× CPS boost', cost: { cookies: 100000 },
+            { id: 'pet_treat', name: '🍖 Pet Treat', desc: '+10 pet XP', cost: { cookies: 200000 }, result: { petXp: 10 } },
+            { id: 'boost_potion', name: '🧪 Boost Potion', desc: '30s 2× CPS', cost: { cookies: 100000 },
                 result: { boost: 'cps' } },
+            { id: 'mega_potion', name: '⚡ Mega Potion', desc: '15s 5× clicks', cost: { cookies: 500000 },
+                result: { boost: 'click' } },
+            { id: 'super_gem', name: '💎 Super Gem', desc: 'Craft 3 gems', cost: { cookies: 2500000 }, result: { gems: 3 } },
+            { id: 'super_star', name: '⭐ Super Star', desc: 'Craft 2 stars', cost: { cookies: 10000000 },
+                result: { stars: 2 } },
         ];
 
-        // ─── SHOP ITEMS ───
+        // ─── SHOP ───
         const SHOP_ITEMS = [
-            { id: 'cps_boost', name: '⚡ 2× CPS Boost (30s)', desc: 'Double your CPS for 30 seconds', price: { cookies: 50000 },
+            { id: 'cps_boost', name: '⚡ 2× CPS (30s)', desc: 'Double CPS for 30s', price: { cookies: 50000 },
                 type: 'cps_boost' },
-            { id: 'click_boost', name: '🔥 3× Click Boost (15s)', desc: 'Triple click power for 15 seconds',
-                price: { cookies: 30000 }, type: 'click_boost' },
-            { id: 'gem_pack', name: '💎 Gem Pack', desc: 'Get 5 gems instantly', price: { cookies: 500000 }, type: 'gems',
+            { id: 'click_boost', name: '🔥 3× Click (15s)', desc: 'Triple clicks for 15s', price: { cookies: 30000 },
+                type: 'click_boost' },
+            { id: 'gem_pack', name: '💎 Gem Pack', desc: 'Get 5 gems', price: { cookies: 500000 }, type: 'gems',
                 amount: 5 },
-            { id: 'star_pack', name: '⭐ Star Pack', desc: 'Get 3 stars instantly', price: { cookies: 2000000 }, type: 'stars',
+            { id: 'star_pack', name: '⭐ Star Pack', desc: 'Get 3 stars', price: { cookies: 2000000 }, type: 'stars',
                 amount: 3 },
-            { id: 'xp_boost', name: '📈 XP Boost (1min)', desc: 'Double XP gain for 60 seconds', price: { cookies: 100000 },
+            { id: 'xp_boost', name: '📈 2× XP (60s)', desc: 'Double XP for 60s', price: { cookies: 100000 },
                 type: 'xp_boost' },
-            { id: 'prestige_boost', name: '🔮 Prestige Boost', desc: '+25% PP on next prestige', price: { gems: 5 },
+            { id: 'prestige_boost', name: '🔮 +25% PP', desc: 'On next prestige', price: { gems: 5 },
                 type: 'prestige_boost' },
+            { id: 'golden_boost', name: '🌟 Golden Rush', desc: 'Golden boost 30s', price: { gems: 3 },
+            type: 'golden_boost' },
+            { id: 'combo_boost', name: '🔥 Combo x2', desc: 'Double combo for 30s', price: { cookies: 200000 },
+                type: 'combo_boost' },
         ];
 
         // ─── MILESTONES ───
@@ -1233,18 +1301,22 @@
                     gems: 1 } },
             { id: 'm_cps_100', label: 'Reach 100 CPS', check: () => getTotalCPS() >= 100, reward: { cookies: 100000,
                     gems: 2 } },
-            { id: 'm_cps_1000', label: 'Reach 1,000 CPS', check: () => getTotalCPS() >= 1000, reward: { cookies: 1000000,
+            { id: 'm_cps_1000', label: 'Reach 1K CPS', check: () => getTotalCPS() >= 1000, reward: { cookies: 1000000,
                     gems: 5 } },
+            { id: 'm_cps_10000', label: 'Reach 10K CPS', check: () => getTotalCPS() >= 10000, reward: { cookies: 5000000,
+                    gems: 10, stars: 1 } },
             { id: 'm_cookies_1m', label: 'Have 1M cookies', check: () => S.cookies >= 1000000, reward: { cookies: 50000,
                     stars: 1 } },
             { id: 'm_cookies_10m', label: 'Have 10M cookies', check: () => S.cookies >= 10000000, reward: { cookies: 200000,
                     stars: 2 } },
             { id: 'm_cookies_100m', label: 'Have 100M cookies', check: () => S.cookies >= 100000000, reward: { cookies: 1000000,
-                    stars: 3 } },
+                    stars: 3, gems: 5 } },
             { id: 'm_upgrades_25', label: 'Buy 25 upgrades', check: () => getTotalUpgrades() >= 25, reward: { cookies: 50000,
                     gems: 1 } },
             { id: 'm_upgrades_50', label: 'Buy 50 upgrades', check: () => getTotalUpgrades() >= 50, reward: { cookies: 200000,
                     gems: 2 } },
+            { id: 'm_upgrades_100', label: 'Buy 100 upgrades', check: () => getTotalUpgrades() >= 100, reward: { cookies: 500000,
+                    gems: 5, stars: 1 } },
             { id: 'm_prestige_1', label: 'Prestige once', check: () => S.totalPrestiges >= 1, reward: { cookies: 100000,
                     gems: 3, stars: 1 } },
             { id: 'm_prestige_5', label: 'Prestige 5 times', check: () => S.totalPrestiges >= 5, reward: { cookies: 500000,
@@ -1253,13 +1325,22 @@
                     stars: 1 } },
             { id: 'm_level_25', label: 'Reach level 25', check: () => S.level >= 25, reward: { cookies: 50000,
                 gems: 1 } },
+            { id: 'm_level_50', label: 'Reach level 50', check: () => S.level >= 50, reward: { cookies: 200000, gems: 2,
+                    stars: 1 } },
             { id: 'm_combo_25', label: 'Reach 25 combo', check: () => combo >= 25, reward: { cookies: 25000, gems: 1 } },
             { id: 'm_combo_50', label: 'Reach 50 combo', check: () => combo >= 50, reward: { cookies: 100000, gems: 2 } },
+            { id: 'm_combo_100', label: 'Reach 100 combo', check: () => combo >= 100, reward: { cookies: 500000, gems: 5,
+                    stars: 1 } },
             { id: 'm_pets_2', label: 'Adopt 2 pets', check: () => (S.pets || []).length >= 2, reward: { cookies: 50000,
+                    stars: 1 } },
+            { id: 'm_pets_5', label: 'Adopt 5 pets', check: () => (S.pets || []).length >= 5, reward: { cookies: 200000,
+                    gems: 3, stars: 2 } },
+            { id: 'm_gems_10', label: 'Collect 10 gems', check: () => S.gems >= 10, reward: { cookies: 50000, gems: 2 } },
+            { id: 'm_gems_25', label: 'Collect 25 gems', check: () => S.gems >= 25, reward: { cookies: 200000, gems: 5,
                     stars: 1 } },
         ];
 
-        // ─── BUY QUANTITY ───
+        // ─── BUY QTY ───
         let buyQty = 1;
 
         // ─── HELPERS ───
@@ -1325,13 +1406,14 @@
                     if (u.id === 'combo1') bonus -= owned * 0.05;
                     else if (u.id === 'combo2') bonus -= owned * 0.10;
                     else if (u.id === 'combo3') bonus -= owned * 0.20;
+                    else if (u.id === 'combo4') bonus -= owned * 0.30;
                 }
             }
-            return Math.max(bonus, 0.1);
+            return Math.max(bonus, 0.05);
         }
 
         function getComboMultiplier() {
-            let base = 1 + (combo * 0.02);
+            let base = 1 + (combo * 0.025);
             const lvCombo = S.levelUpgrades['lv_combo'] || 0;
             base += lvCombo * 0.5;
             const sCombo = S.skills['s_combo'] || 0;
@@ -1354,35 +1436,37 @@
                     else if (u.id === 'cps_mult2') cpsMult += owned * 0.20;
                     else if (u.id === 'cps_mult3') cpsMult += owned * 0.35;
                     else if (u.id === 'cps_mult4') cpsMult += owned * 0.50;
+                    else if (u.id === 'cps_mult5') cpsMult += owned * 0.75;
                 }
             }
 
             let prestigeMult = 1;
+            let allBoost = 1;
             for (const pu of PRESTIGE_UPGRADES) {
-                if (pu.id.startsWith('p_cps')) {
-                    const owned = S.prestigeUpgrades[pu.id] || 0;
-                    if (owned > 0) {
-                        if (pu.id === 'p_cps1') prestigeMult += owned * 0.10;
-                        else if (pu.id === 'p_cps2') prestigeMult += owned * 0.25;
-                        else if (pu.id === 'p_cps3') prestigeMult += owned * 0.50;
-                    }
-                }
-                if (pu.id === 'p_cps_mult') {
-                    const owned = S.prestigeUpgrades[pu.id] || 0;
-                    if (owned > 0) cpsMult += owned * 0.05;
+                const owned = S.prestigeUpgrades[pu.id] || 0;
+                if (owned > 0) {
+                    if (pu.id === 'p_cps1') prestigeMult += owned * 0.10;
+                    else if (pu.id === 'p_cps2') prestigeMult += owned * 0.25;
+                    else if (pu.id === 'p_cps3') prestigeMult += owned * 0.50;
+                    else if (pu.id === 'p_cps_mult') cpsMult += owned * 0.05;
+                    else if (pu.id === 'p_all') allBoost += owned * 0.10;
                 }
             }
+            prestigeMult *= allBoost;
 
             let skillMult = 1;
+            let skillAll = 1;
             for (const sk of SKILLS) {
                 const owned = S.skills[sk.id] || 0;
                 if (owned > 0) {
                     if (sk.id === 's_cps1') skillMult += owned * 0.15;
                     else if (sk.id === 's_cps2') skillMult += owned * 0.30;
                     else if (sk.id === 's_cps3') skillMult += owned * 0.50;
-                    else if (sk.id === 's_cps_all') skillMult += owned * 0.10;
+                    else if (sk.id === 's_cps4') skillMult += owned * 0.75;
+                    else if (sk.id === 's_cps_all') skillAll += owned * 0.10;
                 }
             }
+            skillMult *= skillAll;
 
             let levelCpsMult = 1;
             for (const lu of LEVEL_UPGRADES) {
@@ -1392,13 +1476,13 @@
                         if (lu.id === 'lv_cps1') levelCpsMult += owned * 0.05;
                         else if (lu.id === 'lv_cps2') levelCpsMult += owned * 0.10;
                         else if (lu.id === 'lv_cps3') levelCpsMult += owned * 0.25;
+                        else if (lu.id === 'lv_cps4') levelCpsMult += owned * 0.50;
                     }
                 }
             }
 
-            // Pet bonuses
             let petCps = 1;
-            if (S.activePet !== null) {
+            if (S.activePet !== null && S.pets && S.pets[S.activePet]) {
                 const pet = PETS[S.activePet];
                 if (pet) {
                     if (pet.bonus.cps) petCps *= pet.bonus.cps;
@@ -1406,11 +1490,8 @@
                 }
             }
 
-            // CPS boost from shop
             let shopBoost = 1;
-            if (S.cpsBoostActive && Date.now() < S.cpsBoostEnd) {
-                shopBoost = S.cpsBoostMult;
-            }
+            if (S.cpsBoostActive && Date.now() < S.cpsBoostEnd) shopBoost = S.cpsBoostMult;
 
             t = t * prestigeMult * skillMult * levelCpsMult * cpsMult * petCps * shopBoost;
             return t;
@@ -1424,27 +1505,31 @@
                 else if (cu.id === 'click2') mult += owned * 1;
                 else if (cu.id === 'click3') mult += owned * 2;
                 else if (cu.id === 'click4') mult += owned * 5;
+                else if (cu.id === 'click5') mult += owned * 10;
             }
             const pClick = S.prestigeUpgrades['p_click'] || 0;
             mult += pClick * 0.5;
+            let allBoost = 1;
+            for (const pu of PRESTIGE_UPGRADES) {
+                if (pu.id === 'p_all') allBoost += (S.prestigeUpgrades[pu.id] || 0) * 0.10;
+            }
+            mult *= allBoost;
             const sClick1 = S.skills['s_click1'] || 0;
             const sClick2 = S.skills['s_click2'] || 0;
-            mult += sClick1 * 0.5 + sClick2 * 1;
+            const sClick3 = S.skills['s_click3'] || 0;
+            mult += sClick1 * 0.5 + sClick2 * 1 + sClick3 * 2;
             const lvClick1 = S.levelUpgrades['lv_click1'] || 0;
             const lvClick2 = S.levelUpgrades['lv_click2'] || 0;
-            mult += lvClick1 * 0.5 + lvClick2 * 1;
+            const lvClick3 = S.levelUpgrades['lv_click3'] || 0;
+            mult += lvClick1 * 0.5 + lvClick2 * 1 + lvClick3 * 2;
             const comboMult = getComboMultiplier();
             mult *= comboMult;
-            // Pet click bonus
-            if (S.activePet !== null) {
+            if (S.activePet !== null && S.pets && S.pets[S.activePet]) {
                 const pet = PETS[S.activePet];
                 if (pet && pet.bonus.click) mult *= pet.bonus.click;
                 if (pet && pet.bonus.all) mult *= pet.bonus.all;
             }
-            // Click boost from shop
-            if (S.clickBoostActive && Date.now() < S.clickBoostEnd) {
-                mult *= S.clickBoostMult;
-            }
+            if (S.clickBoostActive && Date.now() < S.clickBoostEnd) mult *= S.clickBoostMult;
             if (S.goldenBoost.active) mult *= S.goldenBoost.multiplier;
             if (S.rainbowBoost.active) mult *= S.rainbowBoost.multiplier;
             return mult;
@@ -1458,19 +1543,23 @@
                     if (u.id === 'golden_val1') bonus += owned * 0.15;
                     else if (u.id === 'golden_val2') bonus += owned * 0.30;
                     else if (u.id === 'golden_val3') bonus += owned * 0.50;
+                    else if (u.id === 'golden_super') bonus += owned * 1.00;
                 }
+            }
+            let allBoost = 1;
+            for (const pu of PRESTIGE_UPGRADES) {
+                if (pu.id === 'p_all') allBoost += (S.prestigeUpgrades[pu.id] || 0) * 0.10;
             }
             const skillBonus = 1 + (S.skills['s_golden'] || 0) * 0.10;
             const levelBonus = 1 + (S.levelUpgrades['lv_golden'] || 0) * 0.10;
             const pGolden = 1 + (S.prestigeUpgrades['p_golden'] || 0) * 0.05;
-            // Pet golden bonus
             let petGolden = 1;
-            if (S.activePet !== null) {
+            if (S.activePet !== null && S.pets && S.pets[S.activePet]) {
                 const pet = PETS[S.activePet];
                 if (pet && pet.bonus.golden) petGolden *= pet.bonus.golden;
                 if (pet && pet.bonus.all) petGolden *= pet.bonus.all;
             }
-            return Math.floor(baseReward * bonus * skillBonus * levelBonus * pGolden * petGolden);
+            return Math.floor(baseReward * bonus * skillBonus * levelBonus * pGolden * petGolden * allBoost);
         }
 
         function getGoldenSpawnChance() {
@@ -1479,7 +1568,7 @@
             if (freq > 0) bonus += freq * 0.10;
             const pGolden = (S.prestigeUpgrades['p_golden'] || 0) * 0.05;
             bonus += pGolden;
-            return Math.min(bonus, 2.5);
+            return Math.min(bonus, 3.0);
         }
 
         function getBankInterestRate() {
@@ -1490,10 +1579,16 @@
                     if (u.id === 'bank1') rate += owned * 0.005;
                     else if (u.id === 'bank2') rate += owned * 0.01;
                     else if (u.id === 'bank3') rate += owned * 0.02;
+                    else if (u.id === 'bank4') rate += owned * 0.03;
                 }
+            }
+            let allBoost = 1;
+            for (const pu of PRESTIGE_UPGRADES) {
+                if (pu.id === 'p_all') allBoost += (S.prestigeUpgrades[pu.id] || 0) * 0.10;
             }
             rate += (S.skills['s_bank'] || 0) * 0.005;
             rate += (S.prestigeUpgrades['p_bank'] || 0) * 0.002;
+            rate *= allBoost;
             return rate;
         }
 
@@ -1501,7 +1596,11 @@
             let bonus = 1;
             const lvPrestige = S.levelUpgrades['lv_prestige'] || 0;
             bonus += lvPrestige * 0.02;
-            // Shop prestige boost
+            let allBoost = 1;
+            for (const pu of PRESTIGE_UPGRADES) {
+                if (pu.id === 'p_all') allBoost += (S.prestigeUpgrades[pu.id] || 0) * 0.10;
+            }
+            bonus *= allBoost;
             if (S._prestigeBoostActive) {
                 bonus *= 1.25;
                 S._prestigeBoostActive = false;
@@ -1538,27 +1637,28 @@
         }
 
         function addXP(amount) {
+            // XP boost from shop
+            let xpMult = 1;
+            if (S._xpBoostActive && Date.now() < S._xpBoostEnd) xpMult = 2;
+            amount *= xpMult;
             S.xp += amount;
             while (S.xp >= S.xpNext) {
                 S.xp -= S.xpNext;
                 S.level++;
                 S.xpNext = getLevelXP(S.level);
-                // Level rewards
                 const gemReward = Math.floor(S.level / 5) + 1;
                 S.gems += gemReward;
-                if (S.level % 5 === 0) {
-                    S.stars += 1;
-                    showNotification(`⭐ Level ${S.level}!`, `+${gemReward}💎 +1⭐`);
-                } else {
-                    showNotification(`⭐ Level Up!`, `You are now level ${S.level} (+${gemReward}💎)`);
-                }
+                let starReward = 0;
+                if (S.level % 10 === 0) { starReward = 1;
+                    S.stars += 1; }
+                showNotification(`⭐ Level ${S.level}!`, `+${gemReward}💎 ${starReward ? '+1⭐' : ''}`);
                 playAchievementSound();
                 checkAchievements();
                 saveGame();
             }
         }
 
-        // ─── NOTIFICATION ───
+        // ─── NOTIFICATIONS ───
         let notifTimeout = null;
         let notifQueue = [];
         let notifShowing = false;
@@ -1594,9 +1694,8 @@
                         unlocked = true;
                         showNotification(`🏆 ${ach.icon} ${ach.name}`, ach.desc);
                         playAchievementSound();
-                        const bonus = Math.floor(100 * S.level * (1 + S.totalPrestiges));
+                        const bonus = Math.floor(500 * S.level * (1 + S.totalPrestiges * 0.5));
                         S.cookies += bonus;
-                        // Gem reward for achievements
                         const gemReward = Math.floor(S.achievements.length / 10) + 1;
                         S.gems += gemReward;
                         showToast(`🎁 +${formatNumber(bonus)} cookies +${gemReward}💎`);
@@ -1610,7 +1709,7 @@
             return unlocked;
         }
 
-        // ─── SOUND SYSTEM ───
+        // ─── SOUNDS ───
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
 
@@ -1699,7 +1798,7 @@
             } catch (_) {}
         }
 
-        // ─── BOOSTS ───
+        // ─── BOOST SYSTEM ───
         let boostInterval = null;
 
         function startBoostSystem() {
@@ -1716,11 +1815,12 @@
                 }
                 if (S.cpsBoostActive && now > S.cpsBoostEnd) {
                     S.cpsBoostActive = false;
-                    showToast('⏰ CPS boost ended');
                 }
                 if (S.clickBoostActive && now > S.clickBoostEnd) {
                     S.clickBoostActive = false;
-                    showToast('⏰ Click boost ended');
+                }
+                if (S._xpBoostActive && now > S._xpBoostEnd) {
+                    S._xpBoostActive = false;
                 }
                 if (!S.goldenBoost.active && !S.rainbowBoost.active) {
                     const roll = Math.random();
@@ -1734,7 +1834,7 @@
                         S._rainbowTriggered = true;
                         document.getElementById('dvcButton').classList.add('rainbow');
                         document.getElementById('dvcButton').classList.remove('golden');
-                        showNotification('🌈 RAINBOW BOOST!', '10× clicks for 30 seconds!');
+                        showNotification('🌈 RAINBOW BOOST!', '10× clicks for 30s!');
                         playGoldenSound();
                         showToast('🌈 10× clicks activated!');
                     } else if (roll < goldenChance + rainbowChance) {
@@ -1744,7 +1844,7 @@
                         S._goldenTriggered = true;
                         document.getElementById('dvcButton').classList.add('golden');
                         document.getElementById('dvcButton').classList.remove('rainbow');
-                        showNotification('💛 GOLDEN BOOST!', '5× clicks for 15 seconds!');
+                        showNotification('💛 GOLDEN BOOST!', '5× clicks for 15s!');
                         playGoldenSound();
                         showToast('💛 5× clicks activated!');
                     }
@@ -1753,7 +1853,7 @@
             }, 5000);
         }
 
-        // ─── GOLDEN COOKIE DROPS ───
+        // ─── GOLDEN COOKIES ───
         let goldenScheduled = false;
         let goldenTimeout = null;
 
@@ -1774,11 +1874,8 @@
                 S.cookies += rewardAmt;
                 S.totalClicks += 1;
                 S.goldenCollected++;
-                // Small chance for gem on golden click
-                if (Math.random() < 0.05) {
-                    S.gems += 1;
-                    showToast('💎 +1 gem from golden cookie!');
-                }
+                if (Math.random() < 0.05) { S.gems += 1;
+                    showToast('💎 +1 gem!'); }
                 updateUI();
                 saveGame();
                 showGoldenPopup(e.clientX, e.clientY, `+${formatNumber(rewardAmt)} 🍪`);
@@ -1789,7 +1886,7 @@
                 scheduleGolden();
             });
             container.appendChild(el);
-            const timeout = Math.max(5000, 15000 / getGoldenSpawnChance());
+            const timeout = Math.max(4000, 15000 / getGoldenSpawnChance());
             setTimeout(() => {
                 if (el.parentNode) { el.remove();
                     scheduleGolden(); }
@@ -1813,7 +1910,7 @@
         function scheduleGolden() {
             if (goldenScheduled) return;
             goldenScheduled = true;
-            const delay = 8000 + Math.random() * 20000 / getGoldenSpawnChance();
+            const delay = 6000 + Math.random() * 20000 / getGoldenSpawnChance();
             clearTimeout(goldenTimeout);
             goldenTimeout = setTimeout(() => {
                 goldenScheduled = false;
@@ -1823,7 +1920,7 @@
             }, delay);
         }
 
-        // ─── COMBO SYSTEM ───
+        // ─── COMBO ───
         let comboDecayInterval = null;
 
         function startComboSystem() {
@@ -1833,7 +1930,7 @@
                     const now = Date.now();
                     if (now - lastClickTime > COMBO_WINDOW) {
                         const decayBonus = getComboDecayBonus();
-                        const decayAmount = Math.max(1, Math.floor(combo * 0.05 * decayBonus));
+                        const decayAmount = Math.max(1, Math.floor(combo * 0.04 * decayBonus));
                         combo = Math.max(0, combo - decayAmount);
                         updateComboDisplay();
                         if (combo === 0) {
@@ -1841,7 +1938,7 @@
                         }
                     }
                 }
-            }, 500);
+            }, 400);
         }
 
         function updateComboDisplay() {
@@ -1856,12 +1953,13 @@
 
         // ─── FRENZY ───
         function triggerFrenzy() {
+            if (frenzyActive) return;
             frenzyActive = true;
             frenzyMultiplier = 2 + (S.prestigeUpgrades['p_combo'] || 0) * 0.1;
             frenzyEndTime = Date.now() + FRENZY_DURATION;
             S._frenzyTriggered = true;
             document.getElementById('frenzyDisplay').classList.add('active');
-            showNotification('⚡ FRENZY!', `2× clicks for ${FRENZY_DURATION/1000} seconds!`);
+            showNotification('⚡ FRENZY!', `2× clicks for ${FRENZY_DURATION/1000}s!`);
             playGoldenSound();
             showToast('⚡ Frenzy activated! 2× clicks!');
             setTimeout(() => {
@@ -1877,8 +1975,10 @@
             document.getElementById('challengeScore').textContent = S.challengeBest || 0;
             document.getElementById('challengeResult').textContent = S.challengeBest > 0 ? `Best: ${S.challengeBest} clicks` :
                 '';
-            document.getElementById('challengeBtn').disabled = false;
-            document.getElementById('challengeBtn').textContent = '▶ Start Challenge';
+            const btn = document.getElementById('challengeBtn');
+            btn.disabled = false;
+            btn.textContent = '▶ Start Challenge';
+            btn.onclick = startChallenge;
         }
 
         function closeChallenge() {
@@ -1892,7 +1992,6 @@
             if (challengeActive) return;
             challengeActive = true;
             challengeClicks = 0;
-            challengeTimeLeft = 5;
             const btn = document.getElementById('challengeBtn');
             btn.disabled = true;
             btn.textContent = '⏳ Click!';
@@ -1923,7 +2022,7 @@
 
             setTimeout(() => {
                 if (challengeActive) endChallenge();
-            }, 5000);
+            }, 5500);
         }
 
         function endChallenge() {
@@ -1932,6 +2031,7 @@
             const btn = document.getElementById('challengeBtn');
             btn.disabled = false;
             btn.textContent = '▶ Start Challenge';
+            btn.onclick = startChallenge;
 
             if (challengeInterval) {
                 clearInterval(challengeInterval.timer);
@@ -1943,7 +2043,7 @@
                 S.challengeBest = challengeClicks;
                 const gemReward = Math.floor(challengeClicks / 10) + 1;
                 S.gems += gemReward;
-                showToast(`🏆 New challenge best: ${challengeClicks} clicks! +${gemReward}💎`);
+                showToast(`🏆 New best: ${challengeClicks} clicks! +${gemReward}💎`);
                 playAchievementSound();
                 checkAchievements();
             }
@@ -1966,8 +2066,8 @@
                 return;
             }
             if (!confirm(
-                    `Prestige will reset your cookies but give you Prestige Points.\nYou will get ${Math.floor(req / 100000)} PP.\nContinue?`
-                    )) return;
+                    `Prestige resets cookies. You'll get ${Math.floor(req / 100000)} PP.\nContinue?`
+                )) return;
 
             const ppBonus = getPrestigePPBonus();
             const ppEarned = Math.floor(req / 100000 * ppBonus);
@@ -1975,9 +2075,10 @@
             S.totalPrestiges++;
             S.rebirthPoints += Math.floor(ppEarned / 2) + 1;
 
-            // Prestige gem bonus
             const gemBonus = S.prestigeUpgrades['p_gems'] || 0;
             if (gemBonus > 0) S.gems += gemBonus;
+            const starBonus = S.prestigeUpgrades['p_stars'] || 0;
+            if (starBonus > 0) S.stars += starBonus;
 
             S.cookies = 0;
             S.totalClicks = 0;
@@ -1987,11 +2088,13 @@
             S.xpNext = getLevelXP(1);
             S.goldenBoost.active = false;
             S.rainbowBoost.active = false;
+            S.cpsBoostActive = false;
+            S.clickBoostActive = false;
             document.getElementById('dvcButton').classList.remove('golden', 'rainbow');
 
             playPrestigeSound();
             showNotification('🔮 PRESTIGED!',
-                `+${ppEarned} PP, +${Math.floor(ppEarned/2)+1} RP, +${gemBonus}💎`);
+                `+${ppEarned} PP, +${Math.floor(ppEarned/2)+1} RP, +${gemBonus}💎, +${starBonus}⭐`);
             showToast(`✨ Prestiged! +${ppEarned} PP`);
             saveGame();
             updateUI();
@@ -2026,7 +2129,7 @@
                 div.className = 'level-upgrade-item' + (can ? ' can' : '');
                 div.innerHTML = `
                     <div class="li">
-                        <span class="ln">${lu.name} <span class="owned" style="font-size:0.4rem;color:var(--muted);background:rgba(255,255,255,0.05);padding:0.05rem 0.25rem;border:1px solid var(--border);">${owned}/${lu.max}</span></span>
+                        <span class="ln">${lu.name} <span style="font-size:0.35rem;color:var(--muted);background:rgba(255,255,255,0.05);padding:0.03rem 0.2rem;border:1px solid var(--border);border-radius:2px;">${owned}/${lu.max}</span></span>
                         <span class="ld">${lu.desc} ${S.level < lu.levelReq ? `🔒 Lv.${lu.levelReq}` : ''}</span>
                     </div>
                     <div class="lr">
@@ -2110,8 +2213,8 @@
             document.getElementById('mdLevel').textContent = S.level;
             document.getElementById('mdCombo').textContent = combo || 0;
             document.getElementById('mdPrestige').textContent = S.totalPrestiges;
+            document.getElementById('mdGems').textContent = S.gems;
 
-            // Boost status
             let boostText = 'Inactive';
             let boostColor = 'var(--muted)';
             if (S.goldenBoost.active) { boostText = '💛 Golden';
@@ -2122,10 +2225,20 @@
                 boostColor = 'var(--green)'; }
             if (S.clickBoostActive) { boostText = '🔥 Click';
                 boostColor = 'var(--orange)'; }
+            if (S._xpBoostActive) { boostText = '📈 XP';
+                boostColor = 'var(--cyan)'; }
             document.getElementById('boostStatus').textContent = boostText;
             document.getElementById('boostStatus').style.color = boostColor;
 
-            // Pet display
+            let boostDisplay = 'No active boosts';
+            if (S.goldenBoost.active) boostDisplay = '💛 5× clicks';
+            if (S.rainbowBoost.active) boostDisplay = '🌈 10× clicks';
+            if (S.cpsBoostActive) boostDisplay = '⚡ 2× CPS';
+            if (S.clickBoostActive) boostDisplay = '🔥 3× clicks';
+            if (S._xpBoostActive) boostDisplay = '📈 2× XP';
+            if (S.goldenBoost.active && S.cpsBoostActive) boostDisplay = '💛⚡ Golden + CPS';
+            document.getElementById('boostDisplay').textContent = boostDisplay;
+
             const petDisplay = document.getElementById('petDisplay');
             if (S.activePet !== null && S.pets && S.pets[S.activePet]) {
                 const pet = PETS[S.activePet];
@@ -2141,13 +2254,15 @@
                         <div class="pet-xp">${xp % 100}/100 XP</div>
                     </div>
                 `;
+                document.getElementById('petName').textContent = pet.name;
             } else {
                 petDisplay.innerHTML =
-                    `<div style="text-align:center;padding:0.2rem;color:var(--muted);font-size:0.45rem;">No pet equipped</div>`;
+                    `<div style="text-align:center;padding:0.15rem;color:var(--muted);font-size:0.4rem;">No pet equipped</div>`;
+                document.getElementById('petName').textContent = 'None';
             }
         }
 
-        // ─── UPGRADE LIST ───
+        // ─── UPGRADES ───
         const upgradeList = document.getElementById('upgradeList');
         let upgradeElements = {};
 
@@ -2162,21 +2277,24 @@
                 div.dataset.id = u.id;
                 let addText = '';
                 if (CLICK_MULT_UPGRADES.some(c => c.id === u.id)) {
-                    const val = u.name.includes('God') ? 5 : u.name.includes('Mega') ? 2 : u.name.includes('Power') ? 1 :
-                        0.5;
+                    const val = u.name.includes('Ultimate') ? 10 : u.name.includes('God') ? 5 : u.name.includes('Mega') ? 2 :
+                        u.name.includes('Power') ? 1 : 0.5;
                     addText = `+${val} click mult`;
                 } else if (CPS_MULT_UPGRADES.some(c => c.id === u.id)) {
-                    const pct = u.id === 'cps_mult1' ? 10 : u.id === 'cps_mult2' ? 20 : u.id === 'cps_mult3' ? 35 : 50;
+                    const pct = u.id === 'cps_mult1' ? 10 : u.id === 'cps_mult2' ? 20 : u.id === 'cps_mult3' ? 35 : u.id ===
+                        'cps_mult4' ? 50 : 75;
                     addText = `+${pct}% CPS`;
                 } else if (GOLDEN_UPGRADES.some(c => c.id === u.id)) {
                     if (u.id.includes('freq')) addText = '+10% spawn rate';
+                    else if (u.id.includes('super')) addText = '+100% golden value';
                     else addText =
                     `+${u.id.includes('val1') ? 15 : u.id.includes('val2') ? 30 : 50}% golden value`;
                 } else if (BANK_UPGRADES.some(c => c.id === u.id)) {
-                    const pct = u.id === 'bank1' ? 0.5 : u.id === 'bank2' ? 1 : 2;
+                    const pct = u.id === 'bank1' ? 0.5 : u.id === 'bank2' ? 1 : u.id === 'bank3' ? 2 : 3;
                     addText = `+${pct}% interest/s`;
                 } else if (COMBO_UPGRADES.some(c => c.id === u.id)) {
-                    addText = `+${u.id.includes('I') ? 5 : u.id.includes('II') ? 10 : 20}% slower decay`;
+                    addText =
+                        `+${u.id.includes('I') ? 5 : u.id.includes('II') ? 10 : u.id.includes('III') ? 20 : 30}% slower decay`;
                 } else {
                     addText = `+${u.cps} CPS`;
                 }
@@ -2234,12 +2352,12 @@
             if (qty <= 0 || S.cookies < cost) return;
             S.cookies -= cost;
             S.upgrades[id] = (S.upgrades[id] || 0) + qty;
-            addXP(5 * qty);
+            addXP(3 * qty);
             playClickSound();
             updateUI();
             saveGame();
             checkAchievements();
-            showToast(`✅ ${u.name} x${qty} purchased!`);
+            showToast(`✅ ${u.name} x${qty}`);
         }
 
         // ─── PRESTIGE UI ───
@@ -2302,7 +2420,7 @@
             showToast(`✅ ${u.name} purchased!`);
         }
 
-        // ─── SKILL UI ───
+        // ─── SKILLS ───
         let skillElements = {};
 
         function buildSkillList() {
@@ -2375,7 +2493,7 @@
             document.getElementById('achCount').textContent = `${unlocked}/${total}`;
 
             list.innerHTML = '';
-            const shown = ACHIEVEMENTS.slice(0, 50);
+            const shown = ACHIEVEMENTS;
             for (const ach of shown) {
                 const unlocked_ = S.achievements.includes(ach.id);
                 const div = document.createElement('div');
@@ -2390,16 +2508,9 @@
                 `;
                 list.appendChild(div);
             }
-            if (ACHIEVEMENTS.length > 50) {
-                const more = document.createElement('div');
-                more.style.cssText =
-                    'color:var(--muted);font-size:0.4rem;padding:0.2rem;text-align:center;';
-                more.textContent = `+ ${ACHIEVEMENTS.length - 50} more achievements!`;
-                list.appendChild(more);
-            }
         }
 
-        // ─── STATS UI ───
+        // ─── STATS ───
         function renderStats() {
             const grid = document.getElementById('statsGrid');
             const cps = getTotalCPS();
@@ -2419,12 +2530,13 @@
                 { label: 'Gems', value: S.gems, cls: 'cyan' },
                 { label: 'Stars', value: S.stars, cls: 'gold' },
                 { label: 'Click Multiplier', value: `×${getClickMultiplier().toFixed(1)}`, cls: 'gold' },
-                { label: 'Bank Interest', value: `${(bankRate * 100).toFixed(1)}%/s`, cls: 'green' },
+                { label: 'Bank Interest', value: `${(bankRate * 100).toFixed(2)}%/s`, cls: 'green' },
                 { label: 'Best Combo', value: S.bestCombo, cls: 'red' },
                 { label: 'Challenge Best', value: S.challengeBest, cls: 'gold' },
                 { label: 'Total Upgrades', value: getTotalUpgrades(), cls: '' },
                 { label: 'Achievements', value: `${S.achievements.length}/${ACHIEVEMENTS.length}`, cls: 'gold' },
-                { label: 'Pets', value: (S.pets || []).length + '/5', cls: 'pink' },
+                { label: 'Pets', value: (S.pets || []).length + '/10', cls: 'pink' },
+                { label: 'Daily Streak', value: S.dailyStreak + ' days', cls: 'gold' },
             ];
             grid.innerHTML = stats.map(s =>
                 `<div class="s-item"><div class="sl">${s.label}</div><div class="sv ${s.cls}">${s.value}</div></div>`
@@ -2451,7 +2563,7 @@
                             <div class="sin">${item.name}</div>
                             <div class="sid">${item.desc}</div>
                         </div>
-                        <div style="display:flex;align-items:center;gap:0.3rem;">
+                        <div style="display:flex;align-items:center;gap:0.2rem;">
                             <span class="si-price">${priceStr}</span>
                             <button class="si-btn" data-shop-id="${item.id}" ${canBuy ? '' : 'disabled'}>
                                 Buy
@@ -2482,12 +2594,12 @@
                 S.cpsBoostActive = true;
                 S.cpsBoostMult = 2;
                 S.cpsBoostEnd = Date.now() + 30000;
-                showToast('⚡ 2× CPS boost activated for 30s!');
+                showToast('⚡ 2× CPS boost activated!');
             } else if (item.type === 'click_boost') {
                 S.clickBoostActive = true;
                 S.clickBoostMult = 3;
                 S.clickBoostEnd = Date.now() + 15000;
-                showToast('🔥 3× click boost activated for 15s!');
+                showToast('🔥 3× click boost activated!');
             } else if (item.type === 'gems') {
                 S.gems += item.amount || 0;
                 showToast(`💎 +${item.amount || 0} gems!`);
@@ -2495,14 +2607,22 @@
                 S.stars += item.amount || 0;
                 showToast(`⭐ +${item.amount || 0} stars!`);
             } else if (item.type === 'xp_boost') {
-                // Double XP for 60s
+                S._xpBoostActive = true;
                 S._xpBoostEnd = Date.now() + 60000;
                 showToast('📈 Double XP for 60s!');
             } else if (item.type === 'prestige_boost') {
                 S._prestigeBoostActive = true;
                 showToast('🔮 +25% PP on next prestige!');
+            } else if (item.type === 'golden_boost') {
+                S.goldenBoost.active = true;
+                S.goldenBoost.multiplier = 5;
+                S.goldenBoost.endTime = Date.now() + 30000;
+                document.getElementById('dvcButton').classList.add('golden');
+                showToast('🌟 Golden boost activated!');
+            } else if (item.type === 'combo_boost') {
+                combo += 10;
+                showToast('🔥 Combo boosted! +10 combo');
             }
-
             saveGame();
             updateUI();
             showToast(`✅ ${item.name} purchased!`);
@@ -2512,7 +2632,7 @@
         function renderPets() {
             const el = document.getElementById('petContent');
             const ownedIds = (S.pets || []).map(p => p.id);
-            document.getElementById('petCount').textContent = `${ownedIds.length}/5`;
+            document.getElementById('petCount').textContent = `${ownedIds.length}/10`;
 
             let html = '';
             for (let i = 0; i < PETS.length; i++) {
@@ -2601,7 +2721,7 @@
                             <div class="cin">${recipe.name}</div>
                             <div class="cid">${recipe.desc}</div>
                         </div>
-                        <div style="display:flex;align-items:center;gap:0.3rem;">
+                        <div style="display:flex;align-items:center;gap:0.2rem;">
                             <span class="ci-cost">${costStr}</span>
                             <button class="ci-btn" data-craft-id="${recipe.id}" ${canCraft ? '' : 'disabled'}>
                                 Craft
@@ -2634,7 +2754,7 @@
                 S.stars += recipe.result.stars;
                 showToast(`⭐ +${recipe.result.stars} star crafted!`);
             }
-            if (recipe.result.petXp && S.activePet !== null) {
+            if (recipe.result.petXp && S.activePet !== null && S.pets && S.pets[S.activePet]) {
                 const pet = PETS[S.activePet];
                 if (pet) {
                     S.petXP[pet.id] = (S.petXP[pet.id] || 0) + recipe.result.petXp;
@@ -2651,20 +2771,26 @@
                 S.cpsBoostEnd = Date.now() + 30000;
                 showToast('⚡ Crafted CPS boost!');
             }
+            if (recipe.result.boost === 'click') {
+                S.clickBoostActive = true;
+                S.clickBoostMult = 5;
+                S.clickBoostEnd = Date.now() + 15000;
+                showToast('🔥 Crafted click boost!');
+            }
 
             playAchievementSound();
             saveGame();
             updateUI();
         }
 
-        // ─── DAILY REWARDS ───
+        // ─── DAILY ───
         function renderDaily() {
             const el = document.getElementById('dailyContent');
             const now = Date.now();
             const canClaim = now - S.lastDailyClaim > 86400000;
             const streak = S.dailyStreak || 0;
-            const reward = Math.floor(1000 * Math.pow(1.2, streak));
-            const gemBonus = Math.floor(streak / 5) + 1;
+            const reward = Math.floor(1000 * Math.pow(1.25, streak));
+            const gemBonus = Math.floor(streak / 3) + 1;
 
             el.innerHTML = `
                 <div class="daily-box">
@@ -2707,12 +2833,12 @@
                     <div class="milestone-item">
                         <span class="mi-label">${done ? '✅' : '⬜'} ${m.label}</span>
                         <span class="mi-reward">${done ? '✓' : rewardStr}</span>
-                        ${!done && canClaim ? `<button class="ci-btn" data-milestone-id="${m.id}">Claim</button>` : ''}
+                        ${!done && canClaim ? `<button class="mi-btn" data-milestone-id="${m.id}">Claim</button>` : ''}
                     </div>
                 `;
             }
             el.innerHTML = html;
-            el.querySelectorAll('[data-milestone-id]').forEach(btn => {
+            el.querySelectorAll('.mi-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const id = this.dataset.milestoneId;
                     claimMilestone(id);
@@ -2739,25 +2865,28 @@
             renderMilestones();
         }
 
-        // ─── PROGRESS CHECKLIST ───
+        // ─── PROGRESS ───
         function renderProgress() {
             const el = document.getElementById('progressContent');
             const tasks = [
-                { label: 'Click the DVC logo 100 times', done: S.totalClicks >= 100 },
+                { label: 'Click 100 times', done: S.totalClicks >= 100 },
                 { label: 'Buy your first upgrade', done: getTotalUpgrades() >= 1 },
-                { label: 'Reach 1,000 cookies', done: S.cookies >= 1000 },
+                { label: 'Reach 1K cookies', done: S.cookies >= 1000 },
                 { label: 'Reach 10 CPS', done: getTotalCPS() >= 10 },
-                { label: 'Buy 10 upgrades total', done: getTotalUpgrades() >= 10 },
-                { label: 'Prestige for the first time', done: S.totalPrestiges >= 1 },
+                { label: 'Buy 10 upgrades', done: getTotalUpgrades() >= 10 },
+                { label: 'Prestige once', done: S.totalPrestiges >= 1 },
                 { label: 'Reach level 10', done: S.level >= 10 },
                 { label: 'Collect a golden cookie', done: S.goldenCollected >= 1 },
                 { label: 'Trigger a Frenzy', done: S._frenzyTriggered || false },
-                { label: 'Get a 10+ combo', done: S.bestCombo >= 10 },
+                { label: 'Get 10+ combo', done: S.bestCombo >= 10 },
                 { label: 'Adopt a pet', done: (S.pets || []).length >= 1 },
                 { label: 'Collect 10 gems', done: S.gems >= 10 },
                 { label: 'Reach level 25', done: S.level >= 25 },
-                { label: 'Get 100 challenge clicks', done: S.challengeBest >= 100 },
+                { label: 'Get 50 challenge clicks', done: S.challengeBest >= 50 },
                 { label: 'Buy a prestige upgrade', done: Object.values(S.prestigeUpgrades).some(v => v > 0) },
+                { label: 'Adopt 3 pets', done: (S.pets || []).length >= 3 },
+                { label: 'Reach 100 CPS', done: getTotalCPS() >= 100 },
+                { label: 'Collect 50 gems', done: S.gems >= 50 },
             ];
             let html = '';
             for (const task of tasks) {
@@ -2773,17 +2902,12 @@
         }
 
         // ─── QUICK ACTIONS ───
-        function quickBuy(amount) {
-            setBuyQty(amount);
-            showToast(`Buy quantity set to x${amount}`);
-        }
+        function quickBuy(amount) { setBuyQty(amount);
+            showToast(`Buy quantity set to x${amount}`); }
 
-        function quickPrestige() {
-            doPrestige();
-        }
+        function quickPrestige() { doPrestige(); }
 
         function quickCollect() {
-            // Collect all golden cookies on screen
             const cookies = document.querySelectorAll('.golden-cookie');
             if (cookies.length === 0) { showToast('No golden cookies to collect!'); return; }
             cookies.forEach(el => {
@@ -2791,10 +2915,10 @@
                 S.cookies += reward;
                 S.goldenCollected++;
                 el.remove();
-                showToast(`🍪 +${formatNumber(reward)} from golden cookie!`);
             });
             saveGame();
             updateUI();
+            showToast(`🍪 Collected ${cookies.length} golden cookies!`);
         }
 
         function quickFrenzy() {
@@ -2802,7 +2926,6 @@
             triggerFrenzy();
         }
 
-        // ─── BUY QUANTITY ───
         function setBuyQty(val) {
             buyQty = val;
             document.querySelectorAll('#buyQtyToggle .qty-btn').forEach(b => {
@@ -2853,8 +2976,8 @@
             const username = document.getElementById('loginUser').value.trim();
             const password = document.getElementById('loginPass').value;
             document.getElementById('loginError').classList.remove('show');
-            if (!username) { showAuthError('loginError', 'Enter a username'); return; }
-            if (!password) { showAuthError('loginError', 'Enter a password'); return; }
+            if (!username) { showAuthError('loginError', 'Enter username'); return; }
+            if (!password) { showAuthError('loginError', 'Enter password'); return; }
             const users = getUsers();
             if (!users[username]) { showAuthError('loginError', 'Account not found.'); return; }
             if (users[username].password !== password) { showAuthError('loginError', 'Wrong password.'); return; }
@@ -2868,13 +2991,13 @@
             const password = document.getElementById('signupPass').value;
             const password2 = document.getElementById('signupPass2').value;
             document.getElementById('signupError').classList.remove('show');
-            if (!username || username.length < 2) { showAuthError('signupError', 'Username must be 2+ chars.'); return; }
-            if (username.length > 20) { showAuthError('signupError', 'Username too long.'); return; }
-            if (!/^[a-zA-Z0-9_\-]+$/.test(username)) { showAuthError('signupError', 'Invalid characters.'); return; }
-            if (!password || password.length < 3) { showAuthError('signupError', 'Password must be 3+ chars.'); return; }
-            if (password !== password2) { showAuthError('signupError', 'Passwords do not match.'); return; }
+            if (!username || username.length < 2) { showAuthError('signupError', 'Username 2+ chars'); return; }
+            if (username.length > 20) { showAuthError('signupError', 'Username too long'); return; }
+            if (!/^[a-zA-Z0-9_\-]+$/.test(username)) { showAuthError('signupError', 'Invalid chars'); return; }
+            if (!password || password.length < 3) { showAuthError('signupError', 'Password 3+ chars'); return; }
+            if (password !== password2) { showAuthError('signupError', 'Passwords don\'t match'); return; }
             const users = getUsers();
-            if (users[username]) { showAuthError('signupError', 'Username taken.'); return; }
+            if (users[username]) { showAuthError('signupError', 'Username taken'); return; }
             users[username] = { password, gameData: { cookies: 0, totalClicks: 0, upgrades: {} } };
             saveUsers(users);
             setAuthLoading('signupBtn', true);
@@ -3013,7 +3136,7 @@
             t.textContent = msg;
             t.classList.add('show');
             clearTimeout(t._h);
-            t._h = setTimeout(() => t.classList.remove('show'), 2400);
+            t._h = setTimeout(() => t.classList.remove('show'), 2200);
         }
 
         // ─── SAVE ───
@@ -3053,6 +3176,7 @@
                 _goldenTriggered: S._goldenTriggered || false,
                 _rainbowTriggered: S._rainbowTriggered || false,
                 _frenzyTriggered: S._frenzyTriggered || false,
+                _prestigeBoostActive: S._prestigeBoostActive || false,
             };
             saveUserData(username, userData);
             S.lastSave = Date.now();
@@ -3094,6 +3218,7 @@
                 S._goldenTriggered = d._goldenTriggered || false;
                 S._rainbowTriggered = d._rainbowTriggered || false;
                 S._frenzyTriggered = d._frenzyTriggered || false;
+                S._prestigeBoostActive = d._prestigeBoostActive || false;
                 const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id),
                     ...CPS_MULT_UPGRADES.map(u => u.id), ...GOLDEN_UPGRADES.map(u => u.id),
                     ...BANK_UPGRADES.map(u => u.id), ...COMBO_UPGRADES.map(u => u.id)
@@ -3115,7 +3240,6 @@
                 combo++;
                 if (combo > S.bestCombo) {
                     S.bestCombo = combo;
-                    S._comboUpdated = true;
                 }
                 document.getElementById('dvcButton').classList.add('combo-active');
             } else {
@@ -3201,7 +3325,7 @@
             });
         }
 
-        // ─── GAME LOOP ───
+        // ─── LOOP ───
         let gameStarted = false;
         let _last = 0;
 
@@ -3341,7 +3465,7 @@
                         const earned = cps * diff * 0.5;
                         S.cookies += earned;
                         S.cookiesAllTime += earned;
-                        showToast(`⏰ Offline earnings: +${formatNumber(earned)} cookies`);
+                        showToast(`⏰ Offline: +${formatNumber(earned)} cookies`);
                         updateUI();
                         saveGame();
                     }
