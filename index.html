@@ -646,7 +646,6 @@
             saveLeaderboard();
             renderLeaderboard();
 
-            // Also update PP leaderboard
             ppLeaderboard = ppLeaderboard.filter(e => e.name !== username);
             ppLeaderboard.push({
                 name: username,
@@ -658,15 +657,10 @@
             savePPLB();
             renderPPLB();
 
-            // Flag for the throttled cloud sync instead of hitting the network on every click
             leaderboardDirty = true;
         }
 
         // ─── CROSS-DEVICE CLOUD SYNC ───
-        // localStorage only lives in *this* browser, which is why scores never showed up
-        // on other devices. window.storage (when available) is shared across every device/user,
-        // so we mirror the leaderboard there. If it's not available (e.g. this file is hosted
-        // standalone outside Claude), we gracefully fall back to the old local-only behavior.
         const hasCloudStorage = !!(window.storage && typeof window.storage.get === 'function' && typeof window.storage.set === 'function');
         let cloudWarningShown = false;
         let leaderboardDirty = false;
@@ -926,7 +920,7 @@
                 levelReq: 8 },
         ];
 
-        // ─── UPGRADE DEFINITIONS ───
+        // ─── CORE UPGRADES ───
         const UPGRADES = [
             { id: 'cursor', name: '🖱️ Cursor', desc: 'Auto-click every second', baseCost: 15, cps: 0.2, mult: 1.15,
             max: 100 },
@@ -954,6 +948,36 @@
             { id: 'click4', name: '🔥 God Click', desc: '+5 click multiplier', baseCost: 100000000, mult: 1.8, max: 10 },
         ];
 
+        // ─── 🆕 CPS SPEED (MULTIPLIER) UPGRADES ───
+        const CPS_MULT_UPGRADES = [
+            { id: 'cps_mult1', name: '⚡ CPS Booster I', desc: '+10% total CPS', baseCost: 500000, mult: 1.6, max: 20 },
+            { id: 'cps_mult2', name: '⚡ CPS Booster II', desc: '+20% total CPS', baseCost: 5000000, mult: 1.7, max: 15 },
+            { id: 'cps_mult3', name: '⚡ CPS Booster III', desc: '+35% total CPS', baseCost: 50000000, mult: 1.8, max: 10 },
+            { id: 'cps_mult4', name: '⚡ CPS Booster IV', desc: '+50% total CPS', baseCost: 500000000, mult: 1.9, max: 8 },
+        ];
+
+        // ─── 🆕 GOLDEN COOKIE UPGRADES ───
+        const GOLDEN_UPGRADES = [
+            { id: 'golden_val1', name: '✨ Golden Value I', desc: '+15% golden cookie reward', baseCost: 200000, mult: 1.5,
+                max: 15 },
+            { id: 'golden_val2', name: '✨ Golden Value II', desc: '+30% golden cookie reward', baseCost: 2000000,
+                mult: 1.6, max: 10 },
+            { id: 'golden_val3', name: '✨ Golden Value III', desc: '+50% golden cookie reward', baseCost: 20000000,
+                mult: 1.7, max: 8 },
+            { id: 'golden_freq', name: '⏱️ Golden Frequency', desc: '+10% golden cookie spawn rate', baseCost: 5000000,
+                mult: 1.5, max: 10 },
+        ];
+
+        // ─── 🆕 BANK / INTEREST UPGRADES ───
+        const BANK_UPGRADES = [
+            { id: 'bank1', name: '🏦 Interest I', desc: '+0.5% interest per second on saved cookies', baseCost: 1000000,
+                mult: 1.4, max: 20 },
+            { id: 'bank2', name: '🏦 Interest II', desc: '+1% interest per second', baseCost: 10000000, mult: 1.5,
+                max: 15 },
+            { id: 'bank3', name: '🏦 Interest III', desc: '+2% interest per second', baseCost: 100000000, mult: 1.6,
+                max: 10 },
+        ];
+
         // ─── PRESTIGE UPGRADES ───
         const PRESTIGE_UPGRADES = [
             { id: 'p_cps1', name: '🔮 CPS Boost I', desc: '+10% permanent CPS', baseCost: 1, mult: 1.2, max: 10 },
@@ -963,6 +987,9 @@
             { id: 'p_golden', name: '🔮 Golden Touch', desc: '+5% golden cookie chance', baseCost: 8, mult: 1.2, max: 10 },
             { id: 'p_start', name: '🔮 Head Start', desc: 'Start with +1000 cookies after prestige', baseCost: 10,
                 mult: 1.5, max: 5 },
+            { id: 'p_bank', name: '🔮 Bank Interest', desc: '+0.2% permanent interest', baseCost: 12, mult: 1.3, max: 8 },
+            { id: 'p_cps_mult', name: '🔮 CPS Multiplier', desc: '+5% permanent CPS multiplier', baseCost: 8, mult: 1.4,
+                max: 10 },
         ];
 
         // ─── SKILL TREE ───
@@ -974,9 +1001,10 @@
             { id: 's_click2', name: '💪 Click II', desc: '+1 click mult', cost: 3, max: 5, requires: 's_click1' },
             { id: 's_golden', name: '✨ Golden Affinity', desc: '+10% golden cookie value', cost: 2, max: 5 },
             { id: 's_cps_all', name: '🌀 All CPS', desc: '+10% all CPS per level', cost: 4, max: 3 },
+            { id: 's_bank', name: '🏦 Bank Bonus', desc: '+0.5% interest', cost: 2, max: 5 },
         ];
 
-        // ─── ACHIEVEMENT DEFINITIONS ─── (60+ achievements)
+        // ─── ACHIEVEMENT DEFINITIONS ─── (70+ achievements)
         const ACHIEVEMENTS = [
             // Click achievements
             { id: 'click_10', name: 'First Click', desc: 'Click 10 times', icon: '🖱️', check: () => S.totalClicks >= 10 },
@@ -1005,6 +1033,7 @@
             { id: 'cps_500', name: 'Speed Legend', desc: 'Reach 500 CPS', icon: '⚡', check: () => getTotalCPS() >= 500 },
             { id: 'cps_1000', name: 'Infinite Power', desc: 'Reach 1,000 CPS', icon: '⚡', check: () => getTotalCPS() >=
                     1000 },
+            { id: 'cps_5000', name: 'CPS God', desc: 'Reach 5,000 CPS', icon: '⚡', check: () => getTotalCPS() >= 5000 },
             // Golden cookie achievements
             { id: 'golden_1', name: 'Golden Touch', desc: 'Collect 1 golden cookie', icon: '✨', check: () => S
                     .goldenCollected >= 1 },
@@ -1035,6 +1064,8 @@
                     .cookies >= 100000000 },
             { id: 'cookies_1b', name: 'Cookie Billionaire', desc: 'Have 1,000,000,000 cookies', icon: '🍪', check: () => S
                     .cookies >= 1000000000 },
+            { id: 'cookies_10b', name: 'Cookie Trillionaire', desc: 'Have 10,000,000,000 cookies', icon: '🍪', check: () =>
+                    S.cookies >= 10000000000 },
             // Upgrade achievements
             { id: 'upgrade_5', name: 'Upgrade Novice', desc: 'Buy 5 upgrades total', icon: '📦', check: () =>
                     getTotalUpgrades() >= 5 },
@@ -1048,6 +1079,29 @@
                     getTotalUpgrades() >= 100 },
             { id: 'upgrade_250', name: 'Upgrade God', desc: 'Buy 250 upgrades total', icon: '📦', check: () =>
                     getTotalUpgrades() >= 250 },
+            // CPS Multiplier achievements
+            { id: 'cps_mult1', name: '⚡ Speed Booster', desc: 'Buy 5 CPS Boosters', icon: '⚡', check: () => {
+                    let count = 0;
+                    for (const u of CPS_MULT_UPGRADES) count += (S.upgrades[u.id] || 0);
+                    return count >= 5;
+                } },
+            { id: 'cps_mult2', name: '⚡ Speed Demon', desc: 'Buy 15 CPS Boosters total', icon: '⚡', check: () => {
+                    let count = 0;
+                    for (const u of CPS_MULT_UPGRADES) count += (S.upgrades[u.id] || 0);
+                    return count >= 15;
+                } },
+            // Golden upgrade achievements
+            { id: 'golden_upgrade1', name: '✨ Golden Collector', desc: 'Buy 5 Golden upgrades', icon: '✨', check: () => {
+                    let count = 0;
+                    for (const u of GOLDEN_UPGRADES) count += (S.upgrades[u.id] || 0);
+                    return count >= 5;
+                } },
+            // Bank achievements
+            { id: 'bank1', name: '🏦 Saver', desc: 'Buy 5 Bank upgrades', icon: '🏦', check: () => {
+                    let count = 0;
+                    for (const u of BANK_UPGRADES) count += (S.upgrades[u.id] || 0);
+                    return count >= 5;
+                } },
             // Prestige achievements
             { id: 'prestige_1', name: 'Reborn', desc: 'Prestige once', icon: '🔮', check: () => S.totalPrestiges >= 1 },
             { id: 'prestige_2', name: 'Twice Reborn', desc: 'Prestige twice', icon: '🔮', check: () => S.totalPrestiges >=
@@ -1118,7 +1172,7 @@
                     S.cookiesAllTime >= 1000000000 },
         ];
 
-        // ─── BUY QUANTITY (x1 / x10 / MAX) ───
+        // ─── BUY QUANTITY ───
         let buyQty = 1;
 
         function getBulkCost(baseCost, mult, owned, qty) {
@@ -1127,13 +1181,13 @@
             return Math.floor(baseCost * Math.pow(mult, owned) * (Math.pow(mult, qty) - 1) / (mult - 1));
         }
 
-        // Works for both UPGRADES and CLICK_MULT_UPGRADES since both are tracked under S.upgrades
         function calcBulkPurchase(u, qtyMode, currency) {
             const owned = S.upgrades[u.id] || 0;
             const remaining = u.max - owned;
             if (remaining <= 0) return { qty: 0, cost: Infinity };
             if (qtyMode === 'max') {
-                let qty = 0, cost = 0;
+                let qty = 0,
+                    cost = 0;
                 for (let i = 0; i < remaining; i++) {
                     const nextCost = Math.floor(u.baseCost * Math.pow(u.mult, owned + i));
                     if (cost + nextCost > currency) break;
@@ -1161,12 +1215,6 @@
             return Math.floor(u.baseCost * Math.pow(u.mult, owned));
         }
 
-        function getClickMultCost(u) {
-            const owned = S.upgrades[u.id] || 0;
-            if (owned >= u.max) return Infinity;
-            return Math.floor(u.baseCost * Math.pow(u.mult, owned));
-        }
-
         function getPrestigeCost(u) {
             const owned = S.prestigeUpgrades[u.id] || 0;
             if (owned >= u.max) return Infinity;
@@ -1188,6 +1236,20 @@
         function getTotalCPS() {
             let t = 0;
             for (const u of UPGRADES) t += (S.upgrades[u.id] || 0) * u.cps;
+
+            // CPS Multiplier upgrades (new)
+            let cpsMult = 1;
+            for (const u of CPS_MULT_UPGRADES) {
+                const owned = S.upgrades[u.id] || 0;
+                if (owned > 0) {
+                    if (u.id === 'cps_mult1') cpsMult += owned * 0.10;
+                    else if (u.id === 'cps_mult2') cpsMult += owned * 0.20;
+                    else if (u.id === 'cps_mult3') cpsMult += owned * 0.35;
+                    else if (u.id === 'cps_mult4') cpsMult += owned * 0.50;
+                }
+            }
+
+            // Prestige CPS boosts
             let prestigeMult = 1;
             for (const pu of PRESTIGE_UPGRADES) {
                 if (pu.id.startsWith('p_cps')) {
@@ -1198,7 +1260,13 @@
                         else if (pu.id === 'p_cps3') prestigeMult += owned * 0.50;
                     }
                 }
+                if (pu.id === 'p_cps_mult') {
+                    const owned = S.prestigeUpgrades[pu.id] || 0;
+                    if (owned > 0) cpsMult += owned * 0.05;
+                }
             }
+
+            // Skill CPS bonuses
             let skillMult = 1;
             for (const sk of SKILLS) {
                 const owned = S.skills[sk.id] || 0;
@@ -1209,6 +1277,7 @@
                     else if (sk.id === 's_cps_all') skillMult += owned * 0.10;
                 }
             }
+
             let levelCpsMult = 1;
             for (const lu of LEVEL_UPGRADES) {
                 if (lu.id.startsWith('lv_cps')) {
@@ -1220,7 +1289,8 @@
                     }
                 }
             }
-            t = t * prestigeMult * skillMult * levelCpsMult;
+
+            t = t * prestigeMult * skillMult * levelCpsMult * cpsMult;
             return t;
         }
 
@@ -1246,6 +1316,48 @@
             return mult;
         }
 
+        function getGoldenReward(baseReward) {
+            let bonus = 1;
+            for (const u of GOLDEN_UPGRADES) {
+                const owned = S.upgrades[u.id] || 0;
+                if (owned > 0) {
+                    if (u.id === 'golden_val1') bonus += owned * 0.15;
+                    else if (u.id === 'golden_val2') bonus += owned * 0.30;
+                    else if (u.id === 'golden_val3') bonus += owned * 0.50;
+                }
+            }
+            const skillBonus = 1 + (S.skills['s_golden'] || 0) * 0.10;
+            const levelBonus = 1 + (S.levelUpgrades['lv_golden'] || 0) * 0.10;
+            const pGolden = 1 + (S.prestigeUpgrades['p_golden'] || 0) * 0.05;
+            return Math.floor(baseReward * bonus * skillBonus * levelBonus * pGolden);
+        }
+
+        function getGoldenSpawnChance() {
+            let bonus = 1;
+            const freq = S.upgrades['golden_freq'] || 0;
+            if (freq > 0) bonus += freq * 0.10;
+            const pGolden = (S.prestigeUpgrades['p_golden'] || 0) * 0.05;
+            bonus += pGolden;
+            return Math.min(bonus, 2.5);
+        }
+
+        function getBankInterestRate() {
+            let rate = 0;
+            for (const u of BANK_UPGRADES) {
+                const owned = S.upgrades[u.id] || 0;
+                if (owned > 0) {
+                    if (u.id === 'bank1') rate += owned * 0.005;
+                    else if (u.id === 'bank2') rate += owned * 0.01;
+                    else if (u.id === 'bank3') rate += owned * 0.02;
+                }
+            }
+            // Skill bank bonus
+            rate += (S.skills['s_bank'] || 0) * 0.005;
+            // Prestige bank bonus
+            rate += (S.prestigeUpgrades['p_bank'] || 0) * 0.002;
+            return rate;
+        }
+
         function getPrestigePPBonus() {
             let bonus = 1;
             const lvPrestige = S.levelUpgrades['lv_prestige'] || 0;
@@ -1257,6 +1369,9 @@
             let c = 0;
             for (const u of UPGRADES) c += (S.upgrades[u.id] || 0);
             for (const cu of CLICK_MULT_UPGRADES) c += (S.upgrades[cu.id] || 0);
+            for (const cu of CPS_MULT_UPGRADES) c += (S.upgrades[cu.id] || 0);
+            for (const gu of GOLDEN_UPGRADES) c += (S.upgrades[gu.id] || 0);
+            for (const bu of BANK_UPGRADES) c += (S.upgrades[bu.id] || 0);
             return c;
         }
 
@@ -1287,7 +1402,6 @@
                 showNotification(`⭐ Level Up!`, `You are now level ${S.level}`);
                 playAchievementSound();
                 checkAchievements();
-                // Auto-save on level up
                 saveGame();
             }
         }
@@ -1360,8 +1474,9 @@
                 }
                 if (!S.goldenBoost.active && !S.rainbowBoost.active) {
                     const roll = Math.random();
-                    let goldenChance = 0.02 + (S.prestigeUpgrades['p_golden'] || 0) * 0.005;
-                    let rainbowChance = 0.005 + (S.prestigeUpgrades['p_golden'] || 0) * 0.001;
+                    const spawnChance = getGoldenSpawnChance();
+                    let goldenChance = 0.02 * spawnChance;
+                    let rainbowChance = 0.005 * spawnChance;
                     if (roll < rainbowChance) {
                         S.rainbowBoost.active = true;
                         S.rainbowBoost.multiplier = 10;
@@ -1401,10 +1516,7 @@
             el.textContent = '🍪';
             const cps = getTotalCPS();
             const baseReward = Math.max(50, Math.floor(cps * 12 + 150));
-            const goldenBonus = 1 + (S.prestigeUpgrades['p_golden'] || 0) * 0.05;
-            const skillBonus = 1 + (S.skills['s_golden'] || 0) * 0.10;
-            const levelBonus = 1 + (S.levelUpgrades['lv_golden'] || 0) * 0.10;
-            const reward = Math.floor(baseReward * goldenBonus * skillBonus * levelBonus);
+            const reward = getGoldenReward(baseReward);
             el.dataset.reward = reward;
             el.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -1423,10 +1535,11 @@
                 scheduleGolden();
             });
             container.appendChild(el);
+            const timeout = Math.max(5000, 15000 / getGoldenSpawnChance());
             setTimeout(() => {
                 if (el.parentNode) { el.remove();
                     scheduleGolden(); }
-            }, 15000);
+            }, timeout);
         }
 
         function showGoldenPopup(x, y, text) {
@@ -1446,7 +1559,7 @@
         function scheduleGolden() {
             if (goldenScheduled) return;
             goldenScheduled = true;
-            const delay = 10000 + Math.random() * 25000;
+            const delay = 8000 + Math.random() * 20000 / getGoldenSpawnChance();
             clearTimeout(goldenTimeout);
             goldenTimeout = setTimeout(() => {
                 goldenScheduled = false;
@@ -1591,6 +1704,8 @@
             if (!lbTab.classList.contains('hidden')) renderLeaderboard();
             const pplbTab = document.getElementById('tabPPLB');
             if (!pplbTab.classList.contains('hidden')) renderPPLB();
+
+            // Bank interest (applied in loop)
         }
 
         // ─── UPGRADE LIST ───
@@ -1599,12 +1714,32 @@
 
         function buildUpgradeList() {
             upgradeList.innerHTML = '';
-            const allUpgrades = [...UPGRADES, ...CLICK_MULT_UPGRADES];
+            const allUpgrades = [...UPGRADES, ...CLICK_MULT_UPGRADES, ...CPS_MULT_UPGRADES, ...GOLDEN_UPGRADES, ...BANK_UPGRADES];
             for (const u of allUpgrades) {
                 const div = document.createElement('div');
                 div.className = 'upgrade';
                 div.dataset.id = u.id;
                 const isClickMult = CLICK_MULT_UPGRADES.some(c => c.id === u.id);
+                const isCPSMult = CPS_MULT_UPGRADES.some(c => c.id === u.id);
+                const isGolden = GOLDEN_UPGRADES.some(c => c.id === u.id);
+                const isBank = BANK_UPGRADES.some(c => c.id === u.id);
+                let addText = '';
+                if (isClickMult) {
+                    const val = u.name.includes('God') ? 5 : u.name.includes('Mega') ? 2 : u.name.includes('Power') ? 1 :
+                        0.5;
+                    addText = `+${val} click mult`;
+                } else if (isCPSMult) {
+                    const pct = u.id === 'cps_mult1' ? 10 : u.id === 'cps_mult2' ? 20 : u.id === 'cps_mult3' ? 35 : 50;
+                    addText = `+${pct}% CPS`;
+                } else if (isGolden) {
+                    if (u.id.includes('freq')) addText = '+10% spawn rate';
+                    else addText = `+${u.id.includes('val1') ? 15 : u.id.includes('val2') ? 30 : 50}% golden value`;
+                } else if (isBank) {
+                    const pct = u.id === 'bank1' ? 0.5 : u.id === 'bank2' ? 1 : 2;
+                    addText = `+${pct}% interest/s`;
+                } else {
+                    addText = `+${u.cps} CPS`;
+                }
                 div.innerHTML = `
                     <div class="info">
                         <span class="name">${u.name} <span class="owned">0</span></span>
@@ -1612,7 +1747,7 @@
                     </div>
                     <div class="right">
                         <div class="price">🍪 ${formatNumber(u.baseCost)}</div>
-                        <div class="add">${isClickMult ? '+' : '+'}${isClickMult ? u.name.includes('God') ? 5 : u.name.includes('Mega') ? 2 : u.name.includes('Power') ? 1 : 0.5 : u.cps} ${isClickMult ? 'click mult' : 'CPS'}</div>
+                        <div class="add">${addText}</div>
                     </div>
                 `;
                 upgradeList.appendChild(div);
@@ -1623,17 +1758,12 @@
                 if (!item) return;
                 if (!item.classList.contains('can')) return;
                 const id = item.dataset.id;
-                const isClickMult = CLICK_MULT_UPGRADES.some(c => c.id === id);
-                if (isClickMult) {
-                    purchaseClickMult(id);
-                } else {
-                    purchase(id);
-                }
+                purchaseAny(id);
             });
         }
 
         function updateUpgradeList() {
-            const allUpgrades = [...UPGRADES, ...CLICK_MULT_UPGRADES];
+            const allUpgrades = [...UPGRADES, ...CLICK_MULT_UPGRADES, ...CPS_MULT_UPGRADES, ...GOLDEN_UPGRADES, ...BANK_UPGRADES];
             for (const u of allUpgrades) {
                 const el = upgradeElements[u.id];
                 if (!el) continue;
@@ -1652,30 +1782,15 @@
             }
         }
 
-        function purchase(id) {
-            const u = UPGRADES.find(x => x.id === id);
+        function purchaseAny(id) {
+            const allUpgrades = [...UPGRADES, ...CLICK_MULT_UPGRADES, ...CPS_MULT_UPGRADES, ...GOLDEN_UPGRADES, ...BANK_UPGRADES];
+            const u = allUpgrades.find(x => x.id === id);
             if (!u) return;
             const { qty, cost } = calcBulkPurchase(u, buyQty, S.cookies);
             if (qty <= 0 || S.cookies < cost) return;
             S.cookies -= cost;
             S.upgrades[id] = (S.upgrades[id] || 0) + qty;
             addXP(5 * qty);
-            playClickSound();
-            updateUI();
-            saveGame();
-            addLeaderboardEntry();
-            checkAchievements();
-            showToast(`✅ ${u.name} x${qty} purchased!`);
-        }
-
-        function purchaseClickMult(id) {
-            const u = CLICK_MULT_UPGRADES.find(x => x.id === id);
-            if (!u) return;
-            const { qty, cost } = calcBulkPurchase(u, buyQty, S.cookies);
-            if (qty <= 0 || S.cookies < cost) return;
-            S.cookies -= cost;
-            S.upgrades[id] = (S.upgrades[id] || 0) + qty;
-            addXP(10 * qty);
             playClickSound();
             updateUI();
             saveGame();
@@ -1846,6 +1961,7 @@
             const grid = document.getElementById('statsGrid');
             const cps = getTotalCPS();
             if (cps > S.bestCPS) S.bestCPS = cps;
+            const bankRate = getBankInterestRate();
             const stats = [
                 { label: 'Total Cookies', value: formatNumber(S.cookiesAllTime || S.cookies), cls: 'gold' },
                 { label: 'Total Clicks', value: S.totalClicks.toLocaleString(), cls: '' },
@@ -1858,6 +1974,7 @@
                 { label: 'Rebirth Points', value: S.rebirthPoints, cls: 'gold' },
                 { label: 'Golden Collected', value: S.goldenCollected, cls: 'gold' },
                 { label: 'Click Multiplier', value: `×${getClickMultiplier().toFixed(1)}`, cls: 'gold' },
+                { label: 'Bank Interest', value: `${(bankRate * 100).toFixed(1)}%/s`, cls: 'green' },
                 { label: 'Total Upgrades', value: getTotalUpgrades(), cls: '' },
                 { label: 'Achievements', value: `${S.achievements.length}/${ACHIEVEMENTS.length}`, cls: 'gold' },
             ];
@@ -1960,7 +2077,10 @@
                 S.achievements = d.achievements || [];
                 S._goldenTriggered = d._goldenTriggered || false;
                 S._rainbowTriggered = d._rainbowTriggered || false;
-                const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id)];
+                const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id),
+                    ...CPS_MULT_UPGRADES.map(u => u.id), ...GOLDEN_UPGRADES.map(u => u.id),
+                    ...BANK_UPGRADES.map(u => u.id)
+                ];
                 for (const id of allUpgradeIds) {
                     if (!(id in S.upgrades)) S.upgrades[id] = 0;
                 }
@@ -2055,7 +2175,10 @@
                 S.bestCPS = 0;
                 S._goldenTriggered = false;
                 S._rainbowTriggered = false;
-                const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id)];
+                const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id),
+                    ...CPS_MULT_UPGRADES.map(u => u.id), ...GOLDEN_UPGRADES.map(u => u.id),
+                    ...BANK_UPGRADES.map(u => u.id)
+                ];
                 for (const id of allUpgradeIds) {
                     if (!(id in S.upgrades)) S.upgrades[id] = 0;
                 }
@@ -2129,7 +2252,10 @@
             S.goldenBoost.active = false;
             S.rainbowBoost.active = false;
             document.getElementById('dvcButton').classList.remove('golden', 'rainbow');
-            const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id)];
+            const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id),
+                ...CPS_MULT_UPGRADES.map(u => u.id), ...GOLDEN_UPGRADES.map(u => u.id),
+                ...BANK_UPGRADES.map(u => u.id)
+            ];
             for (const id of allUpgradeIds) {
                 if (!(id in S.upgrades)) S.upgrades[id] = 0;
             }
@@ -2239,7 +2365,6 @@
 
         // ─── KEYBOARD SHORTCUTS ───
         document.addEventListener('keydown', function(e) {
-            // Space to click
             if (e.code === 'Space' && !e.repeat && !document.getElementById('authOverlay').classList.contains('hidden')) {
                 e.preventDefault();
                 const gameRoot = document.getElementById('gameRoot');
@@ -2262,6 +2387,14 @@
                     S.cookies += cps * delta;
                     S.cookiesAllTime += cps * delta;
                     if (cps > S.bestCPS) S.bestCPS = cps;
+
+                    // Bank interest
+                    const bankRate = getBankInterestRate();
+                    if (bankRate > 0) {
+                        const interest = S.cookies * bankRate * delta;
+                        S.cookies += interest;
+                    }
+
                     updateUI();
                     saveGame();
                     addLeaderboardEntry();
