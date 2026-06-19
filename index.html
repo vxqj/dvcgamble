@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DVC Clicker · Ultimate</title>
+    <title>DVC Clicker · Supabase</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -40,194 +40,98 @@
             width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--border2);
             padding: 2.5rem 2rem 2rem; box-shadow: 0 40px 100px rgba(0,0,0,0.8); position: relative; overflow: hidden;
         }
-        .auth-box::before {
-            content: ''; position: absolute; top: -30%; right: -30%; width: 400px; height: 400px;
-            background: radial-gradient(circle, var(--primary-glow), transparent 70%); opacity: 0.1; pointer-events: none;
-        }
-        .auth-box .auth-logo {
-            font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; text-align: center;
-            letter-spacing: -0.5px; margin-bottom: 0.2rem; position: relative; z-index: 1;
-        }
+        .auth-box::before { content: ''; position: absolute; top: -30%; right: -30%; width: 400px; height: 400px; background: radial-gradient(circle, var(--primary-glow), transparent 70%); opacity: 0.1; pointer-events: none; }
+        .auth-box .auth-logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; text-align: center; letter-spacing: -0.5px; margin-bottom: 0.2rem; position: relative; z-index: 1; }
         .auth-box .auth-logo span { color: var(--primary); text-shadow: 0 0 30px var(--primary-glow); }
-        .auth-box .auth-logo small {
-            font-size: 0.6rem; font-weight: 400; color: var(--muted); letter-spacing: 1px; display: block; margin-top: 0.1rem;
-        }
+        .auth-box .auth-logo small { font-size: 0.6rem; font-weight: 400; color: var(--muted); letter-spacing: 1px; display: block; margin-top: 0.1rem; }
         .auth-box .auth-sub { text-align: center; font-size: 0.75rem; color: var(--muted); margin-bottom: 1.8rem; position: relative; z-index: 1; }
-        .auth-tabs {
-            display: flex; background: var(--surface2); border: 1px solid var(--border); padding: 3px; margin-bottom: 1.5rem;
-            position: relative; z-index: 1;
-        }
-        .auth-tab {
-            flex: 1; padding: 0.5rem; font-size: 0.8rem; font-weight: 600; color: var(--muted); background: transparent;
-            border: none; cursor: pointer; transition: 0.25s ease; font-family: 'Manrope', sans-serif;
-        }
+        .auth-tabs { display: flex; background: var(--surface2); border: 1px solid var(--border); padding: 3px; margin-bottom: 1.5rem; position: relative; z-index: 1; }
+        .auth-tab { flex: 1; padding: 0.5rem; font-size: 0.8rem; font-weight: 600; color: var(--muted); background: transparent; border: none; cursor: pointer; transition: 0.25s ease; font-family: 'Manrope', sans-serif; }
         .auth-tab.active { background: var(--primary); color: #fff; box-shadow: 0 0 30px var(--primary-glow); }
         .auth-tab:hover:not(.active) { color: var(--fg); }
         .auth-form { display: flex; flex-direction: column; gap: 1rem; position: relative; z-index: 1; }
         .auth-form.hidden { display: none; }
         .auth-form .field { display: flex; flex-direction: column; gap: 4px; }
         .auth-form .field label { font-size: 0.7rem; font-weight: 600; color: var(--muted); letter-spacing: 0.5px; }
-        .auth-form .field input {
-            background: var(--surface2); border: 1px solid var(--border); padding: 0.7rem 1rem; color: var(--fg);
-            font-size: 0.9rem; font-family: 'Manrope', sans-serif; transition: border-color 0.2s; width: 100%;
-        }
+        .auth-form .field input { background: var(--surface2); border: 1px solid var(--border); padding: 0.7rem 1rem; color: var(--fg); font-size: 0.9rem; font-family: 'Manrope', sans-serif; transition: border-color 0.2s; width: 100%; }
         .auth-form .field input:focus { border-color: var(--primary); outline: none; }
         .auth-form .field input::placeholder { color: rgba(255,255,255,0.15); }
         .auth-error { font-size: 0.75rem; color: var(--red); background: rgba(255,93,108,0.08); padding: 0.5rem 0.8rem; border: 1px solid rgba(255,93,108,0.15); display: none; }
         .auth-error.show { display: block; }
-        .auth-submit {
-            background: var(--primary); color: #fff; border: none; padding: 0.8rem; font-size: 0.9rem; font-weight: 700;
-            font-family: 'Manrope', sans-serif; cursor: pointer; transition: opacity 0.2s, transform 0.15s; margin-top: 0.3rem; width: 100%;
-        }
+        .auth-submit { background: var(--primary); color: #fff; border: none; padding: 0.8rem; font-size: 0.9rem; font-weight: 700; font-family: 'Manrope', sans-serif; cursor: pointer; transition: opacity 0.2s, transform 0.15s; margin-top: 0.3rem; width: 100%; }
         .auth-submit:hover { opacity: 0.88; transform: translateY(-1px); }
         .auth-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-        .auth-box .auth-demo {
-            text-align: center; font-size: 0.6rem; color: var(--muted); margin-top: 1.5rem; padding-top: 1rem;
-            border-top: 1px solid var(--border); position: relative; z-index: 1; letter-spacing: 0.3px;
-        }
+        .auth-box .auth-demo { text-align: center; font-size: 0.6rem; color: var(--muted); margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); position: relative; z-index: 1; letter-spacing: 0.3px; }
 
-        /* GAME WRAPPER */
+        /* ─── GAME WRAPPER ─── */
         #gameRoot { width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; padding: 1rem; background-image: radial-gradient(ellipse at 30% 20%, rgba(124,92,252,0.08), transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(255,201,74,0.04), transparent 50%); }
         #gameRoot.hidden { display: none; }
 
-        .game {
-            width: 100%; max-width: 1300px; background: var(--surface); border: 1px solid var(--border2);
-            padding: 1.2rem 1.5rem 1.2rem; box-shadow: 0 30px 80px rgba(0,0,0,0.8); position: relative; overflow: hidden;
-            max-height: 97vh; display: flex; flex-direction: column;
-        }
-        .game::before {
-            content: ''; position: absolute; top: -20%; right: -10%; width: 600px; height: 600px;
-            background: radial-gradient(circle, var(--primary-glow), transparent 70%); opacity: 0.12; pointer-events: none;
-        }
+        .game { width: 100%; max-width: 1300px; background: var(--surface); border: 1px solid var(--border2); padding: 1.2rem 1.5rem 1.2rem; box-shadow: 0 30px 80px rgba(0,0,0,0.8); position: relative; overflow: hidden; max-height: 97vh; display: flex; flex-direction: column; }
+        .game::before { content: ''; position: absolute; top: -20%; right: -10%; width: 600px; height: 600px; background: radial-gradient(circle, var(--primary-glow), transparent 70%); opacity: 0.12; pointer-events: none; }
 
-        /* HEADER */
-        .header {
-            display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.6rem;
-            border-bottom: 1px solid var(--border); margin-bottom: 1rem; flex-wrap: wrap; gap: 0.4rem;
-            position: relative; z-index: 2; flex-shrink: 0;
-        }
-        .logo {
-            display: flex; align-items: center; gap: 0.4rem; font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700; font-size: 1.2rem; letter-spacing: -0.5px;
-        }
+        /* ─── HEADER ─── */
+        .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; flex-wrap: wrap; gap: 0.4rem; position: relative; z-index: 2; flex-shrink: 0; }
+        .logo { display: flex; align-items: center; gap: 0.4rem; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.2rem; letter-spacing: -0.5px; }
         .logo span { color: var(--primary); text-shadow: 0 0 24px var(--primary-glow); }
-        .logo small {
-            font-size: 0.5rem; font-weight: 400; color: var(--muted); letter-spacing: 0.5px;
-            background: rgba(255,255,255,0.04); padding: 0.1rem 0.6rem; border: 1px solid var(--border);
-        }
+        .logo small { font-size: 0.5rem; font-weight: 400; color: var(--muted); letter-spacing: 0.5px; background: rgba(255,255,255,0.04); padding: 0.1rem 0.6rem; border: 1px solid var(--border); }
         .header-right { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
         .stats { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-        .stat {
-            background: var(--surface2); padding: 0.15rem 0.6rem; border: 1px solid var(--border);
-            display: flex; align-items: center; gap: 0.2rem; font-size: 0.55rem; font-weight: 600; color: var(--muted);
-        }
+        .stat { background: var(--surface2); padding: 0.15rem 0.6rem; border: 1px solid var(--border); display: flex; align-items: center; gap: 0.2rem; font-size: 0.55rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: 0.2s; }
+        .stat:hover { border-color: var(--primary); color: var(--fg); }
         .stat .val { color: var(--fg); font-family: 'Space Grotesk', monospace; font-size: 0.7rem; }
         .stat .val.gold { color: var(--gold); }
         .stat .val.green { color: var(--green); }
         .stat .val.purple { color: var(--primary); }
-        .user-badge {
-            display: flex; align-items: center; gap: 0.3rem; background: var(--primary-dim);
-            border: 1px solid rgba(124,92,252,0.2); padding: 0.1rem 0.5rem 0.1rem 0.7rem;
-            font-size: 0.65rem; font-weight: 600; color: var(--primary);
-        }
-        .user-badge .logout-btn {
-            background: rgba(255,255,255,0.06); border: none; color: var(--muted); padding: 0.05rem 0.4rem;
-            font-size: 0.5rem; cursor: pointer; font-weight: 600; transition: 0.2s; font-family: 'Manrope', sans-serif;
-        }
+        .user-badge { display: flex; align-items: center; gap: 0.3rem; background: var(--primary-dim); border: 1px solid rgba(124,92,252,0.2); padding: 0.1rem 0.5rem 0.1rem 0.7rem; font-size: 0.65rem; font-weight: 600; color: var(--primary); }
+        .user-badge .logout-btn { background: rgba(255,255,255,0.06); border: none; color: var(--muted); padding: 0.05rem 0.4rem; font-size: 0.5rem; cursor: pointer; font-weight: 600; transition: 0.2s; font-family: 'Manrope', sans-serif; }
         .user-badge .logout-btn:hover { color: var(--red); background: rgba(255,93,108,0.1); }
 
-        /* MAIN GRID */
-        .grid {
-            display: grid; grid-template-columns: 1fr 320px; gap: 1.2rem; position: relative; z-index: 2;
-            flex: 1; min-height: 0;
-        }
+        /* ─── MAIN GRID ─── */
+        .grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.2rem; position: relative; z-index: 2; flex: 1; min-height: 0; }
         @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } .game { padding: 0.8rem; max-height: none; overflow-y: auto; } }
 
-        /* CLICKER */
+        /* ─── CLICKER ─── */
         .clicker-col { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.2rem 0; gap: 0.4rem; }
-        .clicker-wrap {
-            position: relative; width: 180px; height: 180px; cursor: pointer; user-select: none;
-            -webkit-tap-highlight-color: transparent; transition: transform 0.08s ease;
-        }
+        .clicker-wrap { position: relative; width: 180px; height: 180px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; transition: transform 0.08s ease; }
         .clicker-wrap:active { transform: scale(0.92); }
-        .clicker-wrap .dvc {
-            width: 100%; height: 100%; background: radial-gradient(circle at 30% 30%, #34236a, #0d0a1a);
-            border: 2px solid var(--primary); border-radius: 50%;
-            box-shadow: 0 0 50px rgba(124,92,252,0.25), inset 0 0 40px rgba(124,92,252,0.08);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-family: 'Space Grotesk', sans-serif; font-size: 2.8rem; font-weight: 800; color: #fff;
-            letter-spacing: 2px; text-shadow: 0 0 30px var(--primary-glow);
-            transition: box-shadow 0.3s, border-color 0.3s, background 0.3s; position: relative;
-        }
+        .clicker-wrap .dvc { width: 100%; height: 100%; background: radial-gradient(circle at 30% 30%, #34236a, #0d0a1a); border: 2px solid var(--primary); border-radius: 50%; box-shadow: 0 0 50px rgba(124,92,252,0.25), inset 0 0 40px rgba(124,92,252,0.08); display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-size: 2.8rem; font-weight: 800; color: #fff; letter-spacing: 2px; text-shadow: 0 0 30px var(--primary-glow); transition: box-shadow 0.3s, border-color 0.3s, background 0.3s; position: relative; }
         .clicker-wrap .dvc:hover { box-shadow: 0 0 70px rgba(124,92,252,0.45), inset 0 0 40px rgba(124,92,252,0.15); }
-        .clicker-wrap .dvc .sub {
-            font-size: 0.5rem; font-weight: 600; letter-spacing: 2px; color: var(--gold); opacity: 0.7;
-            background: rgba(0,0,0,0.4); padding: 1px 10px; border: 1px solid rgba(255,201,74,0.12);
-            margin-top: -2px; border-radius: 20px;
-        }
+        .clicker-wrap .dvc .sub { font-size: 0.5rem; font-weight: 600; letter-spacing: 2px; color: var(--gold); opacity: 0.7; background: rgba(0,0,0,0.4); padding: 1px 10px; border: 1px solid rgba(255,201,74,0.12); margin-top: -2px; border-radius: 20px; }
         .clicker-wrap .dvc.golden { border-color: var(--gold) !important; box-shadow: 0 0 80px rgba(255,201,74,0.6), inset 0 0 40px rgba(255,201,74,0.3) !important; animation: goldenPulse 0.8s ease-in-out infinite alternate; }
         .clicker-wrap .dvc.rainbow { border-color: #ff6b6b !important; box-shadow: 0 0 80px rgba(255,107,107,0.6), inset 0 0 40px rgba(255,107,107,0.3) !important; animation: rainbowPulse 1.2s ease-in-out infinite alternate; }
         @keyframes goldenPulse { 0% { transform: scale(1); box-shadow: 0 0 60px rgba(255,201,74,0.5); } 100% { transform: scale(1.04); box-shadow: 0 0 100px rgba(255,201,74,0.8); } }
         @keyframes rainbowPulse { 0% { transform: scale(1); filter: hue-rotate(0deg); } 100% { transform: scale(1.06); filter: hue-rotate(360deg); } }
-        .clicker-wrap .ripple {
-            position: absolute; inset: -4px; border: 2px solid var(--primary); border-radius: 50%;
-            opacity: 0; animation: rippleOut 0.7s ease-out forwards; pointer-events: none;
-        }
+        .clicker-wrap .ripple { position: absolute; inset: -4px; border: 2px solid var(--primary); border-radius: 50%; opacity: 0; animation: rippleOut 0.7s ease-out forwards; pointer-events: none; }
         @keyframes rippleOut { 0% { transform: scale(1); opacity: 0.7; } 100% { transform: scale(1.5); opacity: 0; } }
-        .clicker-wrap .part {
-            position: absolute; pointer-events: none; font-size: 1rem; font-weight: 700; color: var(--gold);
-            text-shadow: 0 0 16px var(--gold); animation: floatUp 0.9s ease-out forwards; font-family: 'Space Grotesk', monospace;
-        }
+        .clicker-wrap .part { position: absolute; pointer-events: none; font-size: 1rem; font-weight: 700; color: var(--gold); text-shadow: 0 0 16px var(--gold); animation: floatUp 0.9s ease-out forwards; font-family: 'Space Grotesk', monospace; }
         @keyframes floatUp { 0% { opacity: 1; transform: translate(0,0) scale(0.5); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1.5); } }
 
         .clicker-stats { text-align: center; width: 100%; }
-        .clicker-stats .total {
-            font-family: 'Space Grotesk', monospace; font-size: 2.6rem; font-weight: 700; letter-spacing: -1px;
-            background: linear-gradient(135deg, var(--gold), #ffb347); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-            transition: transform 0.12s;
-        }
+        .clicker-stats .total { font-family: 'Space Grotesk', monospace; font-size: 2.6rem; font-weight: 700; letter-spacing: -1px; background: linear-gradient(135deg, var(--gold), #ffb347); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; transition: transform 0.12s; }
         .clicker-stats .total.pop { animation: popNum 0.15s ease; }
         @keyframes popNum { 0% { transform: scale(1); } 50% { transform: scale(1.06); } 100% { transform: scale(1); } }
         .clicker-stats .label { font-size: 0.65rem; color: var(--muted); margin-top: 0.1rem; letter-spacing: 0.3px; }
         .clicker-stats .cps-badge { font-size: 0.7rem; color: var(--green); font-weight: 600; margin-top: 0.2rem; background: rgba(57,229,140,0.07); padding: 0.1rem 0.8rem; border: 1px solid rgba(57,229,140,0.12); display: inline-block; }
         .clicker-stats .click-mult { font-size: 0.65rem; color: var(--gold); margin-top: 0.15rem; }
 
-        /* RIGHT PANEL */
-        .panel-tabs {
-            display: flex; border-bottom: 1px solid var(--border); margin-bottom: 0.4rem; flex-shrink: 0;
-            gap: 0; overflow-x: auto;
-        }
-        .panel-tabs button {
-            background: transparent; border: none; color: var(--muted); font-weight: 600; font-size: 0.5rem;
-            padding: 0.2rem 0.5rem; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif;
-            letter-spacing: 0.3px; border-bottom: 2px solid transparent; white-space: nowrap;
-        }
+        /* ─── RIGHT PANEL ─── */
+        .panel-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 0.4rem; flex-shrink: 0; gap: 0; overflow-x: auto; }
+        .panel-tabs button { background: transparent; border: none; color: var(--muted); font-weight: 600; font-size: 0.5rem; padding: 0.2rem 0.5rem; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif; letter-spacing: 0.3px; border-bottom: 2px solid transparent; white-space: nowrap; }
         .panel-tabs button.active { color: var(--fg); border-bottom-color: var(--primary); }
         .panel-tabs button:hover { color: var(--fg); }
         .panel-tabs button .badge { background: var(--primary-dim); color: var(--primary); font-size: 0.4rem; padding: 0.05rem 0.3rem; border-radius: 8px; margin-left: 2px; }
 
-        .upgrade-panel {
-            background: var(--surface); border: 1px solid var(--border); padding: 0.5rem 0.6rem 0.4rem;
-            display: flex; flex-direction: column; max-height: 400px; min-height: 0;
-        }
+        .upgrade-panel { background: var(--surface); border: 1px solid var(--border); padding: 0.5rem 0.6rem 0.4rem; display: flex; flex-direction: column; max-height: 400px; min-height: 0; }
         .upgrade-panel .tab-content { flex: 1; overflow-y: auto; padding-right: 3px; }
         .upgrade-panel .tab-content.hidden { display: none; }
         .upgrade-panel .tab-content::-webkit-scrollbar { width: 3px; }
         .upgrade-panel .tab-content::-webkit-scrollbar-thumb { background: var(--primary); }
 
-        .panel-head {
-            font-size: 0.5rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted);
-            font-weight: 600; display: flex; justify-content: space-between; align-items: center;
-            padding-bottom: 0.2rem; border-bottom: 1px solid var(--border); margin-bottom: 0.25rem;
-            flex-shrink: 0;
-        }
+        .panel-head { font-size: 0.5rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.2rem; border-bottom: 1px solid var(--border); margin-bottom: 0.25rem; flex-shrink: 0; }
         .panel-head span { color: var(--gold); font-size: 0.6rem; }
 
-        .upgrade {
-            background: var(--surface2); border: 1px solid var(--border); padding: 0.3rem 0.5rem;
-            display: flex; justify-content: space-between; align-items: center; transition: background 0.15s, border-color 0.15s;
-            opacity: 0.5; pointer-events: none; cursor: default; margin-bottom: 0.15rem; border-radius: 4px;
-        }
+        .upgrade { background: var(--surface2); border: 1px solid var(--border); padding: 0.3rem 0.5rem; display: flex; justify-content: space-between; align-items: center; transition: background 0.15s, border-color 0.15s; opacity: 0.5; pointer-events: none; cursor: default; margin-bottom: 0.15rem; border-radius: 4px; }
         .upgrade.can { opacity: 1; pointer-events: auto; cursor: pointer; border-color: rgba(124,92,252,0.25); }
         .upgrade.can:hover { border-color: var(--primary); background: var(--surface3); }
         .upgrade .info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
@@ -239,17 +143,14 @@
         .upgrade .add { font-size: 0.45rem; color: var(--green); font-weight: 600; }
         .upgrade .prestige-cost { font-family: 'Space Grotesk', monospace; font-weight: 700; font-size: 0.6rem; color: var(--primary); }
 
-        /* LEADERBOARD */
-        .lb-entry {
-            display: flex; justify-content: space-between; padding: 0.25rem 0.2rem; border-bottom: 1px solid var(--border);
-            font-size: 0.65rem; color: var(--muted);
-        }
+        /* ─── LEADERBOARD ─── */
+        .lb-entry { display: flex; justify-content: space-between; padding: 0.25rem 0.2rem; border-bottom: 1px solid var(--border); font-size: 0.65rem; color: var(--muted); }
         .lb-entry .rank { font-weight: 700; color: var(--fg); width: 22px; }
         .lb-entry .name { flex: 1; margin-left: 0.3rem; font-weight: 600; color: var(--fg); }
         .lb-entry .score { font-family: 'Space Grotesk', monospace; color: var(--gold); }
         .lb-entry.me { background: var(--primary-dim); border-color: var(--primary); }
 
-        /* STATS PANEL */
+        /* ─── STATS PANEL ─── */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.2rem; }
         .stats-grid .s-item { background: var(--surface2); padding: 0.2rem 0.4rem; border: 1px solid var(--border); border-radius: 4px; }
         .stats-grid .s-item .sl { font-size: 0.45rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -258,11 +159,8 @@
         .stats-grid .s-item .sv.green { color: var(--green); }
         .stats-grid .s-item .sv.purple { color: var(--primary); }
 
-        /* ACHIEVEMENTS */
-        .ach-item {
-            display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0.4rem; background: var(--surface2);
-            border: 1px solid var(--border); margin-bottom: 0.15rem; border-radius: 4px; opacity: 0.5; transition: 0.2s;
-        }
+        /* ─── ACHIEVEMENTS ─── */
+        .ach-item { display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0.4rem; background: var(--surface2); border: 1px solid var(--border); margin-bottom: 0.15rem; border-radius: 4px; opacity: 0.5; transition: 0.2s; }
         .ach-item.unlocked { opacity: 1; border-color: rgba(255,201,74,0.2); background: rgba(255,201,74,0.04); }
         .ach-item .ae { font-size: 1.1rem; flex-shrink: 0; }
         .ach-item .ai { flex: 1; }
@@ -270,12 +168,8 @@
         .ach-item .ai .ad { font-size: 0.5rem; color: var(--muted); }
         .ach-item .ap { font-size: 0.55rem; color: var(--gold); font-weight: 600; }
 
-        /* SKILL TREE */
-        .skill-item {
-            background: var(--surface2); border: 1px solid var(--border); padding: 0.3rem 0.5rem; border-radius: 4px;
-            margin-bottom: 0.15rem; display: flex; justify-content: space-between; align-items: center;
-            opacity: 0.4; pointer-events: none; cursor: default;
-        }
+        /* ─── SKILL TREE ─── */
+        .skill-item { background: var(--surface2); border: 1px solid var(--border); padding: 0.3rem 0.5rem; border-radius: 4px; margin-bottom: 0.15rem; display: flex; justify-content: space-between; align-items: center; opacity: 0.4; pointer-events: none; cursor: default; }
         .skill-item.can { opacity: 1; pointer-events: auto; cursor: pointer; border-color: rgba(124,92,252,0.25); }
         .skill-item.can:hover { border-color: var(--primary); background: var(--surface3); }
         .skill-item .si { display: flex; flex-direction: column; gap: 1px; }
@@ -283,60 +177,54 @@
         .skill-item .si .sd { font-size: 0.5rem; color: var(--muted); }
         .skill-item .sc { font-family: 'Space Grotesk', monospace; font-size: 0.6rem; color: var(--gold); }
 
-        /* GOLDEN CONTAINER */
-        .golden-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; overflow: hidden;
-        }
-        .golden-cookie {
-            position: absolute; width: 55px; height: 55px; background: radial-gradient(circle at 30% 30%, #ffd966, #f0a500);
-            border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 40px rgba(255,201,74,0.7), inset 0 -4px 8px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #7a4a00;
-            cursor: pointer; pointer-events: auto; animation: goldenFloat 2s ease-in-out infinite;
-            transition: transform 0.15s; text-shadow: 0 2px 4px rgba(255,215,0,0.3); font-family: 'Space Grotesk', sans-serif; user-select: none;
-        }
+        /* ─── LEVEL DASHBOARD MODAL ─── */
+        .modal-overlay { position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; padding: 1.5rem; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay.show { opacity: 1; pointer-events: all; }
+        .modal-box { width: 100%; max-width: 500px; background: var(--surface); border: 1px solid var(--border2); padding: 1.5rem; box-shadow: 0 40px 100px rgba(0,0,0,0.9); max-height: 80vh; overflow-y: auto; }
+        .modal-box .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem; }
+        .modal-box .modal-header h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; }
+        .modal-box .modal-close { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--muted); padding: 0.2rem 0.8rem; cursor: pointer; font-size: 0.8rem; transition: 0.2s; font-family: 'Manrope', sans-serif; }
+        .modal-box .modal-close:hover { color: var(--fg); border-color: var(--border2); }
+
+        .level-progress { background: var(--surface2); border: 1px solid var(--border); padding: 1rem; margin-bottom: 1rem; border-radius: 4px; }
+        .level-progress .lp-info { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 0.3rem; }
+        .level-progress .lp-bar { height: 6px; background: var(--surface3); border-radius: 3px; overflow: hidden; }
+        .level-progress .lp-bar .lp-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--gold)); width: 0%; transition: width 0.3s; }
+
+        .level-upgrade-item { background: var(--surface2); border: 1px solid var(--border); padding: 0.4rem 0.6rem; border-radius: 4px; margin-bottom: 0.3rem; display: flex; justify-content: space-between; align-items: center; opacity: 0.5; pointer-events: none; cursor: default; }
+        .level-upgrade-item.can { opacity: 1; pointer-events: auto; cursor: pointer; border-color: rgba(124,92,252,0.25); }
+        .level-upgrade-item.can:hover { border-color: var(--primary); background: var(--surface3); }
+        .level-upgrade-item .li { display: flex; flex-direction: column; gap: 1px; flex: 1; }
+        .level-upgrade-item .li .ln { font-weight: 700; font-size: 0.7rem; }
+        .level-upgrade-item .li .ld { font-size: 0.55rem; color: var(--muted); }
+        .level-upgrade-item .lr { display: flex; flex-direction: column; align-items: flex-end; gap: 0.1rem; flex-shrink: 0; margin-left: 0.5rem; }
+        .level-upgrade-item .lr .lp { font-family: 'Space Grotesk', monospace; font-size: 0.6rem; color: var(--gold); }
+        .level-upgrade-item .lr .ll { font-size: 0.5rem; color: var(--primary); }
+
+        /* ─── GOLDEN CONTAINER ─── */
+        .golden-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; overflow: hidden; }
+        .golden-cookie { position: absolute; width: 55px; height: 55px; background: radial-gradient(circle at 30% 30%, #ffd966, #f0a500); border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 40px rgba(255,201,74,0.7), inset 0 -4px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #7a4a00; cursor: pointer; pointer-events: auto; animation: goldenFloat 2s ease-in-out infinite; transition: transform 0.15s; text-shadow: 0 2px 4px rgba(255,215,0,0.3); font-family: 'Space Grotesk', sans-serif; user-select: none; }
         .golden-cookie::after { content: '✨'; position: absolute; top: -5px; right: -5px; font-size: 0.7rem; }
         .golden-cookie:hover { transform: scale(1.1); }
         @keyframes goldenFloat { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
-        .golden-popup {
-            position: fixed; pointer-events: none; font-size: 1.3rem; font-weight: 800; color: var(--gold);
-            text-shadow: 0 0 30px var(--gold); z-index: 1000; animation: floatUpBig 1.2s ease-out forwards; font-family: 'Space Grotesk', monospace;
-        }
+        .golden-popup { position: fixed; pointer-events: none; font-size: 1.3rem; font-weight: 800; color: var(--gold); text-shadow: 0 0 30px var(--gold); z-index: 1000; animation: floatUpBig 1.2s ease-out forwards; font-family: 'Space Grotesk', monospace; }
         @keyframes floatUpBig { 0% { opacity: 1; transform: translate(0,0) scale(0.6); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1.8); } }
 
-        /* FOOTER */
-        .footer {
-            margin-top: 0.8rem; padding-top: 0.5rem; border-top: 1px solid var(--border);
-            display: flex; justify-content: space-between; font-size: 0.5rem; color: var(--muted);
-            flex-wrap: wrap; gap: 0.3rem; position: relative; z-index: 2; flex-shrink: 0;
-        }
-        .footer .reset {
-            background: rgba(255,93,108,0.08); border: 1px solid rgba(255,93,108,0.18); padding: 0.1rem 0.6rem;
-            color: var(--red); font-size: 0.5rem; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif;
-        }
+        /* ─── FOOTER ─── */
+        .footer { margin-top: 0.8rem; padding-top: 0.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.5rem; color: var(--muted); flex-wrap: wrap; gap: 0.3rem; position: relative; z-index: 2; flex-shrink: 0; }
+        .footer .reset { background: rgba(255,93,108,0.08); border: 1px solid rgba(255,93,108,0.18); padding: 0.1rem 0.6rem; color: var(--red); font-size: 0.5rem; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif; }
         .footer .reset:hover { background: rgba(255,93,108,0.16); }
 
-        /* TOAST */
-        .toast {
-            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
-            background: var(--surface2); border: 1px solid var(--border2); padding: 0.4rem 1.2rem;
-            font-weight: 600; font-size: 0.75rem; color: var(--fg); box-shadow: 0 12px 40px rgba(0,0,0,0.7);
-            opacity: 0; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; z-index: 9999;
-            border-radius: 6px;
-        }
+        /* ─── TOAST ─── */
+        .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid var(--border2); padding: 0.4rem 1.2rem; font-weight: 600; font-size: 0.75rem; color: var(--fg); box-shadow: 0 12px 40px rgba(0,0,0,0.7); opacity: 0; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; z-index: 9999; border-radius: 6px; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        /* NOTIFICATION BANNER */
-        .notif-banner {
-            position: fixed; top: 0.8rem; left: 50%; transform: translateX(-50%) translateY(-100px);
-            background: var(--surface2); border: 1px solid var(--border2); padding: 0.4rem 1.2rem;
-            font-weight: 700; font-size: 0.85rem; color: var(--gold); box-shadow: 0 12px 40px rgba(0,0,0,0.7);
-            z-index: 9998; transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1); border-radius: 6px;
-            text-align: center; pointer-events: none;
-        }
+        /* ─── NOTIFICATION BANNER ─── */
+        .notif-banner { position: fixed; top: 0.8rem; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--surface2); border: 1px solid var(--border2); padding: 0.4rem 1.2rem; font-weight: 700; font-size: 0.85rem; color: var(--gold); box-shadow: 0 12px 40px rgba(0,0,0,0.7); z-index: 9998; transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1); border-radius: 6px; text-align: center; pointer-events: none; }
         .notif-banner.show { transform: translateX(-50%) translateY(0); }
         .notif-banner .sub { font-size: 0.55rem; font-weight: 400; color: var(--muted); display: block; }
 
-        /* RESPONSIVE */
+        /* ─── RESPONSIVE ─── */
         @media (max-width: 500px) {
             .game { padding: 0.5rem; max-height: none; }
             .clicker-wrap { width: 140px; height: 140px; }
@@ -351,16 +239,22 @@
             .auth-box .auth-logo { font-size: 1.2rem; }
             .upgrade-panel { max-height: 300px; }
             .panel-tabs button { font-size: 0.4rem; padding: 0.15rem 0.3rem; }
+            .modal-box { padding: 1rem; }
         }
+
+        /* Supabase loading state */
+        .loading-text { color: var(--muted); text-align: center; padding: 2rem; font-size: 0.9rem; }
+        .loading-text .spinner { display: inline-block; animation: spin 1s linear infinite; margin-right: 0.5rem; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <!-- AUTH OVERLAY -->
+    <!-- ─── AUTH OVERLAY ─── -->
     <div id="authOverlay">
         <div class="auth-box">
-            <div class="auth-logo">DVC<span>Clicker</span><small>ultimate</small></div>
-            <div class="auth-sub">Sign in to save your progress</div>
+            <div class="auth-logo">DVC<span>Clicker</span><small>supabase</small></div>
+            <div class="auth-sub">Sign in to save your progress to the cloud</div>
             <div class="auth-tabs">
                 <button class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">Log In</button>
                 <button class="auth-tab" data-tab="signup" onclick="switchAuthTab('signup')">Sign Up</button>
@@ -378,25 +272,44 @@
                 <div class="auth-error" id="signupError"></div>
                 <button class="auth-submit" id="signupBtn" type="submit">Create Account</button>
             </form>
-            <div class="auth-demo">🔒 All data stored locally in your browser</div>
+            <div class="auth-demo">🔒 Powered by Supabase</div>
         </div>
     </div>
 
-    <!-- NOTIFICATION BANNER -->
+    <!-- ─── LEVEL DASHBOARD MODAL ─── -->
+    <div class="modal-overlay" id="levelModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>⭐ Level <span id="modalLevel">1</span></h2>
+                <button class="modal-close" onclick="closeLevelDashboard()">✕ Close</button>
+            </div>
+            <div class="level-progress">
+                <div class="lp-info">
+                    <span>XP Progress</span>
+                    <span id="modalXPText">0 / 50</span>
+                </div>
+                <div class="lp-bar"><div class="lp-fill" id="modalXPBar" style="width:0%;"></div></div>
+            </div>
+            <div class="panel-head" style="margin-top:0.5rem;">Level Upgrades <span id="modalLevelUpgradeCount">0</span></div>
+            <div id="modalLevelUpgradeList"></div>
+        </div>
+    </div>
+
+    <!-- ─── NOTIFICATION BANNER ─── -->
     <div class="notif-banner" id="notifBanner"><span id="notifText">🎉</span><span class="sub" id="notifSub"></span></div>
 
-    <!-- GAME ROOT -->
+    <!-- ─── GAME ROOT ─── -->
     <div id="gameRoot" class="hidden">
         <div class="game">
             <!-- HEADER -->
             <div class="header">
-                <div class="logo">DVC<span>Clicker</span><small>ultimate</small></div>
+                <div class="logo">DVC<span>Clicker</span><small>supabase</small></div>
                 <div class="header-right">
                     <div class="stats">
                         <div class="stat">🍪 CPS <span class="val green" id="cpsDisplay">0.0</span></div>
                         <div class="stat">🖱️ Clicks <span class="val gold" id="totalClicksDisplay">0</span></div>
                         <div class="stat">📦 <span class="val" id="upgradeCountDisplay">0</span></div>
-                        <div class="stat">⭐ LVL <span class="val purple" id="levelDisplay">1</span></div>
+                        <div class="stat" onclick="openLevelDashboard()">⭐ LVL <span class="val purple" id="levelDisplay">1</span></div>
                         <div class="stat">🔮 PP <span class="val gold" id="prestigeDisplay">0</span></div>
                     </div>
                     <div class="user-badge"><span id="usernameDisplay">user</span><button class="logout-btn" onclick="logout()">✕</button></div>
@@ -466,7 +379,7 @@
                     </div>
 
                     <div class="tab-content hidden" id="tabLeaderboard">
-                        <div class="panel-head">🏅 Leaderboard</div>
+                        <div class="panel-head">🏅 Leaderboard <span style="font-size:0.5rem;color:var(--muted);font-weight:400;">(global)</span></div>
                         <div id="leaderboardList"></div>
                     </div>
                 </div>
@@ -480,80 +393,345 @@
         </div>
     </div>
 
-    <!-- GOLDEN CONTAINER -->
+    <!-- ─── GOLDEN CONTAINER ─── -->
     <div class="golden-container" id="goldenContainer"></div>
     <div class="toast" id="toast"></div>
 
+    <!-- ─── SUPABASE SDK ─── -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
         /* ================================================================
-           DVC CLICKER — ULTIMATE EDITION (FIXED LEADERBOARD + SMALLER PANEL)
+           DVC CLICKER — SUPABASE EDITION
            ================================================================ */
 
-        // ─── CONSTANTS ───
-        const AUTH_KEY = 'dvcAuthUsers';
-        const SESSION_KEY = 'dvcSession';
-        const LB_KEY = 'dvcLB';
+        // ─── 🔑 PASTE YOUR SUPABASE URL & ANON KEY HERE ───
+        const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+        const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+        // ─────────────────────────────────────────────────────────────
 
-        // ─── AUTH HELPERS ───
-        function getUsers() { try { return JSON.parse(localStorage.getItem(AUTH_KEY)) || {}; } catch (_) { return {}; } }
-        function saveUsers(users) { localStorage.setItem(AUTH_KEY, JSON.stringify(users)); }
-        function getSession() { return localStorage.getItem(SESSION_KEY) || null; }
-        function setSession(username) { localStorage.setItem(SESSION_KEY, username); }
-        function clearSession() { localStorage.removeItem(SESSION_KEY); }
-        function getUserData(username) { const users = getUsers(); return users[username] || null; }
-        function saveUserData(username, data) { const users = getUsers(); users[username] = data; saveUsers(users); }
+        // ─── INIT SUPABASE ───
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // ─── LEADERBOARD ───
-        let leaderboard = [];
+        // ─── GAME STATE ───
+        const S = {
+            cookies: 0,
+            totalClicks: 0,
+            upgrades: {},
+            level: 1,
+            xp: 0,
+            xpNext: 50,
+            prestigePoints: 0,
+            rebirthPoints: 0,
+            prestigeUpgrades: {},
+            skills: {},
+            totalPrestiges: 0,
+            cookiesAllTime: 0,
+            clicksAllTime: 0,
+            goldenCollected: 0,
+            bestCPS: 0,
+            achievements: [],
+            levelUpgrades: {},
+            goldenBoost: { active: false, endTime: 0, multiplier: 1 },
+            rainbowBoost: { active: false, endTime: 0, multiplier: 1 },
+            lastSave: Date.now(),
+            _goldenTriggered: false,
+            _rainbowTriggered: false,
+            username: ''
+        };
 
-        function loadLeaderboard() { try { leaderboard = JSON.parse(localStorage.getItem(LB_KEY)) || []; } catch (_) { leaderboard = []; } }
+        // ─── LEVEL UPGRADES DEFINITIONS ───
+        const LEVEL_UPGRADES = [
+            { id: 'lv_cps1', name: '🌱 CPS Boost I', desc: '+5% CPS', baseCost: 20, costMult: 1.4, max: 10, levelReq: 2 },
+            { id: 'lv_cps2', name: '🌿 CPS Boost II', desc: '+10% CPS', baseCost: 50, costMult: 1.5, max: 8, levelReq: 5 },
+            { id: 'lv_cps3', name: '🌳 CPS Boost III', desc: '+25% CPS', baseCost: 150, costMult: 1.6, max: 6, levelReq: 10 },
+            { id: 'lv_click1', name: '👊 Click Power I', desc: '+0.5 click mult', baseCost: 30, costMult: 1.4, max: 10,
+                levelReq: 3 },
+            { id: 'lv_click2', name: '💪 Click Power II', desc: '+1 click mult', baseCost: 100, costMult: 1.5, max: 8,
+                levelReq: 7 },
+            { id: 'lv_golden', name: '✨ Golden Affinity', desc: '+10% golden value', baseCost: 40, costMult: 1.3, max: 10,
+                levelReq: 4 },
+            { id: 'lv_prestige', name: '🔮 Prestige Boost', desc: '+2% PP earned', baseCost: 80, costMult: 1.5, max: 10,
+                levelReq: 8 },
+        ];
 
-        function saveLeaderboard() {
-            leaderboard.sort((a, b) => b.cookies - a.cookies);
-            if (leaderboard.length > 50) leaderboard = leaderboard.slice(0, 50);
-            localStorage.setItem(LB_KEY, JSON.stringify(leaderboard));
+        // ─── UPGRADE DEFINITIONS ───
+        const UPGRADES = [
+            { id: 'cursor', name: '🖱️ Cursor', desc: 'Auto-click every second', baseCost: 15, cps: 0.2, mult: 1.15,
+            max: 100 },
+            { id: 'grandma', name: '👵 Grandma', desc: 'Bakes cookies with love', baseCost: 100, cps: 1, mult: 1.15,
+            max: 80 },
+            { id: 'farm', name: '🌾 Farm', desc: 'Harvest fresh cookies', baseCost: 500, cps: 4, mult: 1.14, max: 60 },
+            { id: 'mine', name: '⛏️ Mine', desc: 'Dig up cookie ore', baseCost: 3000, cps: 12, mult: 1.13, max: 50 },
+            { id: 'factory', name: '🏭 Factory', desc: 'Mass-produce cookies', baseCost: 15000, cps: 40, mult: 1.12,
+            max: 40 },
+            { id: 'portal', name: '🌀 Portal', desc: 'Summon cookies from elsewhere', baseCost: 80000, cps: 150,
+                mult: 1.10, max: 30 },
+            { id: 'time', name: '⏳ Time Machine', desc: 'Bake cookies from the future', baseCost: 400000, cps: 500,
+                mult: 1.08, max: 20 },
+            { id: 'antimatter', name: '⚛️ Antimatter', desc: 'Annihilate into cookies', baseCost: 2000000, cps: 2000,
+                mult: 1.07, max: 15 },
+            { id: 'universe', name: '🌌 Universe', desc: 'Create a cookie universe', baseCost: 10000000, cps: 8000,
+                mult: 1.06, max: 10 },
+        ];
+
+        // ─── CLICK MULTIPLIER UPGRADES ───
+        const CLICK_MULT_UPGRADES = [
+            { id: 'click1', name: '✊ Strong Click', desc: '+0.5 click multiplier', baseCost: 1000, mult: 1.5, max: 10 },
+            { id: 'click2', name: '💪 Power Click', desc: '+1 click multiplier', baseCost: 50000, mult: 1.6, max: 10 },
+            { id: 'click3', name: '⚡ Mega Click', desc: '+2 click multiplier', baseCost: 2000000, mult: 1.7, max: 10 },
+            { id: 'click4', name: '🔥 God Click', desc: '+5 click multiplier', baseCost: 100000000, mult: 1.8, max: 10 },
+        ];
+
+        // ─── PRESTIGE UPGRADES ───
+        const PRESTIGE_UPGRADES = [
+            { id: 'p_cps1', name: '🔮 CPS Boost I', desc: '+10% permanent CPS', baseCost: 1, mult: 1.2, max: 10 },
+            { id: 'p_cps2', name: '🔮 CPS Boost II', desc: '+25% permanent CPS', baseCost: 5, mult: 1.3, max: 8 },
+            { id: 'p_cps3', name: '🔮 CPS Boost III', desc: '+50% permanent CPS', baseCost: 15, mult: 1.4, max: 6 },
+            { id: 'p_click', name: '🔮 Click Power', desc: '+0.5 permanent click mult', baseCost: 3, mult: 1.3, max: 10 },
+            { id: 'p_golden', name: '🔮 Golden Touch', desc: '+5% golden cookie chance', baseCost: 8, mult: 1.2, max: 10 },
+            { id: 'p_start', name: '🔮 Head Start', desc: 'Start with +1000 cookies after prestige', baseCost: 10,
+                mult: 1.5, max: 5 },
+        ];
+
+        // ─── SKILL TREE ───
+        const SKILLS = [
+            { id: 's_cps1', name: '🌱 CPS I', desc: '+15% CPS', cost: 1, max: 5 },
+            { id: 's_cps2', name: '🌿 CPS II', desc: '+30% CPS', cost: 3, max: 5, requires: 's_cps1' },
+            { id: 's_cps3', name: '🌳 CPS III', desc: '+50% CPS', cost: 5, max: 5, requires: 's_cps2' },
+            { id: 's_click1', name: '👊 Click I', desc: '+0.5 click mult', cost: 1, max: 5 },
+            { id: 's_click2', name: '💪 Click II', desc: '+1 click mult', cost: 3, max: 5, requires: 's_click1' },
+            { id: 's_golden', name: '✨ Golden Affinity', desc: '+10% golden cookie value', cost: 2, max: 5 },
+            { id: 's_cps_all', name: '🌀 All CPS', desc: '+10% all CPS per level', cost: 4, max: 3 },
+        ];
+
+        // ─── ACHIEVEMENT DEFINITIONS ───
+        const ACHIEVEMENTS = [
+            { id: 'click_100', name: 'Novice Clicker', desc: 'Click 100 times', icon: '🖱️', check: () => S.totalClicks >=
+                    100 },
+            { id: 'click_1000', name: 'Clicker Pro', desc: 'Click 1,000 times', icon: '🖱️', check: () => S.totalClicks >=
+                    1000 },
+            { id: 'click_10000', name: 'Click Master', desc: 'Click 10,000 times', icon: '🖱️', check: () => S.totalClicks >=
+                    10000 },
+            { id: 'click_100000', name: 'Click God', desc: 'Click 100,000 times', icon: '🖱️', check: () => S.totalClicks >=
+                    100000 },
+            { id: 'cps_10', name: 'Speed Demon', desc: 'Reach 10 CPS', icon: '⚡', check: () => getTotalCPS() >= 10 },
+            { id: 'cps_100', name: 'Turbo Charged', desc: 'Reach 100 CPS', icon: '⚡', check: () => getTotalCPS() >= 100 },
+            { id: 'cps_1000', name: 'Infinite Power', desc: 'Reach 1,000 CPS', icon: '⚡', check: () => getTotalCPS() >=
+                    1000 },
+            { id: 'golden_1', name: 'Golden Touch', desc: 'Collect 1 golden cookie', icon: '✨', check: () => S
+                    .goldenCollected >= 1 },
+            { id: 'golden_10', name: 'Golden God', desc: 'Collect 10 golden cookies', icon: '✨', check: () => S
+                    .goldenCollected >= 10 },
+            { id: 'golden_50', name: 'Golden Legend', desc: 'Collect 50 golden cookies', icon: '✨', check: () => S
+                    .goldenCollected >= 50 },
+            { id: 'cookies_1k', name: 'Cookie Novice', desc: 'Have 1,000 cookies', icon: '🍪', check: () => S.cookies >=
+                    1000 },
+            { id: 'cookies_1m', name: 'Cookie Millionaire', desc: 'Have 1,000,000 cookies', icon: '🍪', check: () => S
+                    .cookies >= 1000000 },
+            { id: 'cookies_1b', name: 'Cookie Billionaire', desc: 'Have 1,000,000,000 cookies', icon: '🍪', check: () => S
+                    .cookies >= 1000000000 },
+            { id: 'upgrade_10', name: 'Collector', desc: 'Buy 10 upgrades total', icon: '📦', check: () => getTotalUpgrades() >=
+                    10 },
+            { id: 'upgrade_50', name: 'Hoarder', desc: 'Buy 50 upgrades total', icon: '📦', check: () => getTotalUpgrades() >=
+                    50 },
+            { id: 'upgrade_100', name: 'Completionist', desc: 'Buy 100 upgrades total', icon: '📦', check: () =>
+                    getTotalUpgrades() >= 100 },
+            { id: 'prestige_1', name: 'Reborn', desc: 'Prestige once', icon: '🔮', check: () => S.totalPrestiges >= 1 },
+            { id: 'prestige_5', name: 'Enlightened', desc: 'Prestige 5 times', icon: '🔮', check: () => S.totalPrestiges >=
+                    5 },
+            { id: 'prestige_10', name: 'Transcendent', desc: 'Prestige 10 times', icon: '🔮', check: () => S.totalPrestiges >=
+                    10 },
+            { id: 'level_10', name: 'Level Up!', desc: 'Reach level 10', icon: '⭐', check: () => S.level >= 10 },
+            { id: 'level_25', name: 'Advanced', desc: 'Reach level 25', icon: '⭐', check: () => S.level >= 25 },
+            { id: 'level_50', name: 'Master', desc: 'Reach level 50', icon: '⭐', check: () => S.level >= 50 },
+            { id: 'level_100', name: 'Legend', desc: 'Reach level 100', icon: '⭐', check: () => S.level >= 100 },
+            { id: 'rainbow_1', name: '🌈 Rainbow', desc: 'Get a rainbow boost', icon: '🌈', check: () => S.rainbowBoost
+                    .active || S._rainbowTriggered },
+            { id: 'golden_boost_1', name: '💛 Golden Rush', desc: 'Get a golden boost', icon: '💛', check: () => S
+                    .goldenBoost.active || S._goldenTriggered },
+            { id: 'all_skills', name: '🌳 Skill Master', desc: 'Buy 1 of every skill', icon: '🌳', check: () => {
+                    const bought = Object.keys(S.skills).filter(k => S.skills[k] > 0).length;
+                    return bought >= SKILLS.length;
+                } },
+            { id: 'prestige_upgrade_1', name: '🔮 Prestige Pro', desc: 'Buy a prestige upgrade', icon: '🔮', check: () =>
+                    Object.values(S.prestigeUpgrades).some(v => v > 0) },
+            { id: 'level_upgrade_1', name: '📈 Level Upgraded', desc: 'Buy a level upgrade', icon: '📈', check: () =>
+                    Object.values(S.levelUpgrades).some(v => v > 0) },
+        ];
+
+        // ─── HELPERS ───
+        function getCost(u) {
+            const owned = S.upgrades[u.id] || 0;
+            if (owned >= u.max) return Infinity;
+            return Math.floor(u.baseCost * Math.pow(u.mult, owned));
         }
 
-        function addLeaderboardEntry() {
-            const username = getSession();
-            if (!username) return;
-            // Remove existing entry for this user
-            leaderboard = leaderboard.filter(e => e.name !== username);
-            leaderboard.push({
-                name: username,
-                cookies: S.cookies,
-                clicks: S.totalClicks,
-                cps: getTotalCPS(),
-                level: S.level,
-                prestige: S.prestigePoints,
-                date: Date.now()
-            });
-            saveLeaderboard();
-            renderLeaderboard();
+        function getClickMultCost(u) {
+            const owned = S.upgrades[u.id] || 0;
+            if (owned >= u.max) return Infinity;
+            return Math.floor(u.baseCost * Math.pow(u.mult, owned));
         }
 
-        function renderLeaderboard() {
-            const list = document.getElementById('leaderboardList');
-            if (!list) return;
-            const username = getSession();
-            if (leaderboard.length === 0) {
-                list.innerHTML = '<div style="color:var(--muted);padding:0.3rem 0;font-size:0.65rem;">No scores yet. Be the first!</div>';
-                return;
+        function getPrestigeCost(u) {
+            const owned = S.prestigeUpgrades[u.id] || 0;
+            if (owned >= u.max) return Infinity;
+            return Math.floor(u.baseCost * Math.pow(u.mult, owned));
+        }
+
+        function getSkillCost(u) {
+            const owned = S.skills[u.id] || 0;
+            if (owned >= u.max) return Infinity;
+            return Math.floor(u.cost * Math.pow(1.3, owned));
+        }
+
+        function getLevelUpgradeCost(u) {
+            const owned = S.levelUpgrades[u.id] || 0;
+            if (owned >= u.max) return Infinity;
+            return Math.floor(u.baseCost * Math.pow(u.costMult, owned));
+        }
+
+        function getTotalCPS() {
+            let t = 0;
+            for (const u of UPGRADES) t += (S.upgrades[u.id] || 0) * u.cps;
+            // Prestige CPS boosts
+            let prestigeMult = 1;
+            for (const pu of PRESTIGE_UPGRADES) {
+                if (pu.id.startsWith('p_cps')) {
+                    const owned = S.prestigeUpgrades[pu.id] || 0;
+                    if (owned > 0) {
+                        if (pu.id === 'p_cps1') prestigeMult += owned * 0.10;
+                        else if (pu.id === 'p_cps2') prestigeMult += owned * 0.25;
+                        else if (pu.id === 'p_cps3') prestigeMult += owned * 0.50;
+                    }
+                }
             }
-            let html = '';
-            const top = leaderboard.slice(0, 10);
-            top.forEach((entry, i) => {
-                const rank = i + 1;
-                const medals = ['🥇', '🥈', '🥉'];
-                const rankDisplay = rank <= 3 ? medals[i] : `#${rank}`;
-                const isMe = entry.name === username;
-                html += `<div class="lb-entry ${isMe ? 'me' : ''}">
-                    <span class="rank">${rankDisplay}</span>
-                    <span class="name">${entry.name} ${isMe ? '👈' : ''}</span>
-                    <span class="score">🍪 ${formatNumber(entry.cookies)}</span>
-                </div>`;
-            });
-            list.innerHTML = html;
+            // Skill CPS bonuses
+            let skillMult = 1;
+            for (const sk of SKILLS) {
+                const owned = S.skills[sk.id] || 0;
+                if (owned > 0) {
+                    if (sk.id === 's_cps1') skillMult += owned * 0.15;
+                    else if (sk.id === 's_cps2') skillMult += owned * 0.30;
+                    else if (sk.id === 's_cps3') skillMult += owned * 0.50;
+                    else if (sk.id === 's_cps_all') skillMult += owned * 0.10;
+                }
+            }
+            // Level CPS boosts
+            let levelCpsMult = 1;
+            for (const lu of LEVEL_UPGRADES) {
+                if (lu.id.startsWith('lv_cps')) {
+                    const owned = S.levelUpgrades[lu.id] || 0;
+                    if (owned > 0) {
+                        if (lu.id === 'lv_cps1') levelCpsMult += owned * 0.05;
+                        else if (lu.id === 'lv_cps2') levelCpsMult += owned * 0.10;
+                        else if (lu.id === 'lv_cps3') levelCpsMult += owned * 0.25;
+                    }
+                }
+            }
+            t = t * prestigeMult * skillMult * levelCpsMult;
+            return t;
+        }
+
+        function getClickMultiplier() {
+            let mult = 1;
+            // Click mult upgrades
+            for (const cu of CLICK_MULT_UPGRADES) {
+                const owned = S.upgrades[cu.id] || 0;
+                if (cu.id === 'click1') mult += owned * 0.5;
+                else if (cu.id === 'click2') mult += owned * 1;
+                else if (cu.id === 'click3') mult += owned * 2;
+                else if (cu.id === 'click4') mult += owned * 5;
+            }
+            // Prestige click bonus
+            const pClick = S.prestigeUpgrades['p_click'] || 0;
+            mult += pClick * 0.5;
+            // Skill click bonuses
+            const sClick1 = S.skills['s_click1'] || 0;
+            const sClick2 = S.skills['s_click2'] || 0;
+            mult += sClick1 * 0.5 + sClick2 * 1;
+            // Level click bonuses
+            const lvClick1 = S.levelUpgrades['lv_click1'] || 0;
+            const lvClick2 = S.levelUpgrades['lv_click2'] || 0;
+            mult += lvClick1 * 0.5 + lvClick2 * 1;
+            // Boosts
+            if (S.goldenBoost.active) mult *= S.goldenBoost.multiplier;
+            if (S.rainbowBoost.active) mult *= S.rainbowBoost.multiplier;
+            return mult;
+        }
+
+        function getPrestigePPBonus() {
+            let bonus = 1;
+            const lvPrestige = S.levelUpgrades['lv_prestige'] || 0;
+            bonus += lvPrestige * 0.02;
+            return bonus;
+        }
+
+        function getTotalUpgrades() {
+            let c = 0;
+            for (const u of UPGRADES) c += (S.upgrades[u.id] || 0);
+            for (const cu of CLICK_MULT_UPGRADES) c += (S.upgrades[cu.id] || 0);
+            return c;
+        }
+
+        function formatNumber(n) {
+            if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
+            if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+            if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+            if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+            return Math.floor(n).toString();
+        }
+
+        function getLevelXP(level) {
+            return Math.floor(50 * Math.pow(1.15, level - 1));
+        }
+
+        function addXP(amount) {
+            S.xp += amount;
+            while (S.xp >= S.xpNext) {
+                S.xp -= S.xpNext;
+                S.level++;
+                S.xpNext = getLevelXP(S.level);
+                showNotification(`⭐ Level Up!`, `You are now level ${S.level}`);
+                playAchievementSound();
+                checkAchievements();
+                // Auto-save on level up
+                saveGame();
+            }
+        }
+
+        // ─── NOTIFICATION ───
+        let notifTimeout = null;
+
+        function showNotification(title, sub = '') {
+            const el = document.getElementById('notifBanner');
+            document.getElementById('notifText').textContent = title;
+            document.getElementById('notifSub').textContent = sub;
+            el.classList.add('show');
+            clearTimeout(notifTimeout);
+            notifTimeout = setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        // ─── ACHIEVEMENTS ───
+        function checkAchievements() {
+            let unlocked = false;
+            for (const ach of ACHIEVEMENTS) {
+                if (S.achievements.includes(ach.id)) continue;
+                if (ach.check()) {
+                    S.achievements.push(ach.id);
+                    unlocked = true;
+                    showNotification(`🏆 Achievement: ${ach.icon} ${ach.name}`, ach.desc);
+                    playAchievementSound();
+                    const bonus = Math.floor(100 * S.level * (1 + S.totalPrestiges));
+                    S.cookies += bonus;
+                    showToast(`🎁 +${formatNumber(bonus)} cookie bonus!`);
+                }
+            }
+            if (unlocked) {
+                renderAchievements();
+                saveGame();
+            }
+            return unlocked;
         }
 
         // ─── SOUND SYSTEM ───
@@ -633,242 +811,6 @@
             } catch (_) {}
         }
 
-        // ─── GAME STATE ───
-        const S = {
-            cookies: 0,
-            totalClicks: 0,
-            upgrades: {},
-            level: 1,
-            xp: 0,
-            xpNext: 50,
-            prestigePoints: 0,
-            rebirthPoints: 0,
-            prestigeUpgrades: {},
-            skills: {},
-            clickMultiplier: 1,
-            totalPrestiges: 0,
-            cookiesAllTime: 0,
-            clicksAllTime: 0,
-            goldenCollected: 0,
-            bestCPS: 0,
-            achievements: [],
-            goldenBoost: { active: false, endTime: 0, multiplier: 1 },
-            rainbowBoost: { active: false, endTime: 0, multiplier: 1 },
-            lastSave: Date.now(),
-            _goldenTriggered: false,
-            _rainbowTriggered: false
-        };
-
-        // ─── UPGRADE DEFINITIONS ───
-        const UPGRADES = [
-            { id: 'cursor', name: '🖱️ Cursor', desc: 'Auto-click every second', baseCost: 15, cps: 0.2, mult: 1.15, max: 100 },
-            { id: 'grandma', name: '👵 Grandma', desc: 'Bakes cookies with love', baseCost: 100, cps: 1, mult: 1.15, max: 80 },
-            { id: 'farm', name: '🌾 Farm', desc: 'Harvest fresh cookies', baseCost: 500, cps: 4, mult: 1.14, max: 60 },
-            { id: 'mine', name: '⛏️ Mine', desc: 'Dig up cookie ore', baseCost: 3000, cps: 12, mult: 1.13, max: 50 },
-            { id: 'factory', name: '🏭 Factory', desc: 'Mass-produce cookies', baseCost: 15000, cps: 40, mult: 1.12, max: 40 },
-            { id: 'portal', name: '🌀 Portal', desc: 'Summon cookies from elsewhere', baseCost: 80000, cps: 150, mult: 1.10, max: 30 },
-            { id: 'time', name: '⏳ Time Machine', desc: 'Bake cookies from the future', baseCost: 400000, cps: 500, mult: 1.08, max: 20 },
-            { id: 'antimatter', name: '⚛️ Antimatter', desc: 'Annihilate into cookies', baseCost: 2000000, cps: 2000, mult: 1.07, max: 15 },
-            { id: 'universe', name: '🌌 Universe', desc: 'Create a cookie universe', baseCost: 10000000, cps: 8000, mult: 1.06, max: 10 },
-        ];
-
-        // ─── CLICK MULTIPLIER UPGRADES ───
-        const CLICK_MULT_UPGRADES = [
-            { id: 'click1', name: '✊ Strong Click', desc: '+0.5 click multiplier', baseCost: 1000, mult: 1.5, max: 10 },
-            { id: 'click2', name: '💪 Power Click', desc: '+1 click multiplier', baseCost: 50000, mult: 1.6, max: 10 },
-            { id: 'click3', name: '⚡ Mega Click', desc: '+2 click multiplier', baseCost: 2000000, mult: 1.7, max: 10 },
-            { id: 'click4', name: '🔥 God Click', desc: '+5 click multiplier', baseCost: 100000000, mult: 1.8, max: 10 },
-        ];
-
-        // ─── PRESTIGE UPGRADES ───
-        const PRESTIGE_UPGRADES = [
-            { id: 'p_cps1', name: '🔮 CPS Boost I', desc: '+10% permanent CPS', baseCost: 1, mult: 1.2, max: 10 },
-            { id: 'p_cps2', name: '🔮 CPS Boost II', desc: '+25% permanent CPS', baseCost: 5, mult: 1.3, max: 8 },
-            { id: 'p_cps3', name: '🔮 CPS Boost III', desc: '+50% permanent CPS', baseCost: 15, mult: 1.4, max: 6 },
-            { id: 'p_click', name: '🔮 Click Power', desc: '+0.5 permanent click mult', baseCost: 3, mult: 1.3, max: 10 },
-            { id: 'p_golden', name: '🔮 Golden Touch', desc: '+5% golden cookie chance', baseCost: 8, mult: 1.2, max: 10 },
-            { id: 'p_start', name: '🔮 Head Start', desc: 'Start with +1000 cookies after prestige', baseCost: 10, mult: 1.5, max: 5 },
-        ];
-
-        // ─── SKILL TREE ───
-        const SKILLS = [
-            { id: 's_cps1', name: '🌱 CPS I', desc: '+15% CPS', cost: 1, max: 5 },
-            { id: 's_cps2', name: '🌿 CPS II', desc: '+30% CPS', cost: 3, max: 5, requires: 's_cps1' },
-            { id: 's_cps3', name: '🌳 CPS III', desc: '+50% CPS', cost: 5, max: 5, requires: 's_cps2' },
-            { id: 's_click1', name: '👊 Click I', desc: '+0.5 click mult', cost: 1, max: 5 },
-            { id: 's_click2', name: '💪 Click II', desc: '+1 click mult', cost: 3, max: 5, requires: 's_click1' },
-            { id: 's_golden', name: '✨ Golden Affinity', desc: '+10% golden cookie value', cost: 2, max: 5 },
-            { id: 's_cps_all', name: '🌀 All CPS', desc: '+10% all CPS per level', cost: 4, max: 3 },
-        ];
-
-        // ─── ACHIEVEMENT DEFINITIONS ───
-        const ACHIEVEMENTS = [
-            { id: 'click_100', name: 'Novice Clicker', desc: 'Click 100 times', icon: '🖱️', check: () => S.totalClicks >= 100 },
-            { id: 'click_1000', name: 'Clicker Pro', desc: 'Click 1,000 times', icon: '🖱️', check: () => S.totalClicks >= 1000 },
-            { id: 'click_10000', name: 'Click Master', desc: 'Click 10,000 times', icon: '🖱️', check: () => S.totalClicks >= 10000 },
-            { id: 'click_100000', name: 'Click God', desc: 'Click 100,000 times', icon: '🖱️', check: () => S.totalClicks >= 100000 },
-            { id: 'cps_10', name: 'Speed Demon', desc: 'Reach 10 CPS', icon: '⚡', check: () => getTotalCPS() >= 10 },
-            { id: 'cps_100', name: 'Turbo Charged', desc: 'Reach 100 CPS', icon: '⚡', check: () => getTotalCPS() >= 100 },
-            { id: 'cps_1000', name: 'Infinite Power', desc: 'Reach 1,000 CPS', icon: '⚡', check: () => getTotalCPS() >= 1000 },
-            { id: 'golden_1', name: 'Golden Touch', desc: 'Collect 1 golden cookie', icon: '✨', check: () => S.goldenCollected >= 1 },
-            { id: 'golden_10', name: 'Golden God', desc: 'Collect 10 golden cookies', icon: '✨', check: () => S.goldenCollected >= 10 },
-            { id: 'golden_50', name: 'Golden Legend', desc: 'Collect 50 golden cookies', icon: '✨', check: () => S.goldenCollected >= 50 },
-            { id: 'cookies_1k', name: 'Cookie Novice', desc: 'Have 1,000 cookies', icon: '🍪', check: () => S.cookies >= 1000 },
-            { id: 'cookies_1m', name: 'Cookie Millionaire', desc: 'Have 1,000,000 cookies', icon: '🍪', check: () => S.cookies >= 1000000 },
-            { id: 'cookies_1b', name: 'Cookie Billionaire', desc: 'Have 1,000,000,000 cookies', icon: '🍪', check: () => S.cookies >= 1000000000 },
-            { id: 'upgrade_10', name: 'Collector', desc: 'Buy 10 upgrades total', icon: '📦', check: () => getTotalUpgrades() >= 10 },
-            { id: 'upgrade_50', name: 'Hoarder', desc: 'Buy 50 upgrades total', icon: '📦', check: () => getTotalUpgrades() >= 50 },
-            { id: 'upgrade_100', name: 'Completionist', desc: 'Buy 100 upgrades total', icon: '📦', check: () => getTotalUpgrades() >= 100 },
-            { id: 'prestige_1', name: 'Reborn', desc: 'Prestige once', icon: '🔮', check: () => S.totalPrestiges >= 1 },
-            { id: 'prestige_5', name: 'Enlightened', desc: 'Prestige 5 times', icon: '🔮', check: () => S.totalPrestiges >= 5 },
-            { id: 'prestige_10', name: 'Transcendent', desc: 'Prestige 10 times', icon: '🔮', check: () => S.totalPrestiges >= 10 },
-            { id: 'level_10', name: 'Level Up!', desc: 'Reach level 10', icon: '⭐', check: () => S.level >= 10 },
-            { id: 'level_25', name: 'Advanced', desc: 'Reach level 25', icon: '⭐', check: () => S.level >= 25 },
-            { id: 'level_50', name: 'Master', desc: 'Reach level 50', icon: '⭐', check: () => S.level >= 50 },
-            { id: 'level_100', name: 'Legend', desc: 'Reach level 100', icon: '⭐', check: () => S.level >= 100 },
-            { id: 'rainbow_1', name: '🌈 Rainbow', desc: 'Get a rainbow boost', icon: '🌈', check: () => S.rainbowBoost.active || S._rainbowTriggered },
-            { id: 'golden_boost_1', name: '💛 Golden Rush', desc: 'Get a golden boost', icon: '💛', check: () => S.goldenBoost.active || S._goldenTriggered },
-            { id: 'all_skills', name: '🌳 Skill Master', desc: 'Buy 1 of every skill', icon: '🌳', check: () => { const bought = Object.keys(S.skills).filter(k => S.skills[k] > 0).length; return bought >= SKILLS.length; } },
-            { id: 'prestige_upgrade_1', name: '🔮 Prestige Pro', desc: 'Buy a prestige upgrade', icon: '🔮', check: () => Object.values(S.prestigeUpgrades).some(v => v > 0) },
-        ];
-
-        // ─── HELPERS ───
-        function getCost(u) {
-            const owned = S.upgrades[u.id] || 0;
-            if (owned >= u.max) return Infinity;
-            return Math.floor(u.baseCost * Math.pow(u.mult, owned));
-        }
-
-        function getClickMultCost(u) {
-            const owned = S.upgrades[u.id] || 0;
-            if (owned >= u.max) return Infinity;
-            return Math.floor(u.baseCost * Math.pow(u.mult, owned));
-        }
-
-        function getPrestigeCost(u) {
-            const owned = S.prestigeUpgrades[u.id] || 0;
-            if (owned >= u.max) return Infinity;
-            return Math.floor(u.baseCost * Math.pow(u.mult, owned));
-        }
-
-        function getSkillCost(u) {
-            const owned = S.skills[u.id] || 0;
-            if (owned >= u.max) return Infinity;
-            return Math.floor(u.cost * Math.pow(1.3, owned));
-        }
-
-        function getTotalCPS() {
-            let t = 0;
-            for (const u of UPGRADES) t += (S.upgrades[u.id] || 0) * u.cps;
-            let prestigeMult = 1;
-            for (const pu of PRESTIGE_UPGRADES) {
-                if (pu.id.startsWith('p_cps')) {
-                    const owned = S.prestigeUpgrades[pu.id] || 0;
-                    if (owned > 0) {
-                        if (pu.id === 'p_cps1') prestigeMult += owned * 0.10;
-                        else if (pu.id === 'p_cps2') prestigeMult += owned * 0.25;
-                        else if (pu.id === 'p_cps3') prestigeMult += owned * 0.50;
-                    }
-                }
-            }
-            let skillMult = 1;
-            for (const sk of SKILLS) {
-                const owned = S.skills[sk.id] || 0;
-                if (owned > 0) {
-                    if (sk.id === 's_cps1') skillMult += owned * 0.15;
-                    else if (sk.id === 's_cps2') skillMult += owned * 0.30;
-                    else if (sk.id === 's_cps3') skillMult += owned * 0.50;
-                    else if (sk.id === 's_cps_all') skillMult += owned * 0.10;
-                }
-            }
-            t = t * prestigeMult * skillMult;
-            return t;
-        }
-
-        function getClickMultiplier() {
-            let mult = 1;
-            for (const cu of CLICK_MULT_UPGRADES) {
-                const owned = S.upgrades[cu.id] || 0;
-                if (cu.id === 'click1') mult += owned * 0.5;
-                else if (cu.id === 'click2') mult += owned * 1;
-                else if (cu.id === 'click3') mult += owned * 2;
-                else if (cu.id === 'click4') mult += owned * 5;
-            }
-            const pClick = S.prestigeUpgrades['p_click'] || 0;
-            mult += pClick * 0.5;
-            const sClick1 = S.skills['s_click1'] || 0;
-            const sClick2 = S.skills['s_click2'] || 0;
-            mult += sClick1 * 0.5 + sClick2 * 1;
-            if (S.goldenBoost.active) mult *= S.goldenBoost.multiplier;
-            if (S.rainbowBoost.active) mult *= S.rainbowBoost.multiplier;
-            return mult;
-        }
-
-        function getTotalUpgrades() {
-            let c = 0;
-            for (const u of UPGRADES) c += (S.upgrades[u.id] || 0);
-            for (const cu of CLICK_MULT_UPGRADES) c += (S.upgrades[cu.id] || 0);
-            return c;
-        }
-
-        function formatNumber(n) {
-            if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
-            if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
-            if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
-            if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
-            return Math.floor(n).toString();
-        }
-
-        function getLevelXP(level) {
-            return Math.floor(50 * Math.pow(1.15, level - 1));
-        }
-
-        function addXP(amount) {
-            S.xp += amount;
-            while (S.xp >= S.xpNext) {
-                S.xp -= S.xpNext;
-                S.level++;
-                S.xpNext = getLevelXP(S.level);
-                showNotification(`⭐ Level Up!`, `You are now level ${S.level}`);
-                playAchievementSound();
-                checkAchievements();
-            }
-        }
-
-        // ─── NOTIFICATION ───
-        let notifTimeout = null;
-
-        function showNotification(title, sub = '') {
-            const el = document.getElementById('notifBanner');
-            document.getElementById('notifText').textContent = title;
-            document.getElementById('notifSub').textContent = sub;
-            el.classList.add('show');
-            clearTimeout(notifTimeout);
-            notifTimeout = setTimeout(() => el.classList.remove('show'), 3000);
-        }
-
-        // ─── ACHIEVEMENTS ───
-        function checkAchievements() {
-            let unlocked = false;
-            for (const ach of ACHIEVEMENTS) {
-                if (S.achievements.includes(ach.id)) continue;
-                if (ach.check()) {
-                    S.achievements.push(ach.id);
-                    unlocked = true;
-                    showNotification(`🏆 Achievement: ${ach.icon} ${ach.name}`, ach.desc);
-                    playAchievementSound();
-                    const bonus = Math.floor(100 * S.level * (1 + S.totalPrestiges));
-                    S.cookies += bonus;
-                    showToast(`🎁 +${formatNumber(bonus)} cookie bonus!`);
-                }
-            }
-            if (unlocked) {
-                renderAchievements();
-                saveGame();
-            }
-            return unlocked;
-        }
-
         // ─── GOLDEN / RAINBOW BOOSTS ───
         let boostInterval = null;
 
@@ -931,7 +873,8 @@
             const baseReward = Math.max(50, Math.floor(cps * 12 + 150));
             const goldenBonus = 1 + (S.prestigeUpgrades['p_golden'] || 0) * 0.05;
             const skillBonus = 1 + (S.skills['s_golden'] || 0) * 0.10;
-            const reward = Math.floor(baseReward * goldenBonus * skillBonus);
+            const levelBonus = 1 + (S.levelUpgrades['lv_golden'] || 0) * 0.10;
+            const reward = Math.floor(baseReward * goldenBonus * skillBonus * levelBonus);
             el.dataset.reward = reward;
             el.addEventListener('click', function(e) {
                 e.stopPropagation();
@@ -945,13 +888,13 @@
                 this.remove();
                 playGoldenSound();
                 showToast(`✨ Golden cookie! +${formatNumber(rewardAmt)} tokens`);
-                addLeaderboardEntry();
                 checkAchievements();
                 scheduleGolden();
             });
             container.appendChild(el);
             setTimeout(() => {
-                if (el.parentNode) { el.remove(); scheduleGolden(); }
+                if (el.parentNode) { el.remove();
+                    scheduleGolden(); }
             }, 15000);
         }
 
@@ -993,9 +936,12 @@
                 showToast(`❌ Need ${formatNumber(req)} cookies to prestige!`);
                 return;
             }
-            if (!confirm(`Prestige will reset your cookies but give you Prestige Points.\nYou will get ${Math.floor(req / 100000)} PP.\nContinue?`)) return;
+            if (!confirm(
+                    `Prestige will reset your cookies but give you Prestige Points.\nYou will get ${Math.floor(req / 100000)} PP.\nContinue?`
+                    )) return;
 
-            const ppEarned = Math.floor(req / 100000);
+            const ppBonus = getPrestigePPBonus();
+            const ppEarned = Math.floor(req / 100000 * ppBonus);
             S.prestigePoints += ppEarned;
             S.totalPrestiges++;
             S.rebirthPoints += Math.floor(ppEarned / 2) + 1;
@@ -1012,12 +958,71 @@
             document.getElementById('dvcButton').classList.remove('golden', 'rainbow');
 
             playPrestigeSound();
-            showNotification('🔮 PRESTIGED!', `+${ppEarned} Prestige Points, +${Math.floor(ppEarned/2)+1} Rebirth Points`);
+            showNotification('🔮 PRESTIGED!',
+                `+${ppEarned} Prestige Points, +${Math.floor(ppEarned/2)+1} Rebirth Points`);
             showToast(`✨ Prestiged! +${ppEarned} PP`);
             saveGame();
             updateUI();
-            addLeaderboardEntry();
             checkAchievements();
+        }
+
+        // ─── LEVEL DASHBOARD ───
+        function openLevelDashboard() {
+            document.getElementById('levelModal').classList.add('show');
+            renderLevelDashboard();
+        }
+
+        function closeLevelDashboard() {
+            document.getElementById('levelModal').classList.remove('show');
+        }
+
+        function renderLevelDashboard() {
+            document.getElementById('modalLevel').textContent = S.level;
+            document.getElementById('modalXPText').textContent = `${formatNumber(S.xp)} / ${formatNumber(S.xpNext)}`;
+            const pct = Math.min(100, (S.xp / S.xpNext) * 100);
+            document.getElementById('modalXPBar').style.width = pct + '%';
+
+            const list = document.getElementById('modalLevelUpgradeList');
+            list.innerHTML = '';
+            let totalOwned = 0;
+            for (const lu of LEVEL_UPGRADES) {
+                const owned = S.levelUpgrades[lu.id] || 0;
+                totalOwned += owned;
+                const cost = getLevelUpgradeCost(lu);
+                const can = S.xp >= cost && owned < lu.max && S.level >= lu.levelReq;
+                const div = document.createElement('div');
+                div.className = 'level-upgrade-item' + (can ? ' can' : '');
+                div.innerHTML = `
+                    <div class="li">
+                        <span class="ln">${lu.name} <span class="owned" style="font-size:0.5rem;color:var(--muted);background:rgba(255,255,255,0.05);padding:0.05rem 0.3rem;border:1px solid var(--border);">${owned}/${lu.max}</span></span>
+                        <span class="ld">${lu.desc} ${S.level < lu.levelReq ? `🔒 Lv.${lu.levelReq}` : ''}</span>
+                    </div>
+                    <div class="lr">
+                        <div class="lp">${cost === Infinity ? 'MAX' : '⭐ ' + cost}</div>
+                        <div class="ll">${S.level >= lu.levelReq ? '✅' : `Lv.${lu.levelReq}`}</div>
+                    </div>
+                `;
+                if (can) {
+                    div.addEventListener('click', () => purchaseLevelUpgrade(lu.id));
+                }
+                list.appendChild(div);
+            }
+            document.getElementById('modalLevelUpgradeCount').textContent = totalOwned;
+        }
+
+        function purchaseLevelUpgrade(id) {
+            const u = LEVEL_UPGRADES.find(x => x.id === id);
+            if (!u) return;
+            const cost = getLevelUpgradeCost(u);
+            if (S.xp < cost) return;
+            S.xp -= cost;
+            S.levelUpgrades[id] = (S.levelUpgrades[id] || 0) + 1;
+            playAchievementSound();
+            updateUI();
+            renderLevelDashboard();
+            saveGame();
+            checkAchievements();
+            showToast(`✅ ${u.name} purchased!`);
         }
 
         // ─── UI UPDATE ───
@@ -1050,7 +1055,7 @@
             document.getElementById('prestigeCount').textContent = S.prestigePoints + ' PP';
 
             const lbTab = document.getElementById('tabLeaderboard');
-            if (!lbTab.classList.contains('hidden')) renderLeaderboard();
+            if (!lbTab.classList.contains('hidden')) fetchLeaderboard();
         }
 
         // ─── UPGRADE LIST ───
@@ -1117,7 +1122,6 @@
             playClickSound();
             updateUI();
             saveGame();
-            addLeaderboardEntry();
             checkAchievements();
             showToast(`✅ ${u.name} purchased!`);
         }
@@ -1133,7 +1137,6 @@
             playClickSound();
             updateUI();
             saveGame();
-            addLeaderboardEntry();
             checkAchievements();
             showToast(`✅ ${u.name} purchased!`);
         }
@@ -1189,7 +1192,8 @@
             const list = document.getElementById('skillList');
             list.innerHTML = '';
             if (S.totalPrestiges === 0) {
-                list.innerHTML = '<div style="color:var(--muted);padding:0.3rem;font-size:0.6rem;">Prestige once to unlock the Skill Tree!</div>';
+                list.innerHTML =
+                    '<div style="color:var(--muted);padding:0.3rem;font-size:0.6rem;">Prestige once to unlock the Skill Tree!</div>';
                 return;
             }
             for (const sk of SKILLS) {
@@ -1313,74 +1317,110 @@
             playClickSound();
             updateUI();
             saveGame();
-            addLeaderboardEntry();
             checkAchievements();
         }
 
-        // ─── SAVE / LOAD ───
-        function saveGame() {
-            const username = getSession();
-            if (!username) return;
-            const userData = getUserData(username);
-            if (!userData) return;
-            userData.gameData = {
-                cookies: S.cookies,
-                totalClicks: S.totalClicks,
-                upgrades: S.upgrades,
-                level: S.level,
-                xp: S.xp,
-                xpNext: S.xpNext,
-                prestigePoints: S.prestigePoints,
-                rebirthPoints: S.rebirthPoints,
-                prestigeUpgrades: S.prestigeUpgrades,
-                skills: S.skills,
-                totalPrestiges: S.totalPrestiges,
-                cookiesAllTime: S.cookiesAllTime,
-                clicksAllTime: S.clicksAllTime,
-                goldenCollected: S.goldenCollected,
-                bestCPS: S.bestCPS,
-                achievements: S.achievements,
-                _goldenTriggered: S._goldenTriggered || false,
-                _rainbowTriggered: S._rainbowTriggered || false,
-            };
-            saveUserData(username, userData);
-            S.lastSave = Date.now();
-        }
+        // ─── SUPABASE AUTH ───
+        async function doLogin() {
+            const username = document.getElementById('loginUser').value.trim();
+            const password = document.getElementById('loginPass').value;
+            document.getElementById('loginError').classList.remove('show');
+            if (!username) { showAuthError('loginError', 'Enter a username'); return; }
+            if (!password) { showAuthError('loginError', 'Enter a password'); return; }
 
-        function loadGame() {
-            const username = getSession();
-            if (!username) return false;
-            const userData = getUserData(username);
-            if (userData && userData.gameData) {
-                const d = userData.gameData;
-                S.cookies = d.cookies || 0;
-                S.totalClicks = d.totalClicks || 0;
-                S.upgrades = d.upgrades || {};
-                S.level = d.level || 1;
-                S.xp = d.xp || 0;
-                S.xpNext = d.xpNext || getLevelXP(1);
-                S.prestigePoints = d.prestigePoints || 0;
-                S.rebirthPoints = d.rebirthPoints || 0;
-                S.prestigeUpgrades = d.prestigeUpgrades || {};
-                S.skills = d.skills || {};
-                S.totalPrestiges = d.totalPrestiges || 0;
-                S.cookiesAllTime = d.cookiesAllTime || 0;
-                S.clicksAllTime = d.clicksAllTime || 0;
-                S.goldenCollected = d.goldenCollected || 0;
-                S.bestCPS = d.bestCPS || 0;
-                S.achievements = d.achievements || [];
-                S._goldenTriggered = d._goldenTriggered || false;
-                S._rainbowTriggered = d._rainbowTriggered || false;
-                const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id)];
-                for (const id of allUpgradeIds) {
-                    if (!(id in S.upgrades)) S.upgrades[id] = 0;
-                }
-                return true;
+            setAuthLoading('loginBtn', true);
+            try {
+                // Sign in with email (username@dvc.local)
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: username + '@dvc.local',
+                    password: password
+                });
+                if (error) throw error;
+                completeAuth(username);
+            } catch (err) {
+                showAuthError('loginError', err.message);
+                setAuthLoading('loginBtn', false);
             }
-            return false;
         }
 
-        // ─── AUTH UI ───
+        async function doSignup() {
+            const username = document.getElementById('signupUser').value.trim();
+            const password = document.getElementById('signupPass').value;
+            const password2 = document.getElementById('signupPass2').value;
+            document.getElementById('signupError').classList.remove('show');
+
+            if (!username || username.length < 2) { showAuthError('signupError', 'Username must be 2+ chars.'); return; }
+            if (username.length > 20) { showAuthError('signupError', 'Username too long.'); return; }
+            if (!/^[a-zA-Z0-9_\-]+$/.test(username)) { showAuthError('signupError', 'Invalid characters.'); return; }
+            if (!password || password.length < 3) { showAuthError('signupError', 'Password must be 3+ chars.'); return; }
+            if (password !== password2) { showAuthError('signupError', 'Passwords do not match.'); return; }
+
+            setAuthLoading('signupBtn', true);
+            try {
+                // Sign up with email (username@dvc.local)
+                const { data, error } = await supabase.auth.signUp({
+                    email: username + '@dvc.local',
+                    password: password,
+                    options: {
+                        data: { username: username }
+                    }
+                });
+                if (error) throw error;
+                // Create profile entry
+                if (data.user) {
+                    const { error: profileError } = await supabase
+                        .from('profiles')
+                        .insert([{ id: data.user.id, username: username, data: {} }]);
+                    if (profileError) throw profileError;
+                }
+                showToast('✅ Account created!');
+                completeAuth(username);
+            } catch (err) {
+                showAuthError('signupError', err.message);
+                setAuthLoading('signupBtn', false);
+            }
+        }
+
+        // ─── COMPLETE AUTH ───
+        async function completeAuth(username) {
+            setSession(username);
+            document.getElementById('authOverlay').classList.add('hidden');
+            document.getElementById('gameRoot').classList.remove('hidden');
+
+            // Load game data from Supabase
+            await loadGame();
+
+            document.getElementById('usernameDisplay').textContent = username;
+            document.getElementById('footerUsername').textContent = username;
+
+            updateUI();
+            fetchLeaderboard();
+            renderAchievements();
+            renderStats();
+            showToast('🍪 Welcome back, ' + username + '!');
+
+            if (!gameStarted) {
+                gameStarted = true;
+                startBoostSystem();
+                scheduleGolden();
+                requestAnimationFrame(loop);
+            }
+        }
+
+        function setSession(username) {
+            S.username = username;
+            localStorage.setItem('dvc_username', username);
+        }
+
+        function getSession() {
+            return localStorage.getItem('dvc_username') || null;
+        }
+
+        function clearSession() {
+            S.username = '';
+            localStorage.removeItem('dvc_username');
+        }
+
         function switchAuthTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(el => {
                 el.classList.toggle('active', el.dataset.tab === tab);
@@ -1399,98 +1439,131 @@
 
         function setAuthLoading(btnId, loading) {
             const btn = document.getElementById(btnId);
-            if (loading) { btn.disabled = true; btn.textContent = '...'; } else { btn.disabled = false; btn.textContent = btnId === 'loginBtn' ? 'Log In' : 'Create Account'; }
+            if (loading) { btn.disabled = true;
+                btn.textContent = '...'; } else { btn.disabled = false;
+                btn.textContent = btnId === 'loginBtn' ? 'Log In' : 'Create Account'; }
         }
 
-        function doLogin() {
-            const username = document.getElementById('loginUser').value.trim();
-            const password = document.getElementById('loginPass').value;
-            document.getElementById('loginError').classList.remove('show');
-            if (!username) { showAuthError('loginError', 'Enter a username'); return; }
-            if (!password) { showAuthError('loginError', 'Enter a password'); return; }
-            const users = getUsers();
-            if (!users[username]) { showAuthError('loginError', 'Account not found.'); return; }
-            if (users[username].password !== password) { showAuthError('loginError', 'Wrong password.'); return; }
-            setAuthLoading('loginBtn', true);
-            setTimeout(() => { setAuthLoading('loginBtn', false); completeAuth(username); }, 400);
+        // ─── SUPABASE SAVE / LOAD ───
+        async function saveGame() {
+            if (!S.username) return;
+            try {
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({
+                        data: {
+                            cookies: S.cookies,
+                            totalClicks: S.totalClicks,
+                            upgrades: S.upgrades,
+                            level: S.level,
+                            xp: S.xp,
+                            xpNext: S.xpNext,
+                            prestigePoints: S.prestigePoints,
+                            rebirthPoints: S.rebirthPoints,
+                            prestigeUpgrades: S.prestigeUpgrades,
+                            skills: S.skills,
+                            totalPrestiges: S.totalPrestiges,
+                            cookiesAllTime: S.cookiesAllTime,
+                            clicksAllTime: S.clicksAllTime,
+                            goldenCollected: S.goldenCollected,
+                            bestCPS: S.bestCPS,
+                            achievements: S.achievements,
+                            levelUpgrades: S.levelUpgrades,
+                            _goldenTriggered: S._goldenTriggered || false,
+                            _rainbowTriggered: S._rainbowTriggered || false,
+                        },
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('username', S.username);
+                if (error) throw error;
+            } catch (err) {
+                console.warn('Save error:', err);
+            }
         }
 
-        function doSignup() {
-            const username = document.getElementById('signupUser').value.trim();
-            const password = document.getElementById('signupPass').value;
-            const password2 = document.getElementById('signupPass2').value;
-            document.getElementById('signupError').classList.remove('show');
-            if (!username || username.length < 2) { showAuthError('signupError', 'Username must be 2+ chars.'); return; }
-            if (username.length > 20) { showAuthError('signupError', 'Username too long.'); return; }
-            if (!/^[a-zA-Z0-9_\-]+$/.test(username)) { showAuthError('signupError', 'Invalid characters.'); return; }
-            if (!password || password.length < 3) { showAuthError('signupError', 'Password must be 3+ chars.'); return; }
-            if (password !== password2) { showAuthError('signupError', 'Passwords do not match.'); return; }
-            const users = getUsers();
-            if (users[username]) { showAuthError('signupError', 'Username taken.'); return; }
-            users[username] = { password, gameData: { cookies: 0, totalClicks: 0, upgrades: {} } };
-            saveUsers(users);
-            setAuthLoading('signupBtn', true);
-            setTimeout(() => {
-                setAuthLoading('signupBtn', false);
-                showToast('✅ Account created!');
-                completeAuth(username);
-            }, 400);
-        }
-
-        function completeAuth(username) {
-            setSession(username);
-            document.getElementById('authOverlay').classList.add('hidden');
-            document.getElementById('gameRoot').classList.remove('hidden');
-
-            const loaded = loadGame();
-            if (!loaded) {
-                S.cookies = 0;
-                S.totalClicks = 0;
-                S.upgrades = {};
-                S.level = 1;
-                S.xp = 0;
-                S.xpNext = getLevelXP(1);
-                S.prestigePoints = 0;
-                S.rebirthPoints = 0;
-                S.prestigeUpgrades = {};
-                S.skills = {};
-                S.totalPrestiges = 0;
-                S.achievements = [];
-                S.goldenCollected = 0;
-                S.cookiesAllTime = 0;
-                S.clicksAllTime = 0;
-                S.bestCPS = 0;
-                S._goldenTriggered = false;
-                S._rainbowTriggered = false;
-                const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id)];
-                for (const id of allUpgradeIds) {
-                    if (!(id in S.upgrades)) S.upgrades[id] = 0;
+        async function loadGame() {
+            if (!S.username) return false;
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('data')
+                    .eq('username', S.username)
+                    .single();
+                if (error) throw error;
+                if (data && data.data) {
+                    const d = data.data;
+                    S.cookies = d.cookies || 0;
+                    S.totalClicks = d.totalClicks || 0;
+                    S.upgrades = d.upgrades || {};
+                    S.level = d.level || 1;
+                    S.xp = d.xp || 0;
+                    S.xpNext = d.xpNext || getLevelXP(1);
+                    S.prestigePoints = d.prestigePoints || 0;
+                    S.rebirthPoints = d.rebirthPoints || 0;
+                    S.prestigeUpgrades = d.prestigeUpgrades || {};
+                    S.skills = d.skills || {};
+                    S.totalPrestiges = d.totalPrestiges || 0;
+                    S.cookiesAllTime = d.cookiesAllTime || 0;
+                    S.clicksAllTime = d.clicksAllTime || 0;
+                    S.goldenCollected = d.goldenCollected || 0;
+                    S.bestCPS = d.bestCPS || 0;
+                    S.achievements = d.achievements || [];
+                    S.levelUpgrades = d.levelUpgrades || {};
+                    S._goldenTriggered = d._goldenTriggered || false;
+                    S._rainbowTriggered = d._rainbowTriggered || false;
+                    const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id)];
+                    for (const id of allUpgradeIds) {
+                        if (!(id in S.upgrades)) S.upgrades[id] = 0;
+                    }
+                    return true;
                 }
-            }
-
-            document.getElementById('usernameDisplay').textContent = username;
-            document.getElementById('footerUsername').textContent = username;
-
-            loadLeaderboard();
-            addLeaderboardEntry();
-
-            updateUI();
-            renderLeaderboard();
-            renderAchievements();
-            renderStats();
-            showToast('🍪 Welcome back, ' + username + '!');
-
-            if (!gameStarted) {
-                gameStarted = true;
-                startBoostSystem();
-                scheduleGolden();
-                requestAnimationFrame(loop);
+                return false;
+            } catch (err) {
+                console.warn('Load error:', err);
+                return false;
             }
         }
 
-        function logout() {
+        // ─── FETCH LEADERBOARD ───
+        async function fetchLeaderboard() {
+            const list = document.getElementById('leaderboardList');
+            if (!list) return;
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('username, data')
+                    .order('data->cookies', { ascending: false })
+                    .limit(10);
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    list.innerHTML = '<div style="color:var(--muted);padding:0.3rem 0;font-size:0.65rem;">No scores yet. Be the first!</div>';
+                    return;
+                }
+                let html = '';
+                data.forEach((entry, i) => {
+                    const rank = i + 1;
+                    const medals = ['🥇', '🥈', '🥉'];
+                    const rankDisplay = rank <= 3 ? medals[i] : `#${rank}`;
+                    const isMe = entry.username === S.username;
+                    const cookies = entry.data?.cookies || 0;
+                    html += `<div class="lb-entry ${isMe ? 'me' : ''}">
+                        <span class="rank">${rankDisplay}</span>
+                        <span class="name">${entry.username} ${isMe ? '👈' : ''}</span>
+                        <span class="score">🍪 ${formatNumber(cookies)}</span>
+                    </div>`;
+                });
+                list.innerHTML = html;
+            } catch (err) {
+                console.warn('Leaderboard error:', err);
+                list.innerHTML = '<div style="color:var(--muted);padding:0.3rem 0;font-size:0.65rem;">Error loading leaderboard.</div>';
+            }
+        }
+
+        // ─── LOGOUT ───
+        async function logout() {
             if (!confirm('Log out? Progress saved.')) return;
-            saveGame();
+            await saveGame();
+            await supabase.auth.signOut();
             clearSession();
             document.getElementById('gameRoot').classList.add('hidden');
             document.getElementById('authOverlay').classList.remove('hidden');
@@ -1504,7 +1577,8 @@
             showToast('Logged out.');
         }
 
-        function resetGame() {
+        // ─── RESET ───
+        async function resetGame() {
             if (!confirm('Reset ALL progress for this account?')) return;
             S.cookies = 0;
             S.totalClicks = 0;
@@ -1518,6 +1592,7 @@
             S.skills = {};
             S.totalPrestiges = 0;
             S.achievements = [];
+            S.levelUpgrades = {};
             S.goldenCollected = 0;
             S.cookiesAllTime = 0;
             S.clicksAllTime = 0;
@@ -1531,10 +1606,9 @@
             for (const id of allUpgradeIds) {
                 if (!(id in S.upgrades)) S.upgrades[id] = 0;
             }
-            saveGame();
+            await saveGame();
             document.querySelectorAll('.golden-cookie').forEach(el => el.remove());
             updateUI();
-            addLeaderboardEntry();
             showToast('↻ Reset complete.');
         }
 
@@ -1565,10 +1639,7 @@
                     Object.keys(contents).forEach(key => {
                         contents[key].classList.toggle('hidden', key !== tab);
                     });
-                    if (tab === 'leaderboard') {
-                        loadLeaderboard();
-                        renderLeaderboard();
-                    }
+                    if (tab === 'leaderboard') fetchLeaderboard();
                     if (tab === 'achievements') renderAchievements();
                     if (tab === 'stats') renderStats();
                     if (tab === 'prestige') updatePrestigeUI();
@@ -1591,8 +1662,6 @@
                     S.cookiesAllTime += cps * delta;
                     if (cps > S.bestCPS) S.bestCPS = cps;
                     updateUI();
-                    saveGame();
-                    addLeaderboardEntry();
                     checkAchievements();
                 }
                 _last = ts;
@@ -1600,29 +1669,37 @@
             requestAnimationFrame(loop);
         }
 
+        // ─── AUTO-SAVE ───
+        setInterval(() => {
+            if (S.username) saveGame();
+        }, 10000);
+
+        // ─── SAVE ON UNLOAD ───
         window.addEventListener('beforeunload', () => {
-            if (getSession()) saveGame();
+            if (S.username) saveGame();
         });
 
-        function init() {
+        // ─── INIT ───
+        async function init() {
             buildUpgradeList();
-            loadLeaderboard();
 
+            // Check for existing session
             const sessionUser = getSession();
             if (sessionUser) {
-                const users = getUsers();
-                if (users[sessionUser]) {
+                S.username = sessionUser;
+                // Try to restore session via Supabase
+                const { data } = await supabase.auth.getSession();
+                if (data.session) {
                     document.getElementById('loginUser').value = sessionUser;
                     completeAuth(sessionUser);
+                    return;
                 } else {
                     clearSession();
-                    document.getElementById('authOverlay').classList.remove('hidden');
-                    document.getElementById('gameRoot').classList.add('hidden');
                 }
-            } else {
-                document.getElementById('authOverlay').classList.remove('hidden');
-                document.getElementById('gameRoot').classList.add('hidden');
             }
+
+            document.getElementById('authOverlay').classList.remove('hidden');
+            document.getElementById('gameRoot').classList.add('hidden');
 
             document.getElementById('clicker').addEventListener('click', handleClick);
             document.getElementById('clicker').addEventListener('touchstart', (e) => {
@@ -1631,27 +1708,6 @@
             }, { passive: false });
             document.getElementById('resetBtn').addEventListener('click', resetGame);
             initTabs();
-
-            setInterval(() => {
-                if (getSession()) saveGame();
-            }, 5000);
-
-            if (getSession()) {
-                const now = Date.now();
-                const diff = (now - S.lastSave) / 1000;
-                if (diff > 60) {
-                    const cps = getTotalCPS();
-                    if (cps > 0) {
-                        const earned = cps * diff * 0.5;
-                        S.cookies += earned;
-                        S.cookiesAllTime += earned;
-                        showToast(`⏰ Offline earnings: +${formatNumber(earned)} cookies`);
-                        updateUI();
-                        saveGame();
-                    }
-                }
-                S.lastSave = now;
-            }
         }
 
         document.addEventListener('DOMContentLoaded', init);
