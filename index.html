@@ -232,7 +232,7 @@
         }
 
         /* ════════════════════════════════════════
-           GAME WRAPPER (hidden until auth)
+           GAME WRAPPER
            ════════════════════════════════════════ */
         #gameRoot {
             width: 100%;
@@ -242,13 +242,12 @@
             align-items: center;
             padding: 1.5rem;
             background-image: radial-gradient(ellipse at 30% 20%, rgba(124, 92, 252, 0.08), transparent 50%),
-                radial-gradient(ellipse at 70% 80%, rgba(255, 201, 74, 0.04), transparent 50%);
+                radial-gradient(ellipse at 80% 80%, rgba(255, 201, 74, 0.04), transparent 50%);
         }
         #gameRoot.hidden {
             display: none;
         }
 
-        /* ─── GAME WRAPPER ─── */
         .game {
             width: 100%;
             max-width: 1200px;
@@ -1007,6 +1006,7 @@
         // ─── AUTH SYSTEM ───
         const AUTH_KEY = 'dvcAuthUsers';
         const SESSION_KEY = 'dvcSession';
+        const LB_KEY = 'dvcLB';
 
         function getUsers() {
             try {
@@ -1039,6 +1039,68 @@
             const users = getUsers();
             users[username] = data;
             saveUsers(users);
+        }
+
+        // ─── LEADERBOARD ───
+        let leaderboard = [];
+
+        function loadLeaderboard() {
+            try {
+                const raw = localStorage.getItem(LB_KEY);
+                leaderboard = raw ? JSON.parse(raw) : [];
+            } catch (_) { leaderboard = []; }
+        }
+
+        function saveLeaderboard() {
+            try {
+                // Keep only top 50 by cookies
+                leaderboard.sort((a, b) => b.cookies - a.cookies);
+                if (leaderboard.length > 50) leaderboard = leaderboard.slice(0, 50);
+                localStorage.setItem(LB_KEY, JSON.stringify(leaderboard));
+            } catch (_) {}
+        }
+
+        function addLeaderboardEntry() {
+            const username = getSession();
+            if (!username) return;
+            // Remove existing entry for this user
+            leaderboard = leaderboard.filter(e => e.name !== username);
+            leaderboard.push({
+                name: username,
+                cookies: S.cookies,
+                clicks: S.totalClicks,
+                cps: getTotalCPS(),
+                date: Date.now()
+            });
+            saveLeaderboard();
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const list = document.getElementById('leaderboardList');
+            if (!list) return;
+            const username = getSession();
+            if (leaderboard.length === 0) {
+                list.innerHTML =
+                    '<div style="color:var(--muted);padding:1rem 0;font-size:0.8rem;">No scores yet. Keep clicking!</div>';
+                return;
+            }
+            let html = '';
+            const top = leaderboard.slice(0, 10);
+            top.forEach((entry, i) => {
+                const rank = i + 1;
+                const medals = ['🥇', '🥈', '🥉'];
+                const rankDisplay = rank <= 3 ? medals[i] : `#${rank}`;
+                const isMe = entry.name === username;
+                html += `
+              <div class="lb-entry ${isMe ? 'me' : ''}">
+                <span class="rank">${rankDisplay}</span>
+                <span class="name">${entry.name} ${isMe ? '👈' : ''}</span>
+                <span class="score">🍪 ${formatNumber(entry.cookies)}</span>
+              </div>
+            `;
+            });
+            list.innerHTML = html;
         }
 
         // ─── AUTH UI ───
@@ -1094,7 +1156,6 @@
                 return;
             }
 
-            // Success
             setAuthLoading('loginBtn', true);
             setTimeout(() => {
                 setAuthLoading('loginBtn', false);
@@ -1137,7 +1198,6 @@
                 return;
             }
 
-            // Create account with default game data
             const defaultData = {
                 password: password,
                 gameData: {
@@ -1170,7 +1230,6 @@
                 S.totalClicks = userData.gameData.totalClicks || 0;
                 S.upgrades = userData.gameData.upgrades || {};
             } else {
-                // Fresh start
                 S.cookies = 0;
                 S.totalClicks = 0;
                 S.upgrades = {};
@@ -1180,12 +1239,14 @@
                 if (!(u.id in S.upgrades)) S.upgrades[u.id] = 0;
             }
 
+            // Reset leaderboard – only keep current user's entry
+            leaderboard = [];
+            addLeaderboardEntry();
+
             // Update UI
             document.getElementById('usernameDisplay').textContent = username;
             document.getElementById('footerUsername').textContent = username;
             updateUI();
-            loadLeaderboard();
-            addLeaderboardEntry();
             renderLeaderboard();
             showToast('🍪 Welcome back, ' + username + '!');
 
@@ -1200,21 +1261,17 @@
         // ─── LOGOUT ───
         function logout() {
             if (!confirm('Log out? Your progress will be saved.')) return;
-            // Save current state
             saveGame();
             clearSession();
             document.getElementById('gameRoot').classList.add('hidden');
             document.getElementById('authOverlay').classList.remove('hidden');
-            // Reset login form
             document.getElementById('loginUser').value = '';
             document.getElementById('loginPass').value = '';
             document.getElementById('loginError').classList.remove('show');
-            // Clear game state
             S.cookies = 0;
             S.totalClicks = 0;
             S.upgrades = {};
             updateUI();
-            // Clear golden cookies
             document.querySelectorAll('.golden-cookie').forEach(el => el.remove());
             showToast('Logged out.');
         }
@@ -1240,7 +1297,6 @@
         if (sessionUser) {
             const users = getUsers();
             if (users[sessionUser]) {
-                // Auto-login
                 document.getElementById('loginUser').value = sessionUser;
                 completeAuth(sessionUser);
             } else {
@@ -1274,67 +1330,6 @@
             { id: 'universe', name: '🌌 Universe', desc: 'Create a cookie universe', baseCost: 10000000, cps: 8000,
                 mult: 1.06, max: 10 },
         ];
-
-        // ─── LEADERBOARD ───
-        let leaderboard = [];
-
-        function loadLeaderboard() {
-            try {
-                const raw = localStorage.getItem('dvcLB');
-                leaderboard = raw ? JSON.parse(raw) : [];
-            } catch (_) { leaderboard = []; }
-        }
-
-        function saveLeaderboard() {
-            try {
-                localStorage.setItem('dvcLB', JSON.stringify(leaderboard));
-            } catch (_) {}
-        }
-
-        function addLeaderboardEntry() {
-            const username = getSession() || 'Guest';
-            const entry = {
-                name: username,
-                cookies: S.cookies,
-                clicks: S.totalClicks,
-                cps: getTotalCPS(),
-                date: Date.now()
-            };
-            // Remove existing entry for this user
-            leaderboard = leaderboard.filter(e => e.name !== username);
-            leaderboard.push(entry);
-            leaderboard.sort((a, b) => b.cookies - a.cookies);
-            if (leaderboard.length > 50) leaderboard = leaderboard.slice(0, 50);
-            saveLeaderboard();
-            renderLeaderboard();
-        }
-
-        function renderLeaderboard() {
-            const list = document.getElementById('leaderboardList');
-            if (!list) return;
-            const username = getSession();
-            if (leaderboard.length === 0) {
-                list.innerHTML =
-                    '<div style="color:var(--muted);padding:1rem 0;font-size:0.8rem;">No scores yet. Keep clicking!</div>';
-                return;
-            }
-            let html = '';
-            const top = leaderboard.slice(0, 10);
-            top.forEach((entry, i) => {
-                const rank = i + 1;
-                const medals = ['🥇', '🥈', '🥉'];
-                const rankDisplay = rank <= 3 ? medals[i] : `#${rank}`;
-                const isMe = entry.name === username;
-                html += `
-              <div class="lb-entry ${isMe ? 'me' : ''}">
-                <span class="rank">${rankDisplay}</span>
-                <span class="name">${entry.name} ${isMe ? '👈' : ''}</span>
-                <span class="score">🍪 ${formatNumber(entry.cookies)}</span>
-              </div>
-            `;
-            });
-            list.innerHTML = html;
-        }
 
         // ─── HELPERS ───
         function getCost(u) {
@@ -1636,7 +1631,6 @@
                     });
                     if (tab === 'leaderboard') {
                         loadLeaderboard();
-                        addLeaderboardEntry();
                         renderLeaderboard();
                     }
                 });
@@ -1669,7 +1663,6 @@
 
             // If session exists, game is already initialized via completeAuth()
             if (!getSession()) {
-                // Show auth overlay
                 document.getElementById('authOverlay').classList.remove('hidden');
                 document.getElementById('gameRoot').classList.add('hidden');
             } else {
@@ -1685,6 +1678,8 @@
                     if (!(u.id in S.upgrades)) S.upgrades[u.id] = 0;
                 }
                 updateUI();
+                // Reset leaderboard to only current user
+                leaderboard = [];
                 addLeaderboardEntry();
                 renderLeaderboard();
                 document.getElementById('usernameDisplay').textContent = username;
