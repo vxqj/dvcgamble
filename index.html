@@ -397,7 +397,7 @@
 
     <script>
         /* ================================================================
-           DVC CLICKER — SUPABASE EDITION
+           DVC CLICKER — SUPABASE EDITION (FIXED SIGNUP)
            ================================================================ */
 
         // ─── 🔑 YOUR SUPABASE CREDENTIALS ───
@@ -1342,6 +1342,7 @@
 
             setAuthLoading('signupBtn', true);
             try {
+                // 1. Sign up with Supabase Auth
                 const { data, error } = await supabase.auth.signUp({
                     email: username + '@dvc.local',
                     password: password,
@@ -1350,12 +1351,23 @@
                     }
                 });
                 if (error) throw error;
-                if (data.user) {
+                if (!data.user) throw new Error('Sign-up succeeded but user object missing.');
+
+                // 2. Insert profile (ignore if table doesn't exist yet – we'll catch and inform)
+                try {
                     const { error: profileError } = await supabase
                         .from('profiles')
                         .insert([{ id: data.user.id, username: username, data: {} }]);
-                    if (profileError) throw profileError;
+                    if (profileError) {
+                        // If profile insert fails, still log the user in but warn them
+                        console.warn('Profile insert failed, but you can still play. Please run the SQL setup.', profileError);
+                        showToast('⚠️ Account created, but profile save failed. Run the SQL setup to save progress.');
+                    }
+                } catch (profileErr) {
+                    console.warn('Profile insert error:', profileErr);
+                    showToast('⚠️ Account created, but profile save failed. Run the SQL setup to save progress.');
                 }
+
                 showToast('✅ Account created!');
                 completeAuth(username);
             } catch (err) {
@@ -1370,7 +1382,36 @@
             document.getElementById('authOverlay').classList.add('hidden');
             document.getElementById('gameRoot').classList.remove('hidden');
 
-            await loadGame();
+            // Attempt to load from Supabase, but if it fails, start fresh
+            const loaded = await loadGame();
+            if (!loaded) {
+                // Fresh start – set defaults
+                S.cookies = 0;
+                S.totalClicks = 0;
+                S.upgrades = {};
+                S.level = 1;
+                S.xp = 0;
+                S.xpNext = getLevelXP(1);
+                S.prestigePoints = 0;
+                S.rebirthPoints = 0;
+                S.prestigeUpgrades = {};
+                S.skills = {};
+                S.totalPrestiges = 0;
+                S.achievements = [];
+                S.levelUpgrades = {};
+                S.goldenCollected = 0;
+                S.cookiesAllTime = 0;
+                S.clicksAllTime = 0;
+                S.bestCPS = 0;
+                S._goldenTriggered = false;
+                S._rainbowTriggered = false;
+                const allUpgradeIds = [...UPGRADES.map(u => u.id), ...CLICK_MULT_UPGRADES.map(u => u.id)];
+                for (const id of allUpgradeIds) {
+                    if (!(id in S.upgrades)) S.upgrades[id] = 0;
+                }
+                // Save fresh state to Supabase
+                await saveGame();
+            }
 
             document.getElementById('usernameDisplay').textContent = username;
             document.getElementById('footerUsername').textContent = username;
@@ -1469,7 +1510,13 @@
                     .select('data')
                     .eq('username', S.username)
                     .single();
-                if (error) throw error;
+                if (error) {
+                    if (error.code === 'PGRST116') {
+                        // Profile doesn't exist yet – start fresh
+                        return false;
+                    }
+                    throw error;
+                }
                 if (data && data.data) {
                     const d = data.data;
                     S.cookies = d.cookies || 0;
