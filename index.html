@@ -145,6 +145,16 @@
         .mute-btn:hover { color: var(--fg); border-color: var(--border2); }
         .mute-btn.muted { color: var(--red); border-color: rgba(255,93,108,0.3); }
 
+        /* BUY QUANTITY TOGGLE */
+        .buy-qty-toggle { display: flex; gap: 0.2rem; margin-bottom: 0.35rem; }
+        .buy-qty-toggle .qty-btn {
+            flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--muted);
+            font-size: 0.5rem; font-weight: 700; padding: 0.2rem 0.3rem; cursor: pointer; transition: 0.15s;
+            font-family: 'Manrope', sans-serif; border-radius: 4px;
+        }
+        .buy-qty-toggle .qty-btn:hover { color: var(--fg); border-color: var(--border2); }
+        .buy-qty-toggle .qty-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
         /* MAIN GRID */
         .grid {
             display: grid; grid-template-columns: 1fr 320px; gap: 1.2rem; position: relative; z-index: 2;
@@ -509,6 +519,11 @@
 
                     <div class="tab-content" id="tabUpgrades">
                         <div class="panel-head">🛠️ Purchases <span id="upgradeCount">0</span></div>
+                        <div class="buy-qty-toggle" id="buyQtyToggle">
+                            <button class="qty-btn active" data-qty="1">Buy x1</button>
+                            <button class="qty-btn" data-qty="10">Buy x10</button>
+                            <button class="qty-btn" data-qty="max">Buy MAX</button>
+                        </div>
                         <div id="upgradeList"></div>
                     </div>
 
@@ -530,6 +545,7 @@
                             Unlocked after your first Prestige!<br>
                             Spend <span style="color:var(--gold)">Rebirth Points</span> on permanent upgrades.
                         </div>
+                        <div id="skillLockedMsg" style="color:var(--muted);padding:0.3rem;font-size:0.6rem;">Prestige once to unlock the Skill Tree!</div>
                         <div id="skillList"></div>
                     </div>
 
@@ -558,7 +574,11 @@
             <!-- FOOTER -->
             <div class="footer">
                 <span>© DVC Clicker · <span id="footerUsername">user</span></span>
-                <button class="reset" id="resetBtn">⟳ Reset</button>
+                <div style="display:flex;gap:0.3rem;">
+                    <button class="reset" id="exportBtn" style="background:rgba(124,92,252,0.08);border-color:rgba(124,92,252,0.18);color:var(--primary);">⬇ Export Save</button>
+                    <button class="reset" id="importBtn" style="background:rgba(57,229,140,0.08);border-color:rgba(57,229,140,0.18);color:var(--green);">⬆ Import Save</button>
+                    <button class="reset" id="resetBtn">⟳ Reset</button>
+                </div>
             </div>
         </div>
     </div>
@@ -637,6 +657,93 @@
             });
             savePPLB();
             renderPPLB();
+
+            // Flag for the throttled cloud sync instead of hitting the network on every click
+            leaderboardDirty = true;
+        }
+
+        // ─── CROSS-DEVICE CLOUD SYNC ───
+        // localStorage only lives in *this* browser, which is why scores never showed up
+        // on other devices. window.storage (when available) is shared across every device/user,
+        // so we mirror the leaderboard there. If it's not available (e.g. this file is hosted
+        // standalone outside Claude), we gracefully fall back to the old local-only behavior.
+        const hasCloudStorage = !!(window.storage && typeof window.storage.get === 'function' && typeof window.storage.set === 'function');
+        let cloudWarningShown = false;
+        let leaderboardDirty = false;
+        let lbAutoRefreshTimer = null;
+        let lbSyncTimer = null;
+
+        async function cloudGetArray(key) {
+            try {
+                const r = await window.storage.get(key, true);
+                return (r && r.value) ? JSON.parse(r.value) : [];
+            } catch (_) {
+                return [];
+            }
+        }
+
+        async function cloudSetArray(key, arr) {
+            try {
+                await window.storage.set(key, JSON.stringify(arr), true);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function refreshLeaderboardFromCloud() {
+            if (!hasCloudStorage) return;
+            const cloudLB = await cloudGetArray('global_leaderboard');
+            const cloudPP = await cloudGetArray('global_pp_leaderboard');
+            if (cloudLB.length) leaderboard = cloudLB;
+            if (cloudPP.length) ppLeaderboard = cloudPP;
+            renderLeaderboard();
+            renderPPLB();
+        }
+
+        async function pushDirtyLeaderboardToCloud(force) {
+            const username = getSession();
+            if (!username) return;
+            if (!hasCloudStorage) {
+                if (!cloudWarningShown) {
+                    cloudWarningShown = true;
+                    showToast('ℹ️ No cloud sync here — leaderboard is local to this browser');
+                }
+                return;
+            }
+            if (!force && !leaderboardDirty) return;
+            leaderboardDirty = false;
+
+            const myEntry = leaderboard.find(e => e.name === username);
+            const myPP = ppLeaderboard.find(e => e.name === username);
+
+            if (myEntry) {
+                let cloudLB = await cloudGetArray('global_leaderboard');
+                cloudLB = cloudLB.filter(e => e.name !== username);
+                cloudLB.push(myEntry);
+                cloudLB.sort((a, b) => b.cookies - a.cookies);
+                if (cloudLB.length > 50) cloudLB = cloudLB.slice(0, 50);
+                if (await cloudSetArray('global_leaderboard', cloudLB)) leaderboard = cloudLB;
+            }
+            if (myPP) {
+                let cloudPP = await cloudGetArray('global_pp_leaderboard');
+                cloudPP = cloudPP.filter(e => e.name !== username);
+                cloudPP.push(myPP);
+                cloudPP.sort((a, b) => b.prestige - a.prestige);
+                if (cloudPP.length > 50) cloudPP = cloudPP.slice(0, 50);
+                if (await cloudSetArray('global_pp_leaderboard', cloudPP)) ppLeaderboard = cloudPP;
+            }
+            renderLeaderboard();
+            renderPPLB();
+        }
+
+        function startLBAutoRefresh() {
+            stopLBAutoRefresh();
+            if (!hasCloudStorage) return;
+            lbAutoRefreshTimer = setInterval(refreshLeaderboardFromCloud, 12000);
+        }
+        function stopLBAutoRefresh() {
+            if (lbAutoRefreshTimer) { clearInterval(lbAutoRefreshTimer); lbAutoRefreshTimer = null; }
         }
 
         function renderLeaderboard() {
@@ -1011,6 +1118,42 @@
                     S.cookiesAllTime >= 1000000000 },
         ];
 
+        // ─── BUY QUANTITY (x1 / x10 / MAX) ───
+        let buyQty = 1;
+
+        function getBulkCost(baseCost, mult, owned, qty) {
+            if (qty <= 0) return 0;
+            if (mult === 1) return Math.floor(baseCost * qty);
+            return Math.floor(baseCost * Math.pow(mult, owned) * (Math.pow(mult, qty) - 1) / (mult - 1));
+        }
+
+        // Works for both UPGRADES and CLICK_MULT_UPGRADES since both are tracked under S.upgrades
+        function calcBulkPurchase(u, qtyMode, currency) {
+            const owned = S.upgrades[u.id] || 0;
+            const remaining = u.max - owned;
+            if (remaining <= 0) return { qty: 0, cost: Infinity };
+            if (qtyMode === 'max') {
+                let qty = 0, cost = 0;
+                for (let i = 0; i < remaining; i++) {
+                    const nextCost = Math.floor(u.baseCost * Math.pow(u.mult, owned + i));
+                    if (cost + nextCost > currency) break;
+                    cost += nextCost;
+                    qty++;
+                }
+                return { qty, cost };
+            }
+            const qty = Math.min(qtyMode, remaining);
+            return { qty, cost: getBulkCost(u.baseCost, u.mult, owned, qty) };
+        }
+
+        function setBuyQty(val) {
+            buyQty = val;
+            document.querySelectorAll('#buyQtyToggle .qty-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.qty === String(val));
+            });
+            updateUpgradeList();
+        }
+
         // ─── HELPERS ───
         function getCost(u) {
             const owned = S.upgrades[u.id] || 0;
@@ -1117,10 +1260,16 @@
             return c;
         }
 
+        const NUM_SUFFIXES = [
+            { v: 1e33, s: 'Dc' }, { v: 1e30, s: 'No' }, { v: 1e27, s: 'Oc' },
+            { v: 1e24, s: 'Sp' }, { v: 1e21, s: 'Sx' }, { v: 1e18, s: 'Qi' },
+            { v: 1e15, s: 'Qa' }, { v: 1e12, s: 'T' }, { v: 1e9, s: 'B' }, { v: 1e6, s: 'M' },
+        ];
         function formatNumber(n) {
-            if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
-            if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
-            if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+            if (!isFinite(n)) return '∞';
+            for (const suf of NUM_SUFFIXES) {
+                if (n >= suf.v) return (n / suf.v).toFixed(2) + suf.s;
+            }
             if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
             return Math.floor(n).toString();
         }
@@ -1145,14 +1294,27 @@
 
         // ─── NOTIFICATION ───
         let notifTimeout = null;
+        let notifQueue = [];
+        let notifShowing = false;
 
         function showNotification(title, sub = '') {
+            notifQueue.push({ title, sub });
+            if (!notifShowing) processNotifQueue();
+        }
+
+        function processNotifQueue() {
+            if (notifQueue.length === 0) { notifShowing = false; return; }
+            notifShowing = true;
+            const { title, sub } = notifQueue.shift();
             const el = document.getElementById('notifBanner');
             document.getElementById('notifText').textContent = title;
             document.getElementById('notifSub').textContent = sub;
             el.classList.add('show');
             clearTimeout(notifTimeout);
-            notifTimeout = setTimeout(() => el.classList.remove('show'), 3000);
+            notifTimeout = setTimeout(() => {
+                el.classList.remove('show');
+                setTimeout(processNotifQueue, 300);
+            }, 2200);
         }
 
         // ─── ACHIEVEMENTS ───
@@ -1332,6 +1494,7 @@
             saveGame();
             updateUI();
             addLeaderboardEntry();
+            pushDirtyLeaderboardToCloud(true);
             checkAchievements();
         }
 
@@ -1475,10 +1638,16 @@
                 const el = upgradeElements[u.id];
                 if (!el) continue;
                 const owned = S.upgrades[u.id] || 0;
-                const cost = u.baseCost ? getCost(u) : getClickMultCost(u);
-                const can = S.cookies >= cost && owned < u.max;
+                const { qty, cost } = calcBulkPurchase(u, buyQty, S.cookies);
+                const maxedOut = owned >= u.max;
+                const can = !maxedOut && qty > 0 && S.cookies >= cost;
                 el.querySelector('.owned').textContent = owned;
-                el.querySelector('.price').innerHTML = cost === Infinity ? 'MAX' : '🍪 ' + formatNumber(cost);
+                if (maxedOut) {
+                    el.querySelector('.price').innerHTML = 'MAX';
+                } else {
+                    const qtyLabel = (buyQty === 'max') ? (qty > 0 ? ` (x${qty})` : ' (can\'t afford)') : (qty > 1 ? ` (x${qty})` : '');
+                    el.querySelector('.price').innerHTML = '🍪 ' + formatNumber(cost) + qtyLabel;
+                }
                 el.classList.toggle('can', can);
             }
         }
@@ -1486,62 +1655,78 @@
         function purchase(id) {
             const u = UPGRADES.find(x => x.id === id);
             if (!u) return;
-            const cost = getCost(u);
-            if (S.cookies < cost) return;
+            const { qty, cost } = calcBulkPurchase(u, buyQty, S.cookies);
+            if (qty <= 0 || S.cookies < cost) return;
             S.cookies -= cost;
-            S.upgrades[id] = (S.upgrades[id] || 0) + 1;
-            addXP(5);
+            S.upgrades[id] = (S.upgrades[id] || 0) + qty;
+            addXP(5 * qty);
             playClickSound();
             updateUI();
             saveGame();
             addLeaderboardEntry();
             checkAchievements();
-            showToast(`✅ ${u.name} purchased!`);
+            showToast(`✅ ${u.name} x${qty} purchased!`);
         }
 
         function purchaseClickMult(id) {
             const u = CLICK_MULT_UPGRADES.find(x => x.id === id);
             if (!u) return;
-            const cost = getClickMultCost(u);
-            if (S.cookies < cost) return;
+            const { qty, cost } = calcBulkPurchase(u, buyQty, S.cookies);
+            if (qty <= 0 || S.cookies < cost) return;
             S.cookies -= cost;
-            S.upgrades[id] = (S.upgrades[id] || 0) + 1;
-            addXP(10);
+            S.upgrades[id] = (S.upgrades[id] || 0) + qty;
+            addXP(10 * qty);
             playClickSound();
             updateUI();
             saveGame();
             addLeaderboardEntry();
             checkAchievements();
-            showToast(`✅ ${u.name} purchased!`);
+            showToast(`✅ ${u.name} x${qty} purchased!`);
         }
 
         // ─── PRESTIGE UI ───
+        let prestigeElements = {};
+
+        function buildPrestigeList() {
+            const list = document.getElementById('prestigeUpgradeList');
+            list.innerHTML = '';
+            for (const pu of PRESTIGE_UPGRADES) {
+                const div = document.createElement('div');
+                div.className = 'upgrade';
+                div.dataset.id = pu.id;
+                div.innerHTML = `
+                    <div class="info">
+                        <span class="name">${pu.name} <span class="owned">0</span></span>
+                        <span class="desc">${pu.desc}</span>
+                    </div>
+                    <div class="right">
+                        <div class="prestige-cost">🔮 ${pu.baseCost}</div>
+                    </div>
+                `;
+                list.appendChild(div);
+                prestigeElements[pu.id] = div;
+            }
+            list.addEventListener('click', function(e) {
+                const item = e.target.closest('.upgrade');
+                if (!item || !item.classList.contains('can')) return;
+                purchasePrestigeUpgrade(item.dataset.id);
+            });
+        }
+
         function updatePrestigeUI() {
             const req = getPrestigeReq();
             document.getElementById('prestigeReq').textContent = formatNumber(req);
             document.getElementById('prestigeProgress').textContent = formatNumber(S.cookies);
 
-            const list = document.getElementById('prestigeUpgradeList');
-            list.innerHTML = '';
             for (const pu of PRESTIGE_UPGRADES) {
+                const el = prestigeElements[pu.id];
+                if (!el) continue;
                 const owned = S.prestigeUpgrades[pu.id] || 0;
                 const cost = getPrestigeCost(pu);
                 const can = S.prestigePoints >= cost && owned < pu.max;
-                const div = document.createElement('div');
-                div.className = 'upgrade' + (can ? ' can' : '');
-                div.innerHTML = `
-                    <div class="info">
-                        <span class="name">${pu.name} <span class="owned">${owned}</span></span>
-                        <span class="desc">${pu.desc}</span>
-                    </div>
-                    <div class="right">
-                        <div class="prestige-cost">${cost === Infinity ? 'MAX' : '🔮 ' + cost}</div>
-                    </div>
-                `;
-                if (can) {
-                    div.addEventListener('click', () => purchasePrestigeUpgrade(pu.id));
-                }
-                list.appendChild(div);
+                el.querySelector('.owned').textContent = owned;
+                el.querySelector('.prestige-cost').innerHTML = cost === Infinity ? 'MAX' : '🔮 ' + cost;
+                el.classList.toggle('can', can);
             }
         }
 
@@ -1560,38 +1745,53 @@
         }
 
         // ─── SKILL UI ───
-        function updateSkillUI() {
-            document.getElementById('rebirthPointsDisplay').textContent = S.rebirthPoints + ' RP';
+        let skillElements = {};
 
+        function buildSkillList() {
             const list = document.getElementById('skillList');
             list.innerHTML = '';
-            if (S.totalPrestiges === 0) {
-                list.innerHTML =
-                    '<div style="color:var(--muted);padding:0.3rem;font-size:0.6rem;">Prestige once to unlock the Skill Tree!</div>';
-                return;
-            }
             for (const sk of SKILLS) {
-                const owned = S.skills[sk.id] || 0;
-                const cost = getSkillCost(sk);
-                const can = S.rebirthPoints >= cost && owned < sk.max;
-                let reqMet = true;
-                if (sk.requires) {
-                    reqMet = (S.skills[sk.requires] || 0) > 0;
-                }
-                const finalCan = can && reqMet;
                 const div = document.createElement('div');
-                div.className = 'skill-item' + (finalCan ? ' can' : '');
+                div.className = 'skill-item';
+                div.dataset.id = sk.id;
                 div.innerHTML = `
                     <div class="si">
-                        <span class="sn">${sk.name} <span class="owned">${owned}/${sk.max}</span></span>
-                        <span class="sd">${sk.desc}${!reqMet ? ' 🔒 Requires: ' + SKILLS.find(s=>s.id===sk.requires)?.name || '' : ''}</span>
+                        <span class="sn">${sk.name} <span class="owned">0/${sk.max}</span></span>
+                        <span class="sd">${sk.desc}</span>
                     </div>
-                    <div class="sc">${cost === Infinity ? 'MAX' : '⭐ ' + cost}</div>
+                    <div class="sc">⭐ ${sk.cost}</div>
                 `;
-                if (finalCan) {
-                    div.addEventListener('click', () => purchaseSkill(sk.id));
-                }
                 list.appendChild(div);
+                skillElements[sk.id] = div;
+            }
+            list.addEventListener('click', function(e) {
+                const item = e.target.closest('.skill-item');
+                if (!item || !item.classList.contains('can')) return;
+                purchaseSkill(item.dataset.id);
+            });
+        }
+
+        function updateSkillUI() {
+            document.getElementById('rebirthPointsDisplay').textContent = S.rebirthPoints + ' RP';
+            const lockedMsg = document.getElementById('skillLockedMsg');
+            const list = document.getElementById('skillList');
+            const locked = S.totalPrestiges === 0;
+            lockedMsg.style.display = locked ? 'block' : 'none';
+            list.style.display = locked ? 'none' : 'block';
+            if (locked) return;
+
+            for (const sk of SKILLS) {
+                const el = skillElements[sk.id];
+                if (!el) continue;
+                const owned = S.skills[sk.id] || 0;
+                const cost = getSkillCost(sk);
+                let reqMet = true;
+                if (sk.requires) reqMet = (S.skills[sk.requires] || 0) > 0;
+                const can = S.rebirthPoints >= cost && owned < sk.max && reqMet;
+                el.querySelector('.owned').textContent = `${owned}/${sk.max}`;
+                el.querySelector('.sd').innerHTML = `${sk.desc}${!reqMet ? ' 🔒 Requires: ' + (SKILLS.find(s => s.id === sk.requires)?.name || '') : ''}`;
+                el.querySelector('.sc').innerHTML = cost === Infinity ? 'MAX' : '⭐ ' + cost;
+                el.classList.toggle('can', can);
             }
         }
 
@@ -1866,7 +2066,10 @@
 
             loadLeaderboard();
             loadPPLB();
-            addLeaderboardEntry();
+            refreshLeaderboardFromCloud().then(() => {
+                addLeaderboardEntry();
+                pushDirtyLeaderboardToCloud(true);
+            });
 
             updateUI();
             renderLeaderboard();
@@ -1880,12 +2083,15 @@
                 startBoostSystem();
                 scheduleGolden();
                 requestAnimationFrame(loop);
+                lbSyncTimer = setInterval(() => pushDirtyLeaderboardToCloud(false), 15000);
             }
         }
 
         function logout() {
             if (!confirm('Log out? Progress saved.')) return;
             saveGame();
+            pushDirtyLeaderboardToCloud(true);
+            stopLBAutoRefresh();
             clearSession();
             document.getElementById('gameRoot').classList.add('hidden');
             document.getElementById('authOverlay').classList.remove('hidden');
@@ -1931,6 +2137,7 @@
             document.querySelectorAll('.golden-cookie').forEach(el => el.remove());
             updateUI();
             addLeaderboardEntry();
+            pushDirtyLeaderboardToCloud(true);
             showToast('↻ Reset complete.');
         }
 
@@ -1940,6 +2147,58 @@
             t.classList.add('show');
             clearTimeout(t._h);
             t._h = setTimeout(() => t.classList.remove('show'), 2400);
+        }
+
+        // ─── EXPORT / IMPORT SAVE ───
+        function exportSave() {
+            const username = getSession();
+            if (!username) return;
+            saveGame();
+            const userData = getUserData(username);
+            if (!userData) return;
+            const payload = { username, exportedAt: Date.now(), gameData: userData.gameData };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dvc-clicker-save-${username}-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            showToast('⬇ Save exported!');
+        }
+
+        function importSave() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.addEventListener('change', () => {
+                const file = input.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const payload = JSON.parse(reader.result);
+                        if (!payload.gameData) throw new Error('Invalid save file');
+                        if (!confirm('Import this save? It will overwrite your CURRENT progress on this account.')) return;
+                        const username = getSession();
+                        if (!username) return;
+                        const userData = getUserData(username) || { password: '', gameData: {} };
+                        userData.gameData = payload.gameData;
+                        saveUserData(username, userData);
+                        loadGame();
+                        updateUI();
+                        addLeaderboardEntry();
+                        pushDirtyLeaderboardToCloud(true);
+                        showToast('⬆ Save imported!');
+                    } catch (e) {
+                        showToast('❌ Invalid save file');
+                    }
+                };
+                reader.readAsText(file);
+            });
+            input.click();
         }
 
         // ─── TABS ───
@@ -1962,13 +2221,13 @@
                     Object.keys(contents).forEach(key => {
                         contents[key].classList.toggle('hidden', key !== tab);
                     });
-                    if (tab === 'leaderboard') {
-                        loadLeaderboard();
+                    if (tab === 'leaderboard' || tab === 'pplb') {
+                        refreshLeaderboardFromCloud();
                         renderLeaderboard();
-                    }
-                    if (tab === 'pplb') {
-                        loadPPLB();
                         renderPPLB();
+                        startLBAutoRefresh();
+                    } else {
+                        stopLBAutoRefresh();
                     }
                     if (tab === 'achievements') renderAchievements();
                     if (tab === 'stats') renderStats();
@@ -2019,6 +2278,8 @@
 
         function init() {
             buildUpgradeList();
+            buildPrestigeList();
+            buildSkillList();
             loadLeaderboard();
             loadPPLB();
 
@@ -2044,6 +2305,13 @@
                 handleClick(e);
             }, { passive: false });
             document.getElementById('resetBtn').addEventListener('click', resetGame);
+            document.getElementById('exportBtn').addEventListener('click', exportSave);
+            document.getElementById('importBtn').addEventListener('click', importSave);
+            document.getElementById('buyQtyToggle').addEventListener('click', (e) => {
+                const btn = e.target.closest('.qty-btn');
+                if (!btn) return;
+                setBuyQty(btn.dataset.qty === 'max' ? 'max' : parseInt(btn.dataset.qty));
+            });
             initTabs();
 
             setInterval(() => {
