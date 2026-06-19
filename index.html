@@ -63,14 +63,14 @@
         .auth-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
         .auth-box .auth-demo { text-align: center; font-size: 0.6rem; color: var(--muted); margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); position: relative; z-index: 1; letter-spacing: 0.3px; }
 
-        /* ─── GAME WRAPPER ─── */
+        /* GAME WRAPPER */
         #gameRoot { width: 100%; height: 100vh; display: flex; justify-content: center; align-items: center; padding: 1rem; background-image: radial-gradient(ellipse at 30% 20%, rgba(124,92,252,0.08), transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(255,201,74,0.04), transparent 50%); }
         #gameRoot.hidden { display: none; }
 
         .game { width: 100%; max-width: 1300px; background: var(--surface); border: 1px solid var(--border2); padding: 1.2rem 1.5rem 1.2rem; box-shadow: 0 30px 80px rgba(0,0,0,0.8); position: relative; overflow: hidden; max-height: 97vh; display: flex; flex-direction: column; }
         .game::before { content: ''; position: absolute; top: -20%; right: -10%; width: 600px; height: 600px; background: radial-gradient(circle, var(--primary-glow), transparent 70%); opacity: 0.12; pointer-events: none; }
 
-        /* ─── HEADER ─── */
+        /* HEADER */
         .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); margin-bottom: 1rem; flex-wrap: wrap; gap: 0.4rem; position: relative; z-index: 2; flex-shrink: 0; }
         .logo { display: flex; align-items: center; gap: 0.4rem; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.2rem; letter-spacing: -0.5px; }
         .logo span { color: var(--primary); text-shadow: 0 0 24px var(--primary-glow); }
@@ -87,11 +87,11 @@
         .user-badge .logout-btn { background: rgba(255,255,255,0.06); border: none; color: var(--muted); padding: 0.05rem 0.4rem; font-size: 0.5rem; cursor: pointer; font-weight: 600; transition: 0.2s; font-family: 'Manrope', sans-serif; }
         .user-badge .logout-btn:hover { color: var(--red); background: rgba(255,93,108,0.1); }
 
-        /* ─── MAIN GRID ─── */
+        /* MAIN GRID */
         .grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.2rem; position: relative; z-index: 2; flex: 1; min-height: 0; }
         @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } .game { padding: 0.8rem; max-height: none; overflow-y: auto; } }
 
-        /* ─── CLICKER ─── */
+        /* CLICKER */
         .clicker-col { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.2rem 0; gap: 0.4rem; }
         .clicker-wrap { position: relative; width: 180px; height: 180px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; transition: transform 0.08s ease; }
         .clicker-wrap:active { transform: scale(0.92); }
@@ -115,7 +115,7 @@
         .clicker-stats .cps-badge { font-size: 0.7rem; color: var(--green); font-weight: 600; margin-top: 0.2rem; background: rgba(57,229,140,0.07); padding: 0.1rem 0.8rem; border: 1px solid rgba(57,229,140,0.12); display: inline-block; }
         .clicker-stats .click-mult { font-size: 0.65rem; color: var(--gold); margin-top: 0.15rem; }
 
-        /* ─── RIGHT PANEL ─── */
+        /* RIGHT PANEL */
         .panel-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 0.4rem; flex-shrink: 0; gap: 0; overflow-x: auto; }
         .panel-tabs button { background: transparent; border: none; color: var(--muted); font-weight: 600; font-size: 0.5rem; padding: 0.2rem 0.5rem; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif; letter-spacing: 0.3px; border-bottom: 2px solid transparent; white-space: nowrap; }
         .panel-tabs button.active { color: var(--fg); border-bottom-color: var(--primary); }
@@ -143,14 +143,14 @@
         .upgrade .add { font-size: 0.45rem; color: var(--green); font-weight: 600; }
         .upgrade .prestige-cost { font-family: 'Space Grotesk', monospace; font-weight: 700; font-size: 0.6rem; color: var(--primary); }
 
-        /* ─── LEADERBOARD ─── */
+        /* LEADERBOARD */
         .lb-entry { display: flex; justify-content: space-between; padding: 0.25rem 0.2rem; border-bottom: 1px solid var(--border); font-size: 0.65rem; color: var(--muted); }
         .lb-entry .rank { font-weight: 700; color: var(--fg); width: 22px; }
         .lb-entry .name { flex: 1; margin-left: 0.3rem; font-weight: 600; color: var(--fg); }
         .lb-entry .score { font-family: 'Space Grotesk', monospace; color: var(--gold); }
         .lb-entry.me { background: var(--primary-dim); border-color: var(--primary); }
 
-        /* ─── STATS PANEL ─── */
+        /* STATS PANEL */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.2rem; }
         .stats-grid .s-item { background: var(--surface2); padding: 0.2rem 0.4rem; border: 1px solid var(--border); border-radius: 4px; }
         .stats-grid .s-item .sl { font-size: 0.45rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -159,7 +159,7 @@
         .stats-grid .s-item .sv.green { color: var(--green); }
         .stats-grid .s-item .sv.purple { color: var(--primary); }
 
-        /* ─── ACHIEVEMENTS ─── */
+        /* ACHIEVEMENTS */
         .ach-item { display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0.4rem; background: var(--surface2); border: 1px solid var(--border); margin-bottom: 0.15rem; border-radius: 4px; opacity: 0.5; transition: 0.2s; }
         .ach-item.unlocked { opacity: 1; border-color: rgba(255,201,74,0.2); background: rgba(255,201,74,0.04); }
         .ach-item .ae { font-size: 1.1rem; flex-shrink: 0; }
@@ -168,7 +168,7 @@
         .ach-item .ai .ad { font-size: 0.5rem; color: var(--muted); }
         .ach-item .ap { font-size: 0.55rem; color: var(--gold); font-weight: 600; }
 
-        /* ─── SKILL TREE ─── */
+        /* SKILL TREE */
         .skill-item { background: var(--surface2); border: 1px solid var(--border); padding: 0.3rem 0.5rem; border-radius: 4px; margin-bottom: 0.15rem; display: flex; justify-content: space-between; align-items: center; opacity: 0.4; pointer-events: none; cursor: default; }
         .skill-item.can { opacity: 1; pointer-events: auto; cursor: pointer; border-color: rgba(124,92,252,0.25); }
         .skill-item.can:hover { border-color: var(--primary); background: var(--surface3); }
@@ -177,7 +177,7 @@
         .skill-item .si .sd { font-size: 0.5rem; color: var(--muted); }
         .skill-item .sc { font-family: 'Space Grotesk', monospace; font-size: 0.6rem; color: var(--gold); }
 
-        /* ─── LEVEL DASHBOARD MODAL ─── */
+        /* LEVEL DASHBOARD MODAL */
         .modal-overlay { position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; padding: 1.5rem; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .modal-overlay.show { opacity: 1; pointer-events: all; }
         .modal-box { width: 100%; max-width: 500px; background: var(--surface); border: 1px solid var(--border2); padding: 1.5rem; box-shadow: 0 40px 100px rgba(0,0,0,0.9); max-height: 80vh; overflow-y: auto; }
@@ -201,7 +201,7 @@
         .level-upgrade-item .lr .lp { font-family: 'Space Grotesk', monospace; font-size: 0.6rem; color: var(--gold); }
         .level-upgrade-item .lr .ll { font-size: 0.5rem; color: var(--primary); }
 
-        /* ─── GOLDEN CONTAINER ─── */
+        /* GOLDEN CONTAINER */
         .golden-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; overflow: hidden; }
         .golden-cookie { position: absolute; width: 55px; height: 55px; background: radial-gradient(circle at 30% 30%, #ffd966, #f0a500); border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 40px rgba(255,201,74,0.7), inset 0 -4px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #7a4a00; cursor: pointer; pointer-events: auto; animation: goldenFloat 2s ease-in-out infinite; transition: transform 0.15s; text-shadow: 0 2px 4px rgba(255,215,0,0.3); font-family: 'Space Grotesk', sans-serif; user-select: none; }
         .golden-cookie::after { content: '✨'; position: absolute; top: -5px; right: -5px; font-size: 0.7rem; }
@@ -210,21 +210,21 @@
         .golden-popup { position: fixed; pointer-events: none; font-size: 1.3rem; font-weight: 800; color: var(--gold); text-shadow: 0 0 30px var(--gold); z-index: 1000; animation: floatUpBig 1.2s ease-out forwards; font-family: 'Space Grotesk', monospace; }
         @keyframes floatUpBig { 0% { opacity: 1; transform: translate(0,0) scale(0.6); } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1.8); } }
 
-        /* ─── FOOTER ─── */
+        /* FOOTER */
         .footer { margin-top: 0.8rem; padding-top: 0.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.5rem; color: var(--muted); flex-wrap: wrap; gap: 0.3rem; position: relative; z-index: 2; flex-shrink: 0; }
         .footer .reset { background: rgba(255,93,108,0.08); border: 1px solid rgba(255,93,108,0.18); padding: 0.1rem 0.6rem; color: var(--red); font-size: 0.5rem; font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Manrope', sans-serif; }
         .footer .reset:hover { background: rgba(255,93,108,0.16); }
 
-        /* ─── TOAST ─── */
+        /* TOAST */
         .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid var(--border2); padding: 0.4rem 1.2rem; font-weight: 600; font-size: 0.75rem; color: var(--fg); box-shadow: 0 12px 40px rgba(0,0,0,0.7); opacity: 0; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none; z-index: 9999; border-radius: 6px; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        /* ─── NOTIFICATION BANNER ─── */
+        /* NOTIFICATION BANNER */
         .notif-banner { position: fixed; top: 0.8rem; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--surface2); border: 1px solid var(--border2); padding: 0.4rem 1.2rem; font-weight: 700; font-size: 0.85rem; color: var(--gold); box-shadow: 0 12px 40px rgba(0,0,0,0.7); z-index: 9998; transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1); border-radius: 6px; text-align: center; pointer-events: none; }
         .notif-banner.show { transform: translateX(-50%) translateY(0); }
         .notif-banner .sub { font-size: 0.55rem; font-weight: 400; color: var(--muted); display: block; }
 
-        /* ─── RESPONSIVE ─── */
+        /* RESPONSIVE */
         @media (max-width: 500px) {
             .game { padding: 0.5rem; max-height: none; }
             .clicker-wrap { width: 140px; height: 140px; }
@@ -241,16 +241,11 @@
             .panel-tabs button { font-size: 0.4rem; padding: 0.15rem 0.3rem; }
             .modal-box { padding: 1rem; }
         }
-
-        /* Supabase loading state */
-        .loading-text { color: var(--muted); text-align: center; padding: 2rem; font-size: 0.9rem; }
-        .loading-text .spinner { display: inline-block; animation: spin 1s linear infinite; margin-right: 0.5rem; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <!-- ─── AUTH OVERLAY ─── -->
+    <!-- AUTH OVERLAY -->
     <div id="authOverlay">
         <div class="auth-box">
             <div class="auth-logo">DVC<span>Clicker</span><small>supabase</small></div>
@@ -276,7 +271,7 @@
         </div>
     </div>
 
-    <!-- ─── LEVEL DASHBOARD MODAL ─── -->
+    <!-- LEVEL DASHBOARD MODAL -->
     <div class="modal-overlay" id="levelModal">
         <div class="modal-box">
             <div class="modal-header">
@@ -295,10 +290,10 @@
         </div>
     </div>
 
-    <!-- ─── NOTIFICATION BANNER ─── -->
+    <!-- NOTIFICATION BANNER -->
     <div class="notif-banner" id="notifBanner"><span id="notifText">🎉</span><span class="sub" id="notifSub"></span></div>
 
-    <!-- ─── GAME ROOT ─── -->
+    <!-- GAME ROOT -->
     <div id="gameRoot" class="hidden">
         <div class="game">
             <!-- HEADER -->
@@ -393,11 +388,11 @@
         </div>
     </div>
 
-    <!-- ─── GOLDEN CONTAINER ─── -->
+    <!-- GOLDEN CONTAINER -->
     <div class="golden-container" id="goldenContainer"></div>
     <div class="toast" id="toast"></div>
 
-    <!-- ─── SUPABASE SDK ─── -->
+    <!-- SUPABASE SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
@@ -405,10 +400,10 @@
            DVC CLICKER — SUPABASE EDITION
            ================================================================ */
 
-        // ─── 🔑 PASTE YOUR SUPABASE URL & ANON KEY HERE ───
-        const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
-        const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
-        // ─────────────────────────────────────────────────────────────
+        // ─── 🔑 YOUR SUPABASE CREDENTIALS ───
+        const SUPABASE_URL = 'https://jlahhnamxoemxsfnlasq.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_i2WyIj7o1i_dX0gVLRv1Og_OSM-Zb6Q';
+        // ─────────────────────────────────────────
 
         // ─── INIT SUPABASE ───
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -594,7 +589,6 @@
         function getTotalCPS() {
             let t = 0;
             for (const u of UPGRADES) t += (S.upgrades[u.id] || 0) * u.cps;
-            // Prestige CPS boosts
             let prestigeMult = 1;
             for (const pu of PRESTIGE_UPGRADES) {
                 if (pu.id.startsWith('p_cps')) {
@@ -606,7 +600,6 @@
                     }
                 }
             }
-            // Skill CPS bonuses
             let skillMult = 1;
             for (const sk of SKILLS) {
                 const owned = S.skills[sk.id] || 0;
@@ -617,7 +610,6 @@
                     else if (sk.id === 's_cps_all') skillMult += owned * 0.10;
                 }
             }
-            // Level CPS boosts
             let levelCpsMult = 1;
             for (const lu of LEVEL_UPGRADES) {
                 if (lu.id.startsWith('lv_cps')) {
@@ -635,7 +627,6 @@
 
         function getClickMultiplier() {
             let mult = 1;
-            // Click mult upgrades
             for (const cu of CLICK_MULT_UPGRADES) {
                 const owned = S.upgrades[cu.id] || 0;
                 if (cu.id === 'click1') mult += owned * 0.5;
@@ -643,18 +634,14 @@
                 else if (cu.id === 'click3') mult += owned * 2;
                 else if (cu.id === 'click4') mult += owned * 5;
             }
-            // Prestige click bonus
             const pClick = S.prestigeUpgrades['p_click'] || 0;
             mult += pClick * 0.5;
-            // Skill click bonuses
             const sClick1 = S.skills['s_click1'] || 0;
             const sClick2 = S.skills['s_click2'] || 0;
             mult += sClick1 * 0.5 + sClick2 * 1;
-            // Level click bonuses
             const lvClick1 = S.levelUpgrades['lv_click1'] || 0;
             const lvClick2 = S.levelUpgrades['lv_click2'] || 0;
             mult += lvClick1 * 0.5 + lvClick2 * 1;
-            // Boosts
             if (S.goldenBoost.active) mult *= S.goldenBoost.multiplier;
             if (S.rainbowBoost.active) mult *= S.rainbowBoost.multiplier;
             return mult;
@@ -695,7 +682,6 @@
                 showNotification(`⭐ Level Up!`, `You are now level ${S.level}`);
                 playAchievementSound();
                 checkAchievements();
-                // Auto-save on level up
                 saveGame();
             }
         }
@@ -1330,7 +1316,6 @@
 
             setAuthLoading('loginBtn', true);
             try {
-                // Sign in with email (username@dvc.local)
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: username + '@dvc.local',
                     password: password
@@ -1357,7 +1342,6 @@
 
             setAuthLoading('signupBtn', true);
             try {
-                // Sign up with email (username@dvc.local)
                 const { data, error } = await supabase.auth.signUp({
                     email: username + '@dvc.local',
                     password: password,
@@ -1366,7 +1350,6 @@
                     }
                 });
                 if (error) throw error;
-                // Create profile entry
                 if (data.user) {
                     const { error: profileError } = await supabase
                         .from('profiles')
@@ -1387,7 +1370,6 @@
             document.getElementById('authOverlay').classList.add('hidden');
             document.getElementById('gameRoot').classList.remove('hidden');
 
-            // Load game data from Supabase
             await loadGame();
 
             document.getElementById('usernameDisplay').textContent = username;
@@ -1439,9 +1421,7 @@
 
         function setAuthLoading(btnId, loading) {
             const btn = document.getElementById(btnId);
-            if (loading) { btn.disabled = true;
-                btn.textContent = '...'; } else { btn.disabled = false;
-                btn.textContent = btnId === 'loginBtn' ? 'Log In' : 'Create Account'; }
+            if (loading) { btn.disabled = true; btn.textContent = '...'; } else { btn.disabled = false; btn.textContent = btnId === 'loginBtn' ? 'Log In' : 'Create Account'; }
         }
 
         // ─── SUPABASE SAVE / LOAD ───
@@ -1683,11 +1663,9 @@
         async function init() {
             buildUpgradeList();
 
-            // Check for existing session
             const sessionUser = getSession();
             if (sessionUser) {
                 S.username = sessionUser;
-                // Try to restore session via Supabase
                 const { data } = await supabase.auth.getSession();
                 if (data.session) {
                     document.getElementById('loginUser').value = sessionUser;
