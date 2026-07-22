@@ -35,6 +35,7 @@
   --c-secret1:   #7c5cff;
   --c-secret2:   #ff2ec4;
   --c-niche:     #ffffff;
+  --c-teacher:   #e8c766;
 
   --font-display: 'Anton', 'Arial Narrow', sans-serif;
   --font-body: 'Inter', -apple-system, sans-serif;
@@ -575,6 +576,16 @@ footer{
   100%{ background-position: 300% 50%; }
 }
 
+.foil-border{
+  background: linear-gradient(90deg,#3a2f0f,#e8c766,#3a2f0f,#e8c766,#3a2f0f);
+  background-size: 300% 100%;
+  animation: foilMove 2.2s linear infinite;
+}
+@keyframes foilMove{
+  0%{ background-position: 0% 50%; }
+  100%{ background-position: 300% 50%; }
+}
+
 @media (max-width: 560px){
   .stats-pill-group{ gap:6px; }
   .stat-pill{ min-width: 84px; padding: 7px 10px; }
@@ -675,42 +686,48 @@ const CONFIG = {
   // #unbox-icon-slot element usage below with an <img> tag if you'd rather use a
   // custom image (e.g. a catbox-hosted icon).
   unboxIconSvg: `
-    <path d="M3 8L12 4L21 8L12 12L3 8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-    <path d="M3 8V16L12 20V12" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-    <path d="M21 8V16L12 20" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-    <path d="M12 12L21 8" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M21 7.5V16.5C21 16.8978 20.8117 17.2794 20.4749 17.5607C20.1382 17.842 19.6813 18 19.2 18H4.8C4.31875 18 3.86176 17.842 3.52504 17.5607C3.18832 17.2794 3 16.8978 3 16.5V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M2.25 6.5C2.25 6.10218 2.40804 5.72064 2.68934 5.43934C2.97064 5.15804 3.35218 5 3.75 5H20.25C20.6478 5 21.0294 5.15804 21.3107 5.43934C21.592 5.72064 21.75 6.10218 21.75 6.5V8C21.75 8.13261 21.6973 8.25979 21.6036 8.35355C21.5098 8.44732 21.3826 8.5 21.25 8.5H2.75C2.61739 8.5 2.49021 8.44732 2.39645 8.35355C2.30268 8.25979 2.25 8.13261 2.25 8V6.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 5V18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M12 5C12 5 11.5 2 8.9 2C7.85 2 7 2.85 7 3.9C7 4.5 7.5 5 8 5H12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 5C12 5 12.5 2 15.1 2C16.15 2 17 2.85 17 3.9C17 4.5 16.5 5 16 5H12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
   `,
 
   // ---- Rarities -------------------------------------------------------
-  // Ordered rarest -> most common. "weight" is relative — the chance of a
-  // rarity is weight / (sum of all weights). Change weights to change odds.
+  // Ordered rarest -> most common. "weight" is out of a fixed total of
+  // 1,000,000 — this total NEVER changes based on which rarities you've
+  // filled in, so leaving a tier empty can't make the tiers above it easier
+  // to hit (see the "cascade" note on weightedPickRarity below for why).
   // "fx" controls how dramatic the reveal animation is: 0 = none, 1 = mild
-  // sparkle, 2 = big (flash + particles), 3 = max (flash + particles + shake + rainbow).
+  // sparkle, 2 = big (flash + particles), 3 = max (flash + particles + shake).
   rarities: [
-    { key: "niche",      label: "Niche",      weight: 5,    color: "var(--c-niche)",     fx: 3 },
-    { key: "secret2",    label: "Secret ++",  weight: 25,   color: "var(--c-secret2)",   fx: 3 },
-    { key: "secret1",    label: "Secret +",   weight: 70,   color: "var(--c-secret1)",   fx: 2 },
-    { key: "mythical",   label: "Mythical",   weight: 200,  color: "var(--c-mythical)",  fx: 2 },
-    { key: "legendary",  label: "Legendary",  weight: 400,  color: "var(--c-legendary)", fx: 1 },
-    { key: "epic",       label: "Epic",       weight: 800,  color: "var(--c-epic)",      fx: 1 },
-    { key: "rare",       label: "Rare",       weight: 1500, color: "var(--c-rare)",      fx: 0 },
-    { key: "uncommon",   label: "Uncommon",   weight: 2500, color: "var(--c-uncommon)",  fx: 0 },
-    { key: "common",     label: "Common",     weight: 4500, color: "var(--c-common)",    fx: 0 },
+    { key: "teacher",    label: "Teacher",    weight: 1,      color: "var(--c-teacher)",   fx: 3, foil: true },
+    { key: "niche",      label: "Niche",      weight: 9,      color: "var(--c-niche)",      fx: 3, rainbow: true },
+    { key: "secret2",    label: "Secret ++",  weight: 90,     color: "var(--c-secret2)",    fx: 3 },
+    { key: "secret1",    label: "Secret +",   weight: 400,    color: "var(--c-secret1)",    fx: 2 },
+    { key: "mythical",   label: "Mythical",   weight: 1500,   color: "var(--c-mythical)",   fx: 2 },
+    { key: "legendary",  label: "Legendary",  weight: 8000,   color: "var(--c-legendary)",  fx: 1 },
+    { key: "epic",       label: "Epic",       weight: 30000,  color: "var(--c-epic)",       fx: 1 },
+    { key: "rare",       label: "Rare",       weight: 90000,  color: "var(--c-rare)",       fx: 0 },
+    { key: "uncommon",   label: "Uncommon",   weight: 220000, color: "var(--c-uncommon)",   fx: 0 },
+    { key: "common",     label: "Common",     weight: 650000, color: "var(--c-common)",     fx: 0 },
   ],
 
   // ---- Items per rarity ------------------------------------------------
-  // Add your friends'/classmates' names into these arrays. Any rarity you
-  // leave empty will simply be skipped when rolled (its weight is ignored
-  // until you add at least one name).
+  // Add names into these arrays. "teacher" is left empty on purpose — see
+  // the note in the chat reply about why teacher names weren't added
+  // automatically. Any tier you leave empty is simply skipped when rolled;
+  // it no longer inflates the odds of the tiers around it.
   items: {
-    niche:     ["Jackson Barnett", "Xavier Lambert", "Seth Cottrell"],
+    teacher:   ["Mikey Haung", "bearded Dragon", "Kurston", "Reg Bryne", "Cailin Malloy", "Paul", "Jane Overton", "Kim Folk", "Brenden Warren Smith", "Hailey Freeman", "Jacqui", "Kirk", "Science Jackie"],
+    niche:     ["Jackson Barnett", "Xavier Lambert", "Seth Cottrell", "Brandon Luriaku"],
     secret2:   ["Coopa Willis", "Elliot Murphy", "Harrison Blake", "Angus Burchfield", "Noah Hosking", "Cooper Barrett", "Sam Sheilds"],
-    secret1:   ["Christian Trong", "Jett Thompson", "Chase Bethune", "Hector Something", "Conner Smith", "Marcus Baker Glen", "Milan Brkljac"],
-    mythical:  ["Sam March", "Archie Doyl", "Mav Danahay", "Big Baaaaaaaaaaaz", "Levin", "Punett", "Seven"],
-    legendary: [ ],
-    epic:      [ ],
-    rare:      [ ],
-    uncommon:  [ ],
+    secret1:   ["Christian Troung", "Jett Thompson", "Chase Bethune", "Hector Something", "Conner Smith", "Marcus Baker Glen", "Milan Brkljac"],
+    mythical:  ["Sam March", "Archie Doyl", "Mav Danahay", "Big Baaaaaaaaaaaz", "Levin", "Punett", "Seven", "Dane / Callie", "Mini Keff"],
+    legendary: ["Max Anthony", "Rowan", "Big Keff", "Lakshman"],
+    epic:      [],
+    rare:      ["Charlie Flint", "Ethan Barker", "Ethan Mathews", "Broby Styles", "Oscar Bananda", "Harvey Wold", "Ollie Shields", "Hammer", "Beau"],
+    uncommon:  ["Jai Wellington", "Shannon Knight", "Finbarr", "Cruze McStay", "Zac Gray", "Bezina", "Charlie Potter"],
     common:    ["Nathan Foster", "Blake Smith", "Conner Cross", "Sam Luck", "Mitchell Taylor", "Jarrah Vickery Stewart", "Conner Wilson", "Cooper Burgess", "Ben Smith", "Remy Smith", "Michael Andrews", "Max Davidson", "Luke Danahay", "Mikey Haung", "Eden Harris", "Jai Pudding", "Lachie Masci", "Lucas Galenti", "Lucas Giles"],
   }
 };
@@ -758,31 +775,45 @@ document.getElementById('unbox-icon-slot').innerHTML = CONFIG.unboxIconSvg;
    ODDS HELPERS
    ========================================================================== */
 function rarityPool(){
-  // only rarities that currently have at least one item are rollable
+  // only rarities that currently have at least one item — used for filler
+  // cards in the reel and for the "nothing configured yet" check
   return CONFIG.rarities.filter(r => (CONFIG.items[r.key] || []).length > 0);
 }
-function totalWeight(pool){
-  return pool.reduce((s,r)=> s + r.weight, 0);
+function totalWeight(list){
+  return list.reduce((s,r)=> s + r.weight, 0);
 }
+// Odds are always computed against the FULL configured weight table, never
+// just the populated tiers — so leaving Legendary/Epic/etc. empty can't
+// silently inflate the odds of Mythical/Secret+/Niche. If the roll lands on
+// a tier with no names in it yet, we cascade DOWN (toward more common
+// tiers) to the nearest populated one, same as a real case-opening game
+// treats an "empty" slot as a pass-through rather than a jackpot.
 function weightedPickRarity(){
-  const pool = rarityPool();
-  if(pool.length === 0) return null;
-  const total = totalWeight(pool);
+  const all = CONFIG.rarities;
+  const total = totalWeight(all);
+  if(total <= 0) return null;
   let roll = Math.random() * total;
-  for(const r of pool){
-    if(roll < r.weight) return r;
-    roll -= r.weight;
+  let chosenIndex = all.length - 1;
+  for(let i=0;i<all.length;i++){
+    if(roll < all[i].weight){ chosenIndex = i; break; }
+    roll -= all[i].weight;
   }
-  return pool[pool.length - 1];
+  for(let i=chosenIndex; i<all.length; i++){
+    if((CONFIG.items[all[i].key] || []).length > 0) return all[i];
+  }
+  for(let i=chosenIndex-1; i>=0; i--){
+    if((CONFIG.items[all[i].key] || []).length > 0) return all[i];
+  }
+  return null;
 }
 function pickItem(rarity){
   const list = CONFIG.items[rarity.key] || [];
   return list[Math.floor(Math.random() * list.length)];
 }
-function fmtChance(weight, pool){
-  const total = totalWeight(pool);
+function fmtChance(weight){
+  const total = totalWeight(CONFIG.rarities);
   const pct = (weight/total)*100;
-  if(pct < 0.01) return pct.toFixed(4)+"%";
+  if(pct < 0.001) return pct.toFixed(5)+"%";
   if(pct < 1) return pct.toFixed(3)+"%";
   return pct.toFixed(2)+"%";
 }
@@ -1087,28 +1118,32 @@ function renderAutoToggle(){
    RARITY / INDEX PANEL
    ========================================================================== */
 function renderRarityList(){
-  const pool = CONFIG.rarities; // show all, even empty, so it's clear what's configured
-  const rollable = rarityPool();
+  const all = CONFIG.rarities; // show all, even empty, so it's clear what's configured
+  const totalAll = totalWeight(all);
   const list = document.getElementById('rarity-list');
   list.innerHTML = '';
-  pool.forEach(r=>{
+  all.forEach(r=>{
     const items = CONFIG.items[r.key] || [];
     const isRollable = items.length > 0;
-    const chance = isRollable ? fmtChance(r.weight, rollable) : '—';
+    const chance = fmtChance(r.weight);
+    const shimmerClass = r.rainbow ? 'rainbow-border' : (r.foil ? 'foil-border' : '');
+    const swatchStyle = shimmerClass ? '' : `background:${r.color}; box-shadow:0 0 8px ${r.color}99;`;
+    const barStyle = shimmerClass ? '' : `background:${r.color};`;
+    const nameColor = (r.key === 'niche') ? 'var(--text)' : r.color;
     const row = document.createElement('div');
     row.className = 'rarity-row';
     row.innerHTML = `
       <div class="rarity-row-head">
-        <div class="chip ${r.key==='niche' ? 'rainbow-border' : ''}" style="${r.key==='niche' ? '' : `background:${r.color}; box-shadow:0 0 8px ${r.color}99;`}"></div>
-        <div class="rname" style="color:${r.color==='var(--c-niche)' ? 'var(--text)' : r.color}">${r.label}</div>
-        <div class="rbar"><div class="rbar-fill ${r.key==='niche' ? 'rainbow-border' : ''}" style="width:${isRollable ? Math.max(2, (r.weight/totalWeight(rollable))*100) : 0}%; ${r.key==='niche' ? '' : `background:${r.color};`}"></div></div>
+        <div class="chip ${shimmerClass}" style="${swatchStyle}"></div>
+        <div class="rname" style="color:${nameColor}">${r.label}</div>
+        <div class="rbar"><div class="rbar-fill ${shimmerClass}" style="width:${Math.max(0.4, (r.weight/totalAll)*100)}%; ${barStyle}"></div></div>
         <div class="rchance">${chance}</div>
         <div class="rcount">${items.length} item${items.length===1?'':'s'}</div>
         <div class="chev">▾</div>
       </div>
       <div class="rarity-items">
         <div class="rarity-items-inner">
-          ${items.length ? items.map(n=>`<div class="item-tag">${escapeHtml(n)} <span class="cnt">${state.itemCounts[n]||0}</span></div>`).join('') : `<div class="item-tag empty">no names added yet — edit CONFIG.items.${r.key}</div>`}
+          ${items.length ? items.map(n=>`<div class="item-tag">${escapeHtml(n)} <span class="cnt">${state.itemCounts[n]||0}</span></div>`).join('') : `<div class="item-tag empty">no names added yet — rolls of ${r.label} currently cascade down to the next filled tier</div>`}
         </div>
       </div>
     `;
