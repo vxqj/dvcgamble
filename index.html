@@ -1048,6 +1048,8 @@ const CONFIG = {
     luck:  { label: "Luck Upgrade", desc: "Shifts the odds — each level makes non-Common pulls relatively more likely.", baseCost: 40, costGrowth: 1.6, maxLevel: 10, boostPerLevel: 0.18 },
     speed: { label: "Unbox Speed",  desc: "Shortens the cooldown between unboxes.", baseCost: 30, costGrowth: 1.5, maxLevel: 6, msPerLevel: 150, minCooldown: 500 },
     multi: { label: "Multi Roll",   desc: "Unlocks opening 2 cases at once, side by side.", cost: 150 },
+    pity:  { label: "Pity Counter", desc: "Guarantees an Epic-or-better pull once your streak without one hits the window. Each level shortens the window.", baseCost: 200, costGrowth: 1.55, maxLevel: 6, baseThreshold: 150, stepPerLevel: 18, minThreshold: 40 },
+    shinyCharm: { label: "Shiny Charm", desc: "Increases your flat shiny chance on every pull.", baseCost: 250, costGrowth: 1.7, maxLevel: 8, multiplierPerLevel: 0.5 },
   },
 
   // Shiny is a SEPARATE roll from rarity — any pull, even a Common, has this
@@ -1118,7 +1120,8 @@ const CONFIG = {
 function loadState(){
   const fallback = {
     total: 0, autoUnbox: false, rarityCounts: {}, itemCounts: {}, shinyCounts: {},
-    upgrades: { luck: 0, speed: 0, multi: false },
+    upgrades: { luck: 0, speed: 0, multi: false, pity: 0, shinyCharm: 0 },
+    pityCounter: 0,
     lastHeartbeatTs: Date.now(),
     globalFeedCache: [],
   };
@@ -1130,6 +1133,7 @@ function loadState(){
     merged.upgrades = Object.assign({}, fallback.upgrades, parsed.upgrades || {});
     merged.globalFeedCache = Array.isArray(parsed.globalFeedCache) ? parsed.globalFeedCache : [];
     merged.shinyCounts = parsed.shinyCounts || {};
+    merged.pityCounter = typeof parsed.pityCounter === 'number' ? parsed.pityCounter : 0;
     return merged;
   }catch(e){
     return fallback;
@@ -1201,9 +1205,56 @@ function pickItem(rarity){
   const list = CONFIG.items[rarity.key] || [];
   return list[Math.floor(Math.random() * list.length)];
 }
-function rollShiny(){
-  return Math.random() < CONFIG.shiny.chance;
+function effectiveShinyChance(){
+  const cfg = CONFIG.upgrades.shinyCharm;
+  const lvl = state.upgrades.shinyCharm || 0;
+  return CONFIG.shiny.chance * (1 + cfg.multiplierPerLevel * lvl);
 }
+function rollShiny(){
+  return Math.random() < effectiveShinyChance();
+}
+
+/* ---- Pity Counter ---------------------------------------------------- */
+function epicIndexValue(){
+  return CONFIG.rarities.findIndex(r=>r.key==='epic');
+}
+function pityThreshold(){
+  const lvl = state.upgrades.pity || 0;
+  if(lvl <= 0) return null;
+  const cfg = CONFIG.upgrades.pity;
+  const threshold = cfg.baseThreshold - (lvl-1) * cfg.stepPerLevel;
+  return Math.max(cfg.minThreshold, threshold);
+}
+function pickRarityWithPity(){
+  const threshold = pityThreshold();
+  const epicIdx = epicIndexValue();
+
+  if(threshold !== null && state.pityCounter >= threshold){
+    const forcedPool = effectiveRarities().filter((r,i)=> i<=epicIdx && (CONFIG.items[r.key]||[]).length>0);
+    let rarity = null;
+    if(forcedPool.length){
+      const totalW = totalWeight(forcedPool);
+      let roll = Math.random()*totalW;
+      rarity = forcedPool[forcedPool.length-1];
+      for(let i=0;i<forcedPool.length;i++){
+        if(roll < forcedPool[i].weight){ rarity = forcedPool[i]; break; }
+        roll -= forcedPool[i].weight;
+      }
+    } else {
+      rarity = weightedPickRarity();
+    }
+    state.pityCounter = 0;
+    return rarity;
+  }
+
+  const rarity = weightedPickRarity();
+  if(rarity){
+    if(rarityIndex(rarity) <= epicIdx) state.pityCounter = 0;
+    else state.pityCounter = (state.pityCounter||0) + 1;
+  }
+  return rarity;
+}
+
 function fmtChanceValue(weight, total){
   const pct = (weight/total)*100;
   if(pct < 0.001) return pct.toFixed(5)+"%";
@@ -1277,6 +1328,26 @@ function renderUpgrades(){
     levelText: upgradeMaxed('multi') ? 'Owned' : 'Not owned',
     maxed: upgradeMaxed('multi'),
     cost: upgradeMaxed('multi') ? null : upgradeCost('multi'),
+  }));
+
+  const pc = CONFIG.upgrades.pity;
+  const pThresh = pityThreshold();
+  const pityLevelText = pThresh === null
+    ? `Level ${state.upgrades.pity} / ${pc.maxLevel} · inactive until level 1`
+    : `Level ${state.upgrades.pity} / ${pc.maxLevel} · window ${pThresh} · streak ${Math.min(state.pityCounter, pThresh)}/${pThresh}`;
+  grid.appendChild(upgradeCardEl({
+    key: 'pity', title: pc.label, desc: pc.desc,
+    levelText: pityLevelText,
+    maxed: upgradeMaxed('pity'),
+    cost: upgradeMaxed('pity') ? null : upgradeCost('pity'),
+  }));
+
+  const shc = CONFIG.upgrades.shinyCharm;
+  grid.appendChild(upgradeCardEl({
+    key: 'shinyCharm', title: shc.label, desc: shc.desc,
+    levelText: `Level ${state.upgrades.shinyCharm} / ${shc.maxLevel} · chance 1 in ${Math.round(1/effectiveShinyChance())}`,
+    maxed: upgradeMaxed('shinyCharm'),
+    cost: upgradeMaxed('shinyCharm') ? null : upgradeCost('shinyCharm'),
   }));
 }
 
@@ -1561,7 +1632,7 @@ function doUnbox(){
   const rollCount = state.upgrades.multi ? 2 : 1;
   const results = [];
   for(let i=0;i<rollCount;i++){
-    const rarity = weightedPickRarity();
+    const rarity = pickRarityWithPity();
     const name = pickItem(rarity);
     results.push({ rarity, name, shiny: rollShiny() });
   }
@@ -1578,7 +1649,6 @@ function doUnbox(){
 }
 
 function isBroadcastWorthy(rarity, shiny){
-  if(shiny) return true;
   const idx = rarityIndex(rarity);
   const thresholdIdx = CONFIG.rarities.findIndex(r=>r.key===CONFIG.globalFeed.minRarityKeyForBroadcast);
   return idx !== -1 && thresholdIdx !== -1 && idx <= thresholdIdx;
@@ -1709,7 +1779,7 @@ function processAwayCatchUp(){
   const collected = [];
   for(let c=0;c<cycles;c++){
     for(let i=0;i<rollCount;i++){
-      const rarity = weightedPickRarity();
+      const rarity = pickRarityWithPity();
       if(!rarity) continue;
       collected.push({ rarity, name: pickItem(rarity), shiny: rollShiny() });
     }
@@ -1831,7 +1901,7 @@ function renderGlobalFeedFromCache(){
   const list = document.getElementById('global-feed-list');
   const items = (state.globalFeedCache || []).slice().sort((a,b)=> b.ts - a.ts);
   if(items.length === 0){
-    list.innerHTML = `<div class="global-feed-empty">no mythical+ (or shiny) pulls broadcast yet — waiting for the first one...</div>`;
+    list.innerHTML = `<div class="global-feed-empty">no mythical+ pulls broadcast yet — waiting for the first one...</div>`;
     return;
   }
   list.innerHTML = items.map(feedItemHtml).join('');
