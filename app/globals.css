@@ -708,3 +708,284 @@ footer.app-footer {
   .reveal-grid { gap: 10px; }
   .coin-pill { padding: 8px 12px; }
 }
+/* ==========================================================================
+   ADD THIS TO THE END OF YOUR EXISTING app/globals.css
+   Uses var(--font-mono) and var(--muted-2), which your file already
+   defines. Colors below are otherwise self-contained (rgba on dark) —
+   tweak them to match your palette if you want a closer blend.
+   ========================================================================== */
+
+/* ---------- Auth button (TopBar) ---------- */
+.auth-btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.auth-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.auth-btn.logged-in {
+  background: rgba(80, 220, 140, 0.12);
+  border-color: rgba(80, 220, 140, 0.35);
+  color: #7cffb2;
+}
+
+/* ---------- Auth modal ---------- */
+.auth-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(6, 8, 12, 0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.auth-modal {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  background: #14161c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 28px 22px 22px;
+}
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--muted-2);
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.auth-tab.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.auth-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted-2);
+  margin: 14px 0 6px;
+}
+.auth-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-size: 14px;
+}
+.auth-username-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.auth-username-box {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+.auth-dice-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 18px;
+  cursor: pointer;
+}
+.auth-error {
+  color: #ff7373;
+  font-size: 12px;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+}
+.auth-submit-btn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 13px;
+  border-radius: 10px;
+  border: none;
+  background: #f2c14e;
+  color: #14161c;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 14px;
+}
+.auth-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.auth-code-screen {
+  text-align: center;
+  padding-top: 10px;
+}
+.auth-title {
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+.auth-sub {
+  color: var(--muted-2);
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+.auth-code-box {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+}
+.auth-copy-hint {
+  display: block;
+  font-size: 10.5px;
+  color: var(--muted-2);
+  margin-top: 6px;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+
+/* ---------- Event tab ---------- */
+.event-timer {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 10px 0;
+}
+.time-block {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 14px;
+  text-align: center;
+  min-width: 56px;
+}
+.time-value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 800;
+}
+.time-label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--muted-2);
+  text-transform: uppercase;
+}
+.event-ended {
+  font-family: var(--font-mono);
+  color: var(--muted-2);
+}
+.event-login-hint {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: #f2c14e;
+  background: rgba(242, 193, 78, 0.1);
+  border: 1px solid rgba(242, 193, 78, 0.3);
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+  padding-bottom: 10px;
+}
+.podium-spot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 110px;
+}
+.podium-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  margin-bottom: 8px;
+  min-height: 62px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+.podium-username {
+  font-weight: 800;
+  font-size: 12.5px;
+}
+.podium-rarity {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  margin-top: 2px;
+  color: #f2c14e;
+}
+.podium-cardname {
+  font-size: 11px;
+  color: var(--muted-2);
+  margin-top: 2px;
+}
+.podium-empty {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted-2);
+}
+.podium-stand {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8px;
+}
+.podium-place-1 .podium-stand {
+  background: rgba(242, 193, 78, 0.18);
+  border-color: rgba(242, 193, 78, 0.4);
+}
+.podium-place-2 .podium-stand {
+  background: rgba(180, 190, 200, 0.14);
+}
+.podium-place-3 .podium-stand {
+  background: rgba(255, 157, 31, 0.14);
+}
+.podium-number {
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 20px;
+  color: var(--muted-2);
+}

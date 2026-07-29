@@ -6,12 +6,23 @@ import ShopTab from "../components/ShopTab";
 import InventoryTab from "../components/InventoryTab";
 import FeedTab from "../components/FeedTab";
 import UpgradesTab from "../components/UpgradesTab";
+import EventTab from "../components/EventTab";
 import PackOpenModal from "../components/PackOpenModal";
-import { ShopIcon, InventoryIcon, FeedIcon, UpgradeIcon } from "../components/Icons";
+import AuthModal from "../components/AuthModal";
+import { ShopIcon, InventoryIcon, FeedIcon, UpgradeIcon, TrophyIcon } from "../components/Icons";
 import { loadState, saveState, defaultState, applyOfflineCoins } from "../lib/storage";
 import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary } from "../lib/engine";
 import { broadcastPull } from "../lib/feed";
 import { startPresence } from "../lib/presence";
+import {
+  getSession,
+  setSession as persistSession,
+  clearSession,
+  loadStateFromCloud,
+  saveStateToCloud,
+  beaconSave,
+  submitEventEntry,
+} from "../lib/authClient";
 import { COIN_INTERVAL_MS, PACKS } from "../lib/config";
 
 const TABS = [
@@ -19,6 +30,7 @@ const TABS = [
   { key: "inventory", label: "Inventory", Icon: InventoryIcon },
   { key: "upgrades", label: "Upgrades", Icon: UpgradeIcon },
   { key: "feed", label: "Feed", Icon: FeedIcon },
+  { key: "event", label: "Event", Icon: TrophyIcon },
 ];
 
 // Small breather between one auto-opened batch collecting and the next one
@@ -32,16 +44,33 @@ export default function Page() {
   const [modalHidden, setModalHidden] = useState(false);
   const [autoOpenPackKey, setAutoOpenPackKey] = useState(null);
   const [onlineCount, setOnlineCount] = useState(1);
+  const [session, setLocalSession] = useState(null); // { token, username } | null
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const readyRef = useRef(false);
   const modalSeqRef = useRef(0);
   const autoTimerRef = useRef(null);
 
-  // Load + hydrate on mount
+  // Load + hydrate on mount. If there's an existing login session, the
+  // player's cloud save is the source of truth; otherwise fall back to
+  // whatever's in localStorage (guest play).
   useEffect(() => {
-    const loaded = loadState() || defaultState();
-    const caught = applyOfflineCoins(loaded);
-    setState(caught);
-    readyRef.current = true;
+    const local = loadState() || defaultState();
+    const caughtLocal = applyOfflineCoins(local);
+    const existingSession = getSession();
+
+    if (existingSession && existingSession.token) {
+      setLocalSession(existingSession);
+      loadStateFromCloud(existingSession.token).then((cloudState) => {
+        const merged = cloudState
+          ? applyOfflineCoins({ ...defaultState(), ...cloudState })
+          : caughtLocal;
+        setState(merged);
+        readyRef.current = true;
+      });
+    } else {
+      setState(caughtLocal);
+      readyRef.current = true;
+    }
   }, []);
 
   // Passive coin income
@@ -57,12 +86,34 @@ export default function Page() {
     return () => clearInterval(t);
   }, [!!state]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Persist on change (debounced)
+  // Persist on change (debounced) — always to localStorage, and also to the
+  // cloud whenever a session is active.
   useEffect(() => {
     if (!state || !readyRef.current) return;
-    const t = setTimeout(() => saveState(state), 300);
+    const t = setTimeout(() => {
+      saveState(state);
+      if (session && session.token) saveStateToCloud(session.token, state);
+    }, 300);
     return () => clearTimeout(t);
-  }, [state]);
+  }, [state, session]);
+
+  // Save on tab close / hide, since the debounced save above can get cut
+  // off if the tab closes mid-timer. sendBeacon fires reliably even as the
+  // page is unloading.
+  useEffect(() => {
+    function saveNow() {
+      if (session && session.token && state) beaconSave(session.token, state);
+    }
+    function onVisibility() {
+      if (document.visibilityState === "hidden") saveNow();
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", saveNow);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", saveNow);
+    };
+  }, [session, state]);
 
   // Online presence — anonymous heartbeat over the same no-backend approach
   // the feed uses, no accounts involved.
@@ -172,17 +223,24 @@ export default function Page() {
       });
       return { ...prev, cards, totalOpened: prev.totalOpened + results.length };
     });
-    results
-      .filter(({ rarity }) => isRarePull(rarity))
-      .forEach(({ rarity, name }) => {
-        broadcastPull({
-          rarityKey: rarity.key,
-          rarityLabel: rarity.label,
-          color: rarity.color,
-          name,
-          packLabel: openedPack ? openedPack.label : undefined,
-        });
+
+    const rarePulls = results.filter(({ rarity }) => isRarePull(rarity));
+    rarePulls.forEach(({ rarity, name }) => {
+      broadcastPull({
+        rarityKey: rarity.key,
+        rarityLabel: rarity.label,
+        color: rarity.color,
+        name,
+        packLabel: openedPack ? openedPack.label : undefined,
       });
+      // Event entries are only meaningful for logged-in players — there's
+      // no identity to put on the podium otherwise. The server always
+      // derives the username from the session token, never from anything
+      // sent here.
+      if (session && session.token) {
+        submitEventEntry(session.token, { rarityKey: rarity.key, cardName: name });
+      }
+    });
 
     // Auto-open continuation: if this batch belongs to the active auto-open
     // run and there are still packs of that type left, queue the next one.
@@ -209,6 +267,23 @@ export default function Page() {
     setModalHidden(false);
   }
 
+  function handleAuthed({ token, username, state: cloudState }) {
+    const nextSession = { token, username };
+    persistSession(nextSession);
+    setLocalSession(nextSession);
+    // Login replaces local play with that account's saved progress; signup
+    // just echoes back what we already had, so this is a no-op there.
+    if (cloudState) {
+      setState(applyOfflineCoins({ ...defaultState(), ...cloudState }));
+    }
+    setAuthModalOpen(false);
+  }
+
+  function handleLogout() {
+    clearSession();
+    setLocalSession(null);
+  }
+
   const autoOpenPack = autoOpenPackKey ? PACKS.find((p) => p.key === autoOpenPackKey) : null;
   const autoOpenRemaining = autoOpenPackKey ? (state.packs[autoOpenPackKey] || 0) : 0;
 
@@ -218,6 +293,9 @@ export default function Page() {
         coins={state.coins}
         onlineCount={onlineCount}
         coinsPerTick={effectiveCoinPerTick(state.upgrades ? state.upgrades.coinBoost : 0)}
+        authedUsername={session ? session.username : null}
+        onOpenAuth={() => setAuthModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       <div className="page-nav">
@@ -250,6 +328,7 @@ export default function Page() {
         <UpgradesTab coins={state.coins} upgrades={state.upgrades} onBuy={handleBuyUpgrade} />
       )}
       {tab === "feed" && <FeedTab localFeedCache={[]} />}
+      {tab === "event" && <EventTab loggedIn={!!session} />}
 
       <footer className="app-footer">DVC Gamble</footer>
 
@@ -269,6 +348,14 @@ export default function Page() {
             onHide={modal.auto ? handleHideModal : undefined}
           />
         </div>
+      )}
+
+      {authModalOpen && (
+        <AuthModal
+          localState={state}
+          onClose={() => setAuthModalOpen(false)}
+          onAuthed={handleAuthed}
+        />
       )}
 
       {/* Stays reachable no matter which tab is on screen, and even while

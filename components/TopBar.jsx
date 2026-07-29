@@ -5,7 +5,7 @@ import { COIN_INTERVAL_MS } from "../lib/config";
 import { fmtNum } from "../lib/engine";
 import { PeopleIcon } from "./Icons";
 
-export default function TopBar({ coins, onlineCount, coinsPerTick }) {
+export default function TopBar({ coins, onlineCount, coinsPerTick, authedUsername, onOpenAuth, onLogout }) {
   const [tick, setTick] = useState(false);
   const [prevCoins, setPrevCoins] = useState(coins);
 
@@ -42,6 +42,15 @@ export default function TopBar({ coins, onlineCount, coinsPerTick }) {
             <div className="coin-rate">+{coinsPerTick || 1} every {(COIN_INTERVAL_MS / 1000).toFixed(0)}s</div>
           </div>
         </div>
+        {authedUsername ? (
+          <button className="auth-btn logged-in" onClick={onLogout} title="Log out">
+            {authedUsername}
+          </button>
+        ) : (
+          <button className="auth-btn" onClick={onOpenAuth}>
+            Sign Up / Log In
+          </button>
+        )}
       </div>
     </header>
   );
