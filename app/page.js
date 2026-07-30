@@ -22,6 +22,7 @@ import {
   saveStateToCloud,
   beaconSave,
   submitEventEntry,
+  fetchMe,
 } from "../lib/authClient";
 import { COIN_INTERVAL_MS, PACKS } from "../lib/config";
 
@@ -60,6 +61,22 @@ export default function Page() {
 
     if (existingSession && existingSession.token) {
       setLocalSession(existingSession);
+      // Re-verify who this token actually belongs to, straight from the DB —
+      // this overwrites anything edited in localStorage/devtools with the
+      // real username, and logs the session out entirely if the token turns
+      // out to be invalid/expired.
+      fetchMe(existingSession.token).then((realUsername) => {
+        if (!realUsername) {
+          clearSession();
+          setLocalSession(null);
+          return;
+        }
+        if (realUsername !== existingSession.username) {
+          const corrected = { ...existingSession, username: realUsername };
+          persistSession(corrected);
+          setLocalSession(corrected);
+        }
+      });
       loadStateFromCloud(existingSession.token).then((cloudState) => {
         const merged = cloudState
           ? applyOfflineCoins({ ...defaultState(), ...cloudState })
