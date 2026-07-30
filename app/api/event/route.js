@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
-import { EVENT_CONFIG } from "../../../lib/config";
+import { EVENT_CONFIG, RARITIES } from "../../../lib/config";
 
 const LEADERBOARD_SIZE = 50;
 
@@ -11,30 +11,54 @@ const LEADERBOARD_SIZE = 50;
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+// Always recompute a pull's rank from its rarity_key against the CURRENT
+// live RARITIES list in lib/config.js, instead of trusting the rarity_index
+// value that was stored in the DB back when that pull was submitted.
+//
+// This is the actual bug: RARITIES gets reordered / grows new top tiers
+// over time (e.g. "Sovereign" got added above "Ascended" at some point).
+// Every row already in event_entries keeps whatever rarity_index it was
+// given at THAT time — it never gets recomputed. So an old "Ascended" pull
+// that was stored back when Ascended was index 0 stays at index 0 forever,
+// even after Sovereign takes over as the new index 0. That old row then
+// ties with (or beats) a brand new, genuinely rarer Sovereign pull on sort,
+// and since ties break on pulled_at ascending, the older-but-now-wrong row
+// wins the tiebreak and outranks the real best pull. That's exactly what
+// was happening: two stale Ascended rows sitting above a real Sovereign.
+//
+// Fixing this at read-time (instead of just going back and patching old
+// rows) means it can never silently drift out of sync again, no matter how
+// many more times the rarity tiers get reordered later.
+function liveRarityIndex(rarityKey) {
+  const idx = RARITIES.findIndex((r) => r.key === rarityKey);
+  return idx < 0 ? RARITIES.length - 1 : idx;
+}
+
 export async function GET() {
   try {
     const db = supabaseAdmin();
-    // Rarest-first, earliest-first for ties. We pull well more rows than
-    // LEADERBOARD_SIZE and then de-dupe to one entry per player client-side
-    // of this query, since only each player's single best pull should be
-    // able to place — a player with many rare pulls shouldn't crowd out
-    // everyone else with their 2nd/3rd/4th-best result. Because rows are
-    // sorted globally by rarity first, a player's newest PERSONAL BEST
-    // (lower rarity_index) always sorts ahead of their own older, worse
-    // pulls — so this naturally reflects improvement without needing an
-    // update/upsert anywhere else in the app.
+    // No longer ORDER BY the (unreliable) stored rarity_index column — pull
+    // everything reasonable and sort it ourselves off live indices below.
     const { data, error } = await db
       .from("event_entries")
-      .select("username, rarity_key, rarity_label, card_name, rarity_index, pulled_at, player_id")
-      .order("rarity_index", { ascending: true })
-      .order("pulled_at", { ascending: true })
-      .limit(1000);
+      .select("username, rarity_key, rarity_label, card_name, pulled_at, player_id")
+      .limit(2000);
 
     if (error) throw error;
 
+    const sorted = (data || [])
+      .map((row) => ({ ...row, liveIndex: liveRarityIndex(row.rarity_key) }))
+      .sort((a, b) => {
+        if (a.liveIndex !== b.liveIndex) return a.liveIndex - b.liveIndex;
+        return new Date(a.pulled_at).getTime() - new Date(b.pulled_at).getTime();
+      });
+
+    // Only each player's single best (now correctly-ranked) pull can place
+    // — de-dupe to one entry per player, keeping the first (= best) one
+    // seen in the freshly-sorted order.
     const seenPlayers = new Set();
     const leaderboard = [];
-    for (const row of data) {
+    for (const row of sorted) {
       if (seenPlayers.has(row.player_id)) continue;
       seenPlayers.add(row.player_id);
       leaderboard.push(row);
