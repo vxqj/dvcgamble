@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchEvent } from "../lib/authClient";
+import { RARITIES } from "../lib/config";
 
 function timeLeft(endsAt) {
   const diff = new Date(endsAt).getTime() - Date.now();
@@ -14,6 +15,11 @@ function timeLeft(endsAt) {
     secs: s % 60,
   };
 }
+
+const rarityLookup = {};
+RARITIES.forEach((r) => {
+  rarityLookup[r.key] = r;
+});
 
 export default function EventTab({ loggedIn }) {
   const [event, setEvent] = useState(null);
@@ -45,10 +51,11 @@ export default function EventTab({ loggedIn }) {
     return <div className="inv-empty">Loading event...</div>;
   }
 
-  const podium = event.podium || [];
-  const first = podium[0];
-  const second = podium[1];
-  const third = podium[2];
+  const leaderboard = event.leaderboard || [];
+  const first = leaderboard[0];
+  const second = leaderboard[1];
+  const third = leaderboard[2];
+  const rest = leaderboard.slice(3);
 
   return (
     <div>
@@ -82,6 +89,40 @@ export default function EventTab({ loggedIn }) {
         <PodiumSpot place={1} entry={first} height={150} />
         <PodiumSpot place={3} entry={third} height={80} />
       </div>
+
+      {rest.length > 0 && (
+        <div style={{ marginTop: 36 }}>
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: 11,
+              letterSpacing: "0.06em",
+              color: "var(--muted-2)",
+              textTransform: "uppercase",
+              marginBottom: 10,
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span>Rank 4–{leaderboard.length}</span>
+            <span>Top {leaderboard.length}</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 6,
+              maxHeight: 480,
+              overflowY: "auto",
+              paddingRight: 4,
+            }}
+          >
+            {rest.map((entry, i) => (
+              <LeaderboardRow key={entry.username + i} rank={i + 4} entry={entry} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -111,6 +152,70 @@ function PodiumSpot({ place, entry, height }) {
       </div>
       <div className="podium-stand" style={{ height }}>
         <span className="podium-number">{place}</span>
+      </div>
+    </div>
+  );
+}
+
+function LeaderboardRow({ rank, entry }) {
+  const rarity = rarityLookup[entry.rarity_key];
+  const rarityStyle = rarity && rarity.gradient
+    ? { "--rarity-gradient": rarity.gradient }
+    : { color: rarity ? rarity.color : "var(--muted-2)" };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 14,
+        padding: "10px 14px",
+        borderRadius: 10,
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 12,
+          color: "var(--muted-2)",
+          width: 28,
+          textAlign: "right",
+          flexShrink: 0,
+        }}
+      >
+        {rank}
+      </div>
+      <div style={{ flex: 1, minWidth: 0, fontWeight: 600, fontSize: 13.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {entry.username}
+      </div>
+      <div
+        className={rarity && rarity.gradient ? "gradient-text" : undefined}
+        style={{
+          ...rarityStyle,
+          fontFamily: "var(--font-mono)",
+          fontSize: 11.5,
+          fontWeight: 700,
+          textTransform: "uppercase",
+          flexShrink: 0,
+        }}
+      >
+        {entry.rarity_label}
+      </div>
+      <div
+        style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: 11.5,
+          color: "var(--muted-2)",
+          flexShrink: 0,
+          maxWidth: 140,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {entry.card_name}
       </div>
     </div>
   );
