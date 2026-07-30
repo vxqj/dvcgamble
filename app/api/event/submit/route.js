@@ -40,12 +40,23 @@ export async function POST(request) {
     // "is this actually better?" comparison right here, live, and keeping
     // exactly one row per player removes that whole class of bug — there's
     // nothing left to sort out incorrectly later.
-    const { data: existing, error: fetchErr } = await db
+    //
+    // NOTE: this uses .order() + .limit(1) instead of .maybeSingle(). If a
+    // player somehow ends up with more than one row (e.g. leftover rows
+    // from before this one-row-per-player logic existed, or a race),
+    // .maybeSingle() throws the moment it sees 2+ rows and silently 500s
+    // the whole request — which is exactly what was breaking submissions
+    // for anyone with a stale duplicate row. This is defensive even after
+    // the one-time SQL cleanup (see the unique constraint added on
+    // player_id) — it just can't ever hard-fail this way again.
+    const { data: existingRows, error: fetchErr } = await db
       .from("event_entries")
       .select("id, rarity_key")
       .eq("player_id", player.id)
-      .maybeSingle();
+      .order("rarity_index", { ascending: true })
+      .limit(1);
     if (fetchErr) throw fetchErr;
+    const existing = existingRows && existingRows.length > 0 ? existingRows[0] : null;
 
     if (existing) {
       const existingIndex = rarityInfo(existing.rarity_key).index;
