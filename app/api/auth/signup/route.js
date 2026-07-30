@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { supabaseAdmin } from "../../../../lib/supabase";
-import { generateUsername, generateLoginCode } from "../../../../lib/usernames";
+import { generateUsername, generateLoginCode, isValidGeneratedUsername } from "../../../../lib/usernames";
 import { hashLoginCode } from "../../../../lib/crypto";
 
 export async function POST(request) {
@@ -16,11 +16,15 @@ export async function POST(request) {
     const db = supabaseAdmin();
 
     // The client's dice-reroll UI shows a server-generated candidate, but we
-    // never just trust whatever it echoes back — re-validate the shape and
-    // re-check availability. If anything's off, generate a fresh one
-    // ourselves so there's no path for an arbitrary typed string to sneak in.
+    // never just trust whatever it echoes back — this must be an EXACT
+    // Adjective+Noun+number combo from the curated lists, not just
+    // something shaped like "letters then digits". A shape-only check would
+    // let someone skip the UI, POST straight to this route with any string
+    // (e.g. "WeirdStuff123"), and have it stored + shown to everyone. If
+    // anything's off, generate a fresh one ourselves — no arbitrary text
+    // ever reaches the database.
     let finalUsername = null;
-    if (typeof username === "string" && /^[A-Za-z]{3,20}\d{3,4}$/.test(username)) {
+    if (isValidGeneratedUsername(username)) {
       const { data: existing } = await db
         .from("players")
         .select("id")
@@ -69,6 +73,7 @@ export async function POST(request) {
       state: initialState,
     });
   } catch (e) {
+    console.error("SIGNUP ERROR:", e);
     return NextResponse.json({ error: "Signup failed" }, { status: 500 });
   }
 }
