@@ -41,6 +41,21 @@ function pulseVars(rarity) {
   return { "--pc1": c[0], "--pc2": c[1], "--pc3": c[2], "--pc4": c[3] };
 }
 
+// Turns a rarity's hex color into a low-alpha rgba() so each revealed
+// card's face can get a subtle tint of its own rarity color instead of
+// every card sharing one flat grey background.
+function hexToRgba(hex, alpha) {
+  if (!hex) return `rgba(255,255,255,${alpha})`;
+  const clean = hex.replace("#", "");
+  const full = clean.length === 3 ? clean.split("").map((c) => c + c).join("") : clean;
+  const bigint = parseInt(full, 16);
+  if (Number.isNaN(bigint)) return `rgba(255,255,255,${alpha})`;
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export default function PackOpenModal({
   pack, results, accent, openCount, soundEnabled, onCollect,
   isAuto, autoStart, onCancelAuto, onHide, speedMultiplier = 1,
@@ -229,8 +244,17 @@ function FlipCard({ result, flipped }) {
   const innerClass = `flip-card-inner${flipped ? " flipped" : ""}${flipped && prismatic ? " prismatic-flip" : ""}`;
   const labelStyle = rarity.gradient ? { "--rarity-gradient": rarity.gradient } : { color: rarity.color };
   // position: relative added so the serial badge below can anchor to this
-  // face specifically, without needing a globals.css change.
-  const backStyle = { color: rarity.color, borderColor: rarity.color, position: "relative", ...pulseVars(rarity) };
+  // face specifically, without needing a globals.css change. background
+  // gives every card a soft tint of its own rarity color instead of the
+  // flat grey every rarity used to share, so the reveal grid reads as a
+  // set of distinct cards rather than identical boxes with different text.
+  const backStyle = {
+    color: rarity.color,
+    borderColor: rarity.color,
+    position: "relative",
+    background: `linear-gradient(165deg, ${hexToRgba(rarity.color, 0.22)} 0%, var(--surface) 60%)`,
+    ...pulseVars(rarity),
+  };
   const showSerial = flipped && rarity.serialsEnabled && count != null;
 
   return (

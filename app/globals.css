@@ -515,7 +515,7 @@ a { color: inherit; }
 .reveal-grid.compact .flip-back { gap: 4px; padding: 6px; }
 .reveal-grid.compact .fb-swatch { width: 20px; height: 20px; }
 .reveal-grid.compact .fb-rarity { font-size: 8px; }
-.reveal-grid.compact .fb-name { font-size: 9px; max-width: 62px; }
+.reveal-grid.compact .fb-name { font-size: 9px; max-width: 62px; -webkit-line-clamp: 2; }
 
 .reveal-grid.ultra { gap: 6px; max-width: 680px; }
 .reveal-grid.ultra .flip-card { width: 56px; height: 76px; }
@@ -546,6 +546,11 @@ a { color: inherit; }
   position: absolute; inset: 0; backface-visibility: hidden;
   border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 8px; padding: 10px; border: 1px solid var(--border);
+  /* Every card is a fixed size (set by .flip-card below) — this keeps a
+     long card name from stretching past that box instead of being
+     clipped, which is what made cards render as different "shapes" in
+     the reveal grid depending on how long the name was. */
+  overflow: hidden;
 }
 .flip-front {
   background: linear-gradient(160deg, var(--surface-2), var(--bg-2));
@@ -557,11 +562,21 @@ a { color: inherit; }
 }
 .flip-back {
   transform: rotateY(180deg);
-  background: var(--surface);
+  background: var(--surface); /* overridden per-card with a rarity tint via inline style */
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
 }
-.flip-back .fb-swatch { width: 30px; height: 30px; border-radius: 8px; box-shadow: 0 0 16px currentColor; }
-.flip-back .fb-rarity { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.5px; text-transform: uppercase; }
-.flip-back .fb-name { font-size: 11.5px; font-weight: 700; line-height: 1.2; max-width: 96px; }
+.flip-back .fb-swatch { width: 30px; height: 30px; border-radius: 8px; box-shadow: 0 0 16px currentColor; flex-shrink: 0; }
+.flip-back .fb-rarity { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.8px; text-transform: uppercase; flex-shrink: 0; }
+.flip-back .fb-name {
+  font-size: 11.5px; font-weight: 700; line-height: 1.25; max-width: 96px;
+  text-align: center; color: #fff;
+  /* Clamp to a fixed number of lines with an ellipsis instead of letting
+     long names (e.g. "Mitchell Taylors Tinder Account") push the box
+     taller than every other card — this is the main fix so all cards in
+     a reveal grid come out the same shape regardless of name length. */
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+  overflow: hidden; text-overflow: ellipsis; word-break: break-word;
+}
 .flip-back.is-rare-fx1 { box-shadow: 0 0 24px currentColor; }
 .flip-back.is-rare-fx2 { animation: goodPulse 1.4s ease-in-out infinite; }
 .flip-back.is-rare-fx3 { animation: goodPulse 1.1s ease-in-out infinite; }
