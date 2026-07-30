@@ -156,14 +156,16 @@ export default function Page() {
     );
   }
 
-  function handleBuy(pack) {
+  function handleBuy(pack, quantity = 1) {
     setState((prev) => {
-      if (prev.coins < pack.cost) return prev;
+      const qty = Math.max(1, Math.floor(quantity || 1));
+      const totalCost = pack.cost * qty;
+      if (prev.coins < totalCost) return prev;
       return {
         ...prev,
-        coins: prev.coins - pack.cost,
-        packs: { ...prev.packs, [pack.key]: (prev.packs[pack.key] || 0) + 1 },
-        totalPacksBought: prev.totalPacksBought + 1,
+        coins: prev.coins - totalCost,
+        packs: { ...prev.packs, [pack.key]: (prev.packs[pack.key] || 0) + qty },
+        totalPacksBought: prev.totalPacksBought + qty,
       };
     });
   }
