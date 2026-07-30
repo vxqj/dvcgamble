@@ -8,19 +8,24 @@ import { PackIcon } from "./Icons";
 // Larger batches (Multi Open) reveal a lot more cards at once — stagger
 // faster as the batch grows so a 25+ card reveal doesn't take forever,
 // while a normal 5-card pack still gets the slower, punchier pacing.
-function flipStaggerMs(count) {
-  if (count > 24) return 55;
-  if (count > 15) return 90;
-  if (count > 8) return 150;
-  return 300;
+// `speedMultiplier` comes from the Quick Hands upgrade (1 = base speed,
+// smaller = faster) and scales on top of the batch-size pacing below.
+function flipStaggerMs(count, speedMultiplier = 1) {
+  const base = count > 24 ? 55 : count > 15 ? 90 : count > 8 ? 150 : 300;
+  return Math.round(base * speedMultiplier);
 }
 
-// Must match the duration of the `prismaticFlip` keyframes in globals.css.
+// Must match the duration of the `prismaticFlip` keyframes in globals.css —
+// this one stays fixed regardless of Quick Hands, since speeding it up
+// would desync it from the CSS animation.
 const PRISMATIC_FLIP_MS = 1300;
 
 // How long the "done" screen sits before an auto-open run collects it and
 // moves on to the next batch — long enough to actually see what you got.
-const AUTO_COLLECT_DELAY_MS = 1100;
+// Scaled down by Quick Hands the same way the flip stagger is, with its
+// own floor so it never disappears entirely.
+const BASE_AUTO_COLLECT_DELAY_MS = 1100;
+const MIN_AUTO_COLLECT_DELAY_MS = 350;
 
 // Gate on the master switch in lib/config.js — a rarity flagged
 // prismatic: true only gets the effect if the switch is also on.
@@ -38,7 +43,7 @@ function pulseVars(rarity) {
 
 export default function PackOpenModal({
   pack, results, accent, openCount, soundEnabled, onCollect,
-  isAuto, autoStart, onCancelAuto, onHide,
+  isAuto, autoStart, onCancelAuto, onHide, speedMultiplier = 1,
 }) {
   const [phase, setPhase] = useState("idle"); // idle -> shaking -> revealing -> done
   const [flippedCount, setFlippedCount] = useState(0);
@@ -49,7 +54,8 @@ export default function PackOpenModal({
   const collectedRef = useRef(false);
 
   const best = results.reduce((a, b) => (rarityIndex(b.rarity.key) < rarityIndex(a.rarity.key) ? b : a), results[0]);
-  const stagger = flipStaggerMs(results.length);
+  const stagger = flipStaggerMs(results.length, speedMultiplier);
+  const autoCollectDelay = Math.max(MIN_AUTO_COLLECT_DELAY_MS, Math.round(BASE_AUTO_COLLECT_DELAY_MS * speedMultiplier));
   const compact = results.length > 8;
   const ultra = results.length > 20;
   const prismaticIndex = results.findIndex((r) => isPrismatic(r.rarity));
@@ -111,7 +117,7 @@ export default function PackOpenModal({
     if (phase !== "done" || !isAuto) return;
     const t = setTimeout(() => {
       if (!collectedRef.current) handleCollect();
-    }, AUTO_COLLECT_DELAY_MS);
+    }, autoCollectDelay);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, isAuto]);

@@ -11,7 +11,7 @@ import PackOpenModal from "../components/PackOpenModal";
 import AuthModal from "../components/AuthModal";
 import { ShopIcon, InventoryIcon, FeedIcon, UpgradeIcon, TrophyIcon } from "../components/Icons";
 import { loadState, saveState, defaultState, applyOfflineCoins } from "../lib/storage";
-import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary } from "../lib/engine";
+import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary, unpackSpeedMultiplier } from "../lib/engine";
 import { broadcastPull } from "../lib/feed";
 import { startPresence } from "../lib/presence";
 import {
@@ -35,8 +35,10 @@ const TABS = [
 ];
 
 // Small breather between one auto-opened batch collecting and the next one
-// starting, so it reads as a sequence rather than a blur.
-const AUTO_NEXT_DELAY_MS = 250;
+// starting, so it reads as a sequence rather than a blur. Scaled down by the
+// Quick Hands upgrade the same way the reveal pacing inside the modal is.
+const BASE_AUTO_NEXT_DELAY_MS = 250;
+const MIN_AUTO_NEXT_DELAY_MS = 60;
 
 export default function Page() {
   const [state, setState] = useState(null);
@@ -268,9 +270,11 @@ export default function Page() {
     if (wasAuto && openedPack && autoOpenPackKey === openedPack.key) {
       const remaining = Math.max(0, (state.packs[openedPack.key] || 0));
       if (remaining > 0) {
+        const speedMult = unpackSpeedMultiplier(state.upgrades ? state.upgrades.unpackSpeed : 0);
+        const nextDelay = Math.max(MIN_AUTO_NEXT_DELAY_MS, Math.round(BASE_AUTO_NEXT_DELAY_MS * speedMult));
         autoTimerRef.current = setTimeout(() => {
           handleOpenPack(openedPack, { auto: true });
-        }, AUTO_NEXT_DELAY_MS);
+        }, nextDelay);
         return; // keep the modal mounted — handleOpenPack swaps it in-place
       }
       stopAutoOpen();
@@ -360,6 +364,7 @@ export default function Page() {
             accent={modal.accent}
             openCount={modal.openCount}
             soundEnabled={state.settings.sound}
+            speedMultiplier={unpackSpeedMultiplier(state.upgrades ? state.upgrades.unpackSpeed : 0)}
             onCollect={handleCollect}
             isAuto={modal.auto}
             autoStart={modal.auto}

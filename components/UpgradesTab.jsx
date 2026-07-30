@@ -1,7 +1,7 @@
 "use client";
 
 import { UPGRADES, COIN_INTERVAL_MS } from "../lib/config";
-import { fmtNum, upgradeCost, upgradeMaxed, multiOpenCount, effectiveCoinPerTick } from "../lib/engine";
+import { fmtNum, upgradeCost, upgradeMaxed, multiOpenCount, effectiveCoinPerTick, unpackSpeedMultiplier } from "../lib/engine";
 
 export default function UpgradesTab({ coins, upgrades, onBuy }) {
   const entries = Object.values(UPGRADES);
@@ -24,6 +24,7 @@ export default function UpgradesTab({ coins, upgrades, onBuy }) {
                 Level {level} / {cfg.maxLevel}
                 {cfg.key === "multiOpen" && ` — opens ${multiOpenCount(level)} pack${multiOpenCount(level) === 1 ? "" : "s"} at once`}
                 {cfg.key === "coinBoost" && ` — +${effectiveCoinPerTick(level)} coins every ${(COIN_INTERVAL_MS / 1000).toFixed(0)}s`}
+                {cfg.key === "unpackSpeed" && ` — ${Math.round((1 - unpackSpeedMultiplier(level)) * 100)}% faster reveals`}
               </div>
               <div className="u-cost-row">
                 <div className="u-cost">
