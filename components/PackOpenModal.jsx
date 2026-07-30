@@ -199,6 +199,20 @@ export default function PackOpenModal({
               {best.rarity.label.toUpperCase()}
             </div>
             <div className="big-reveal-name">{best.name}</div>
+            {best.rarity.serialsEnabled && best.count != null && (
+              <div
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontWeight: 800,
+                  fontSize: 13,
+                  color: best.rarity.color,
+                  marginTop: 4,
+                  letterSpacing: "0.03em",
+                }}
+              >
+                Serial #{best.count}
+              </div>
+            )}
           </div>
         </div>
         <div className="big-reveal-hint">tap to dismiss</div>
@@ -208,13 +222,16 @@ export default function PackOpenModal({
 }
 
 function FlipCard({ result, flipped }) {
-  const { rarity, name } = result;
+  const { rarity, name, count } = result;
   const prismatic = isPrismatic(rarity);
   const fxClass = prismatic ? " is-prismatic" : rarity.fx >= 1 ? ` is-rare-fx${rarity.fx}` : "";
   const displayName = rarity.hidden && !flipped ? "???" : name;
   const innerClass = `flip-card-inner${flipped ? " flipped" : ""}${flipped && prismatic ? " prismatic-flip" : ""}`;
   const labelStyle = rarity.gradient ? { "--rarity-gradient": rarity.gradient } : { color: rarity.color };
-  const backStyle = { color: rarity.color, borderColor: rarity.color, ...pulseVars(rarity) };
+  // position: relative added so the serial badge below can anchor to this
+  // face specifically, without needing a globals.css change.
+  const backStyle = { color: rarity.color, borderColor: rarity.color, position: "relative", ...pulseVars(rarity) };
+  const showSerial = flipped && rarity.serialsEnabled && count != null;
 
   return (
     <div className="flip-card">
@@ -223,6 +240,26 @@ function FlipCard({ result, flipped }) {
           <div className="flip-logo" />
         </div>
         <div className={`flip-face flip-back${fxClass}`} style={backStyle}>
+          {showSerial && (
+            <div
+              style={{
+                position: "absolute",
+                top: 6,
+                right: 6,
+                fontFamily: "var(--font-mono)",
+                fontWeight: 800,
+                fontSize: 10.5,
+                color: rarity.color,
+                background: "rgba(0,0,0,0.55)",
+                border: `1px solid ${rarity.color}88`,
+                borderRadius: 6,
+                padding: "2px 6px",
+                lineHeight: 1.2,
+              }}
+            >
+              #{count}
+            </div>
+          )}
           <div className="fb-swatch" style={{ background: rarity.gradient || rarity.color }} />
           <div className={`fb-rarity${rarity.gradient ? " gradient-text" : ""}`} style={labelStyle}>
             {rarity.hidden ? "???" : rarity.label}

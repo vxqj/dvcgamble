@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PACKS, RARITIES, CARDS } from "../lib/config";
 import {
   fmtChance,
@@ -9,11 +9,13 @@ import {
   effectiveWeightFor,
   multiOpenCount,
   computeSellSummary,
+  isSerializedRarity,
 } from "../lib/engine";
+import { fetchCardCounts, getCachedCount } from "../lib/cardStats";
 import { TrashIcon, PackIcon } from "./Icons";
 
 export default function InventoryTab({
-  packsOwned, cards, upgrades, onOpenPack, onSellCards,
+  packsOwned, cards, cardSerials, upgrades, onOpenPack, onSellCards,
   autoOpenPackKey, onAutoOpenPack, onCancelAutoOpen,
 }) {
   const [sub, setSub] = useState("packs");
@@ -95,7 +97,7 @@ export default function InventoryTab({
       )}
 
       {sub === "cards" && (
-        <CardsView byRarity={byRarity} cards={cards} cardNames={cardNames} onSellCards={onSellCards} />
+        <CardsView byRarity={byRarity} cards={cards} cardSerials={cardSerials} cardNames={cardNames} onSellCards={onSellCards} />
       )}
 
       {sub === "collection" && <CollectionView cards={cards} />}
@@ -112,7 +114,7 @@ export default function InventoryTab({
    for sale. A bar slides up from the bottom showing the running total —
    confirm to cash it all in at once.
    -------------------------------------------------------------------------- */
-function CardsView({ byRarity, cards, cardNames, onSellCards }) {
+function CardsView({ byRarity, cards, cardSerials, cardNames, onSellCards }) {
   const [sellMode, setSellMode] = useState(false);
   const [selected, setSelected] = useState(new Set());
 
@@ -177,10 +179,13 @@ function CardsView({ byRarity, cards, cardNames, onSellCards }) {
               </div>
               <div className="inv-grid">
                 {byRarity[r.key].items.map((name) => (
-                  <div className="inv-item" key={name}>
-                    <div className="inv-item-name">{name}</div>
-                    <div className="inv-item-count">x{cards[name]}</div>
-                  </div>
+                  <InventoryCardItem
+                    key={name}
+                    name={name}
+                    ownedCount={cards[name]}
+                    rarity={r}
+                    serials={cardSerials ? cardSerials[name] : null}
+                  />
                 ))}
               </div>
             </div>
@@ -198,6 +203,95 @@ function CardsView({ byRarity, cards, cardNames, onSellCards }) {
           <button className="sell-bar-confirm" onClick={handleConfirmSell}>Sell</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* --------------------------------------------------------------------------
+   Single owned-card tile.
+   - Non-serialized rarity: shows "xN" like before. Hover shows a tooltip
+     with the card's GLOBAL exist count (fetched lazily on first hover,
+     cached after that — see lib/cardStats.js).
+   - Serialized rarity: instead of "xN", shows one small badge per owned
+     copy with its permanent serial (#12, #47, ...) printed right on the
+     card, no hover needed. Hovering still shows the exist-count tooltip
+     too, for consistency.
+   -------------------------------------------------------------------------- */
+function InventoryCardItem({ name, ownedCount, rarity, serials }) {
+  const [hover, setHover] = useState(false);
+  const [count, setCount] = useState(() => getCachedCount(name));
+
+  useEffect(() => {
+    if (!hover || count != null) return;
+    let cancelled = false;
+    fetchCardCounts([name]).then((res) => {
+      if (!cancelled && res[name] != null) setCount(res[name]);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [hover, name, count]);
+
+  const showSerials = isSerializedRarity(rarity) && serials && serials.length > 0;
+
+  return (
+    <div
+      className="inv-item"
+      style={{ position: "relative" }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <div className="inv-item-name">{name}</div>
+      {showSerials ? (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 3 }}>
+          {serials
+            .slice()
+            .sort((a, b) => a - b)
+            .map((s) => (
+              <span
+                key={s}
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  color: rarity.color,
+                  border: `1px solid ${rarity.color}66`,
+                  background: `${rarity.color}14`,
+                  borderRadius: 6,
+                  padding: "1px 6px",
+                  lineHeight: 1.5,
+                }}
+              >
+                #{s}
+              </span>
+            ))}
+        </div>
+      ) : (
+        <div className="inv-item-count">x{ownedCount}</div>
+      )}
+      {hover && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: "100%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            marginBottom: 6,
+            padding: "5px 9px",
+            borderRadius: 8,
+            background: "rgba(10,10,14,0.95)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            fontFamily: "var(--font-mono)",
+            fontSize: 10.5,
+            color: "#fff",
+            whiteSpace: "nowrap",
+            zIndex: 5,
+            pointerEvents: "none",
+          }}
+        >
+          {count != null ? `${fmtNum(count)} exist` : "loading..."}
+        </div>
+      )}
     </div>
   );
 }

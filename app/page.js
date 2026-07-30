@@ -14,6 +14,7 @@ import { loadState, saveState, defaultState, applyOfflineCoins } from "../lib/st
 import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary, unpackSpeedMultiplier } from "../lib/engine";
 import { broadcastPull } from "../lib/feed";
 import { startPresence } from "../lib/presence";
+import { recordCardPulls } from "../lib/cardStats";
 import {
   getSession,
   setSession as persistSession,
@@ -174,7 +175,7 @@ export default function Page() {
 
   // `auto: true` marks this batch as part of an auto-open run — it skips
   // the "tap to open" screen and auto-collects instead of waiting on a click.
-  function handleOpenPack(pack, { auto = false } = {}) {
+  async function handleOpenPack(pack, { auto = false } = {}) {
     // Only one open flow runs at a time — refuse to start a different pack
     // while another one is mid auto-open run (belt-and-braces alongside the
     // disabled buttons in InventoryTab).
@@ -187,6 +188,17 @@ export default function Page() {
     const batch = multiOpenCount(state.upgrades ? state.upgrades.multiOpen : 0);
     const openCount = Math.min(batch, owned);
     const results = openPacks(pack, openCount);
+
+    // Register every pulled card, in exact pull order, with the server —
+    // it hands back each one's up-to-date global exist count. For a
+    // serialized rarity that returned count IS the card's permanent
+    // serial (the Nth copy of that card ever pulled by anyone), assigned
+    // atomically server-side so it can never collide or be spoofed.
+    const counts = await recordCardPulls(results.map((r) => r.name));
+    results.forEach((r, i) => {
+      r.count = counts[i] != null ? counts[i] : null;
+    });
+
     setState((prev) => ({
       ...prev,
       packs: { ...prev.packs, [pack.key]: Math.max(0, (prev.packs[pack.key] || 0) - openCount) },
@@ -239,10 +251,14 @@ export default function Page() {
 
     setState((prev) => {
       const cards = { ...prev.cards };
-      results.forEach(({ name }) => {
+      const cardSerials = { ...prev.cardSerials };
+      results.forEach(({ name, rarity, count }) => {
         cards[name] = (cards[name] || 0) + 1;
+        if (rarity.serialsEnabled && count != null) {
+          cardSerials[name] = [...(cardSerials[name] || []), count];
+        }
       });
-      return { ...prev, cards, totalOpened: prev.totalOpened + results.length };
+      return { ...prev, cards, cardSerials, totalOpened: prev.totalOpened + results.length };
     });
 
     const rarePulls = results.filter(({ rarity }) => isRarePull(rarity));
@@ -339,6 +355,7 @@ export default function Page() {
         <InventoryTab
           packsOwned={state.packs}
           cards={state.cards}
+          cardSerials={state.cardSerials}
           upgrades={state.upgrades}
           onOpenPack={handleOpenPack}
           onSellCards={handleSellCards}
