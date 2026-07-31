@@ -79,9 +79,9 @@ export async function GET() {
     }));
 
     console.log("[AUCTION_LIST] returning", shaped.length, "shaped auctions");
-    return NextResponse.json({ auctions: shaped });
+    return NextResponse.json({ _debugMarker: "LIST_ROUTE_V2", auctions: shaped });
   } catch (e) {
     console.error("AUCTION LIST ERROR:", e && e.message, e && e.stack);
-    return NextResponse.json({ auctions: [] }, { status: 500 });
+    return NextResponse.json({ _debugMarker: "LIST_ROUTE_V2_ERROR", auctions: [], _debugError: String(e && e.message) }, { status: 500 });
   }
 }
