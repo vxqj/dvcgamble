@@ -332,13 +332,15 @@ export default function Page() {
     setState((prev) => {
       const cards = { ...prev.cards };
       const cardSerials = { ...prev.cardSerials };
+      const discoveredCards = { ...prev.discoveredCards };
       results.forEach(({ name, rarity, count }) => {
         cards[name] = (cards[name] || 0) + 1;
+        discoveredCards[name] = true;
         if (rarity.serialsEnabled && count != null) {
           cardSerials[name] = [...(cardSerials[name] || []), count];
         }
       });
-      return { ...prev, cards, cardSerials, totalOpened: prev.totalOpened + results.length };
+      return { ...prev, cards, cardSerials, discoveredCards, totalOpened: prev.totalOpened + results.length };
     });
 
     const rarePulls = results.filter(({ rarity }) => isRarePull(rarity));
@@ -447,6 +449,7 @@ export default function Page() {
           packsOwned={state.packs}
           cards={state.cards}
           cardSerials={state.cardSerials}
+          discoveredCards={state.discoveredCards}
           upgrades={state.upgrades}
           onOpenPack={handleOpenPack}
           onSellCards={handleSellCards}
