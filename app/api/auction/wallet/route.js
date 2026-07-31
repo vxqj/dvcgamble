@@ -35,5 +35,10 @@ export async function POST(request) {
     return NextResponse.json({ error: error.message || "Transfer failed" }, { status: 400 });
   }
 
-  return NextResponse.json({ wallet: data });
+  // deposit_to_wallet/withdraw_from_wallet now return { wallet, coins } —
+  // coins is the authoritative post-transfer spendable balance, straight
+  // from the DB. Forwarding both lets the client adopt the server's real
+  // number directly instead of computing its own guess client-side, which
+  // is what was letting a stale autosave silently undo a deposit.
+  return NextResponse.json({ wallet: data.wallet, coins: data.coins });
 }

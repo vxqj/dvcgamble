@@ -34,12 +34,13 @@ export default function AuctionDetailModal({ auction, wallet, myUsername, onClos
   }, []);
 
   const rarity = RARITY_MAP[auction.rarityKey] || RARITIES[RARITIES.length - 1];
+  const bids = auction.bids || [];
   const remaining = new Date(auction.endsAt).getTime() - now;
   const ended = remaining <= 0;
   const minNext = auction.currentBid != null ? auction.currentBid + 1 : auction.startingPrice;
   const isSeller = myUsername && auction.sellerUsername === myUsername;
   const canBid = !ended && !isSeller;
-  const winningBid = auction.bids.find((b) => b.amount === auction.currentBid);
+  const winningBid = bids.find((b) => b.amount === auction.currentBid);
 
   const labelStyle = rarity.gradient ? { "--rarity-gradient": rarity.gradient } : { color: rarity.color };
 
@@ -111,12 +112,12 @@ export default function AuctionDetailModal({ auction, wallet, myUsername, onClos
         )}
 
         <div className="ad-bids-section">
-          <div className="ad-bids-header">Bid history ({auction.bids.length})</div>
-          {auction.bids.length === 0 ? (
+          <div className="ad-bids-header">Bid history ({bids.length})</div>
+          {bids.length === 0 ? (
             <div className="ad-no-bids">No bids yet — be the first.</div>
           ) : (
             <div className="ad-bids-list">
-              {auction.bids.map((b, i) => (
+              {bids.map((b, i) => (
                 <div className="ad-bid-row" key={i}>
                   <span className="ad-bid-user">{b.username}</span>
                   <span className="ad-bid-amount">🪙 {b.amount.toLocaleString("en-US")}</span>

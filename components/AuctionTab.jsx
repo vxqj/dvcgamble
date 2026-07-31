@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RARITIES, AUCTION_CONFIG } from "../lib/config";
 import { fetchAuctions, createAuction, placeBid, depositToWallet, withdrawFromWallet } from "../lib/authClient";
 import CreateAuctionModal from "./CreateAuctionModal";
@@ -25,7 +25,7 @@ function formatRemaining(ms) {
 }
 
 export default function AuctionTab({
-  session, wallet, onWalletChange, coins, cards, cardSerials, onAuctionCreated,
+  session, wallet, onWalletChange, onCoinsSynced, coins, cards, cardSerials, onAuctionCreated,
 }) {
   const [auctions, setAuctions] = useState([]);
   const [now, setNow] = useState(Date.now());
@@ -38,20 +38,26 @@ export default function AuctionTab({
   const [depositAmount, setDepositAmount] = useState("");
   const [walletBusy, setWalletBusy] = useState(false);
   const [walletError, setWalletError] = useState("");
+  // Every fetchAuctions() call (poll or manual refresh) gets a ticket. If
+  // responses come back out of order — e.g. a poll that started BEFORE a
+  // create/bid resolves AFTER the manual post-action refresh — the older
+  // one is discarded instead of stomping the fresher list. Without this,
+  // a just-created auction can appear then immediately vanish again until
+  // the next poll cycle catches up.
+  const fetchSeqRef = useRef(0);
+
+  function refreshAuctions() {
+    const seq = ++fetchSeqRef.current;
+    fetchAuctions().then((list) => {
+      if (seq === fetchSeqRef.current) setAuctions(list);
+    });
+  }
 
   useEffect(() => {
-    let cancelled = false;
-    function load() {
-      fetchAuctions().then((list) => {
-        if (!cancelled) setAuctions(list);
-      });
-    }
-    load();
-    const poll = setInterval(load, LIST_POLL_MS);
-    return () => {
-      cancelled = true;
-      clearInterval(poll);
-    };
+    refreshAuctions();
+    const poll = setInterval(refreshAuctions, LIST_POLL_MS);
+    return () => clearInterval(poll);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -80,7 +86,7 @@ export default function AuctionTab({
       // silently undo the listing's card removal.
       onAuctionCreated({ cardName, serial });
       setCreateOpen(false);
-      fetchAuctions().then(setAuctions);
+      refreshAuctions();
     } catch (e) {
       setCreateError(e.message || "Could not create auction");
     } finally {
@@ -95,7 +101,7 @@ export default function AuctionTab({
     try {
       await placeBid(session.token, { auctionId: detailAuction.id, amount });
       onWalletChange();
-      fetchAuctions().then(setAuctions);
+      refreshAuctions();
     } catch (e) {
       setBidError(e.message || "Bid failed");
     } finally {
@@ -109,9 +115,14 @@ export default function AuctionTab({
     setWalletBusy(true);
     setWalletError("");
     try {
-      await depositToWallet(session.token, amt);
+      const res = await depositToWallet(session.token, amt);
       setDepositAmount("");
       onWalletChange();
+      // Adopt the server's authoritative post-deposit coins figure rather
+      // than subtracting locally — this is what actually fixes the
+      // deposit-doesn't-remove-coins bug, since a stale autosave landing
+      // around the same time can no longer win with a guessed number.
+      if (res && res.coins != null) onCoinsSynced(res.coins);
     } catch (e) {
       setWalletError(e.message || "Deposit failed");
     } finally {
@@ -125,9 +136,10 @@ export default function AuctionTab({
     setWalletBusy(true);
     setWalletError("");
     try {
-      await withdrawFromWallet(session.token, amt);
+      const res = await withdrawFromWallet(session.token, amt);
       setDepositAmount("");
       onWalletChange();
+      if (res && res.coins != null) onCoinsSynced(res.coins);
     } catch (e) {
       setWalletError(e.message || "Withdraw failed");
     } finally {
@@ -186,6 +198,7 @@ export default function AuctionTab({
             const rarity = RARITY_MAP[a.rarityKey] || RARITIES[RARITIES.length - 1];
             const remaining = new Date(a.endsAt).getTime() - now;
             const displayPrice = a.currentBid != null ? a.currentBid : a.startingPrice;
+            const bids = a.bids || [];
             return (
               <div
                 className="pack-card"
@@ -206,7 +219,7 @@ export default function AuctionTab({
                 </div>
                 <div className="pack-desc">{rarity.label} · listed by {a.sellerUsername}</div>
                 <div className="pack-tags">
-                  <span className="pack-tag">{a.bids.length} bid{a.bids.length === 1 ? "" : "s"}</span>
+                  <span className="pack-tag">{bids.length} bid{bids.length === 1 ? "" : "s"}</span>
                   <span className={`pack-tag${remaining < 60000 ? " auc-urgent-tag" : ""}`}>
                     {formatRemaining(remaining)}
                   </span>
