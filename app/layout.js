@@ -1,4 +1,5 @@
 import "./globals.css";
+import StatusBanner from "../components/StatusBanner";
 
 export const metadata = {
   title: "DVC GAMBLE — Card Unbox",
@@ -16,7 +17,10 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <StatusBanner />
+        {children}
+      </body>
     </html>
   );
 }
