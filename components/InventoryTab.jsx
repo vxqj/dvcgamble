@@ -13,12 +13,18 @@ import {
 } from "../lib/engine";
 import { fetchCardCounts, getCachedCount } from "../lib/cardStats";
 import { TrashIcon, PackIcon } from "./Icons";
+import CardDetailModal from "./CardDetailModal";
 
 export default function InventoryTab({
   packsOwned, cards, cardSerials, discoveredCards, upgrades, onOpenPack, onSellCards,
   autoOpenPackKey, onAutoOpenPack, onCancelAutoOpen,
 }) {
   const [sub, setSub] = useState("packs");
+  // { name, rarity, ownedCount, serials, discovered } | null — shared by
+  // both the Cards view and the Collection/Dex view, so only one detail
+  // modal can ever be open at a time regardless of which sub-tab it was
+  // opened from.
+  const [detailCard, setDetailCard] = useState(null);
   const openBatch = multiOpenCount(upgrades ? upgrades.multiOpen : 0);
 
   const ownedPackEntries = PACKS.filter((p) => (packsOwned[p.key] || 0) > 0);
@@ -97,12 +103,37 @@ export default function InventoryTab({
       )}
 
       {sub === "cards" && (
-        <CardsView byRarity={byRarity} cards={cards} cardSerials={cardSerials} cardNames={cardNames} onSellCards={onSellCards} />
+        <CardsView
+          byRarity={byRarity}
+          cards={cards}
+          cardSerials={cardSerials}
+          cardNames={cardNames}
+          onSellCards={onSellCards}
+          onOpenDetail={setDetailCard}
+        />
       )}
 
-      {sub === "collection" && <CollectionView cards={cards} discoveredCards={discoveredCards} />}
+      {sub === "collection" && (
+        <CollectionView
+          cards={cards}
+          cardSerials={cardSerials}
+          discoveredCards={discoveredCards}
+          onOpenDetail={setDetailCard}
+        />
+      )}
 
       {sub === "odds" && <OddsTable />}
+
+      {detailCard && (
+        <CardDetailModal
+          name={detailCard.name}
+          rarity={detailCard.rarity}
+          ownedCount={detailCard.ownedCount}
+          serials={detailCard.serials}
+          discovered={detailCard.discovered}
+          onClose={() => setDetailCard(null)}
+        />
+      )}
     </div>
   );
 }
@@ -114,7 +145,7 @@ export default function InventoryTab({
    for sale. A bar slides up from the bottom showing the running total —
    confirm to cash it all in at once.
    -------------------------------------------------------------------------- */
-function CardsView({ byRarity, cards, cardSerials, cardNames, onSellCards }) {
+function CardsView({ byRarity, cards, cardSerials, cardNames, onSellCards, onOpenDetail }) {
   const [sellMode, setSellMode] = useState(false);
   const [selected, setSelected] = useState(new Set());
 
@@ -185,6 +216,18 @@ function CardsView({ byRarity, cards, cardSerials, cardNames, onSellCards }) {
                     ownedCount={cards[name]}
                     rarity={r}
                     serials={cardSerials ? cardSerials[name] : null}
+                    onClick={
+                      sellMode
+                        ? undefined
+                        : () =>
+                            onOpenDetail({
+                              name,
+                              rarity: r,
+                              ownedCount: cards[name],
+                              serials: cardSerials ? cardSerials[name] : null,
+                              discovered: true,
+                            })
+                    }
                   />
                 ))}
               </div>
@@ -217,7 +260,7 @@ function CardsView({ byRarity, cards, cardSerials, cardNames, onSellCards }) {
      card, no hover needed. Hovering still shows the exist-count tooltip
      too, for consistency.
    -------------------------------------------------------------------------- */
-function InventoryCardItem({ name, ownedCount, rarity, serials }) {
+function InventoryCardItem({ name, ownedCount, rarity, serials, onClick }) {
   const [hover, setHover] = useState(false);
   const [count, setCount] = useState(() => getCachedCount(name));
 
@@ -237,9 +280,22 @@ function InventoryCardItem({ name, ownedCount, rarity, serials }) {
   return (
     <div
       className="inv-item"
-      style={{ position: "relative" }}
+      style={{ position: "relative", cursor: onClick ? "pointer" : undefined }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={
+        onClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick();
+              }
+            }
+          : undefined
+      }
     >
       <div className="inv-item-name">{name}</div>
       {showSerials ? (
@@ -301,7 +357,7 @@ function InventoryCardItem({ name, ownedCount, rarity, serials }) {
    Owned cards show their name, count, and rarity color; anything you
    haven't pulled yet shows as "???" so it stays a chase, not a spoiler.
    -------------------------------------------------------------------------- */
-function CollectionView({ cards, discoveredCards }) {
+function CollectionView({ cards, cardSerials, discoveredCards, onOpenDetail }) {
   // Fall back to owned-count if discoveredCards hasn't been wired up yet
   // upstream (e.g. mid-deploy, or an old save that predates the field) —
   // this keeps the tab from breaking, it just reverts to the old (buggy)
@@ -349,7 +405,21 @@ function CollectionView({ cards, discoveredCards }) {
                   <div
                     className={`dex-item${have ? " have" : ""}${have && r.gradient ? " prismatic-border" : ""}`}
                     key={name}
-                    style={itemStyle}
+                    style={{ ...itemStyle, cursor: have ? "pointer" : undefined }}
+                    onClick={
+                      have
+                        ? () =>
+                            onOpenDetail({
+                              name,
+                              rarity: r,
+                              ownedCount,
+                              serials: cardSerials ? cardSerials[name] : null,
+                              discovered: true,
+                            })
+                        : undefined
+                    }
+                    role={have ? "button" : undefined}
+                    tabIndex={have ? 0 : undefined}
                   >
                     <div className={`dex-item-name${have && r.gradient ? " gradient-text" : ""}`} style={nameStyle}>
                       {have ? name : "???"}
