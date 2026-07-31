@@ -335,7 +335,10 @@ export default function Page() {
       const discoveredCards = { ...prev.discoveredCards };
       results.forEach(({ name, rarity, count }) => {
         cards[name] = (cards[name] || 0) + 1;
-        discoveredCards[name] = true;
+        // Keep whatever's already there (don't reset a card's original
+        // discovery date just because it got pulled again) — only set it
+        // the first time this name has ever appeared for this player.
+        discoveredCards[name] = discoveredCards[name] || Date.now();
         if (rarity.serialsEnabled && count != null) {
           cardSerials[name] = [...(cardSerials[name] || []), count];
         }

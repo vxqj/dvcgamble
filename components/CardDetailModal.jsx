@@ -10,7 +10,7 @@ import { isSerializedRarity } from "../lib/engine";
 // CURRENT numbers (0 / empty if sold off); `discovered` distinguishes
 // "never pulled" from "pulled then sold", since both can show up here
 // from the Dex depending on how the caller wires clicks.
-export default function CardDetailModal({ name, rarity, ownedCount, serials, discovered = true, onClose }) {
+export default function CardDetailModal({ name, rarity, ownedCount, serials, discovered = true, discoveredAt, onClose }) {
   const [count, setCount] = useState(() => getCachedCount(name));
 
   useEffect(() => {
@@ -29,6 +29,17 @@ export default function CardDetailModal({ name, rarity, ownedCount, serials, dis
   const labelStyle = rarity.gradient ? { "--rarity-gradient": rarity.gradient } : { color: rarity.color };
   const swatchBg = rarity.gradient || rarity.color;
   const sortedSerials = showSerials ? serials.slice().sort((a, b) => a - b) : [];
+
+  // discoveredAt is a real timestamp for anything pulled after this feature
+  // shipped. Older saves were backfilled with a bare `true` (see storage.js)
+  // since there's no way to know when those were actually first pulled —
+  // show that case honestly instead of inventing a date.
+  const discoveredDateLabel =
+    typeof discoveredAt === "number"
+      ? new Date(discoveredAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
+      : discoveredAt
+      ? "before tracking started"
+      : null;
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -61,6 +72,12 @@ export default function CardDetailModal({ name, rarity, ownedCount, serials, dis
               <span className="cd-stat-label">Exist worldwide</span>
               <span className="cd-stat-value">{count != null ? count.toLocaleString("en-US") : "loading..."}</span>
             </div>
+            {discoveredDateLabel && (
+              <div className="cd-stat-row">
+                <span className="cd-stat-label">First discovered</span>
+                <span className="cd-stat-value">{discoveredDateLabel}</span>
+              </div>
+            )}
 
             {showSerials && (
               <div className="cd-serials">

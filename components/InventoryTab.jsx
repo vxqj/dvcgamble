@@ -108,6 +108,7 @@ export default function InventoryTab({
           cards={cards}
           cardSerials={cardSerials}
           cardNames={cardNames}
+          discoveredCards={discoveredCards}
           onSellCards={onSellCards}
           onOpenDetail={setDetailCard}
         />
@@ -131,6 +132,7 @@ export default function InventoryTab({
           ownedCount={detailCard.ownedCount}
           serials={detailCard.serials}
           discovered={detailCard.discovered}
+          discoveredAt={detailCard.discoveredAt}
           onClose={() => setDetailCard(null)}
         />
       )}
@@ -145,7 +147,7 @@ export default function InventoryTab({
    for sale. A bar slides up from the bottom showing the running total —
    confirm to cash it all in at once.
    -------------------------------------------------------------------------- */
-function CardsView({ byRarity, cards, cardSerials, cardNames, onSellCards, onOpenDetail }) {
+function CardsView({ byRarity, cards, cardSerials, cardNames, discoveredCards, onSellCards, onOpenDetail }) {
   const [sellMode, setSellMode] = useState(false);
   const [selected, setSelected] = useState(new Set());
 
@@ -226,6 +228,7 @@ function CardsView({ byRarity, cards, cardSerials, cardNames, onSellCards, onOpe
                               ownedCount: cards[name],
                               serials: cardSerials ? cardSerials[name] : null,
                               discovered: true,
+                              discoveredAt: discoveredCards ? discoveredCards[name] : null,
                             })
                     }
                   />
@@ -415,6 +418,7 @@ function CollectionView({ cards, cardSerials, discoveredCards, onOpenDetail }) {
                               ownedCount,
                               serials: cardSerials ? cardSerials[name] : null,
                               discovered: true,
+                              discoveredAt: discovered[name],
                             })
                         : undefined
                     }
