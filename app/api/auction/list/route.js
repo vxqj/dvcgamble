@@ -4,19 +4,23 @@ import { supabaseAdmin } from "../../../../lib/supabase";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  console.log("[AUCTION_LIST] hit, at", new Date().toISOString());
   try {
     const db = supabaseAdmin();
 
     // Cheap, no-auth-required cleanup — anyone loading the Auction tab
     // helps flush any auctions whose timer already ran out, so payouts
     // don't wait on a separate cron job to exist.
-    // await db.rpc("settle_expired_auctions");
+    const settleResult = await db.rpc("settle_expired_auctions");
+    console.log("[AUCTION_LIST] settle_expired_auctions result:", JSON.stringify(settleResult));
 
     const { data: auctions, error } = await db
       .from("auctions")
       .select("id, seller_id, card_name, rarity_key, serial, starting_price, current_bid, current_bidder_id, ends_at, status, created_at")
       .eq("status", "active")
       .order("ends_at", { ascending: true });
+    console.log("[AUCTION_LIST] query error:", error ? JSON.stringify(error) : "none");
+    console.log("[AUCTION_LIST] raw row count:", (auctions || []).length, "ids:", (auctions || []).map((a) => a.id));
     if (error) throw error;
 
     const ids = (auctions || []).map((a) => a.id);
@@ -74,9 +78,10 @@ export async function GET() {
       bids: bidsByAuction[a.id] || [],
     }));
 
+    console.log("[AUCTION_LIST] returning", shaped.length, "shaped auctions");
     return NextResponse.json({ auctions: shaped });
   } catch (e) {
-    console.error("AUCTION LIST ERROR:", e);
+    console.error("AUCTION LIST ERROR:", e && e.message, e && e.stack);
     return NextResponse.json({ auctions: [] }, { status: 500 });
   }
 }
