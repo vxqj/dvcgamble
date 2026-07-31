@@ -9,9 +9,10 @@ import UpgradesTab from "../components/UpgradesTab";
 import EventTab from "../components/EventTab";
 import PackOpenModal from "../components/PackOpenModal";
 import AuthModal from "../components/AuthModal";
+import AdminPanel from "../components/AdminPanel";
 import { ShopIcon, InventoryIcon, FeedIcon, UpgradeIcon, TrophyIcon } from "../components/Icons";
 import { loadState, saveState, defaultState, applyOfflineCoins } from "../lib/storage";
-import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary, unpackSpeedMultiplier } from "../lib/engine";
+import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary, unpackSpeedMultiplier, injectForcedCard } from "../lib/engine";
 import { broadcastPull } from "../lib/feed";
 import { startPresence } from "../lib/presence";
 import { recordCardPulls } from "../lib/cardStats";
@@ -23,7 +24,10 @@ import {
   saveStateToCloud,
   beaconSave,
   submitEventEntry,
-  fetchMe,
+  fetchMeFull,
+  fetchLuckMultiplier,
+  consumeForcedPull,
+  claimPendingCoins,
 } from "../lib/authClient";
 import { COIN_INTERVAL_MS, PACKS } from "../lib/config";
 
@@ -69,8 +73,9 @@ export default function Page() {
   const [modalHidden, setModalHidden] = useState(false);
   const [autoOpenPackKey, setAutoOpenPackKey] = useState(null);
   const [onlineCount, setOnlineCount] = useState(1);
-  const [session, setLocalSession] = useState(null); // { token, username } | null
+  const [session, setLocalSession] = useState(null); // { token, username, isAdmin } | null
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [adminModalOpen, setAdminModalOpen] = useState(false);
   const readyRef = useRef(false);
   const modalSeqRef = useRef(0);
   const autoTimerRef = useRef(null);
@@ -86,18 +91,22 @@ export default function Page() {
 
     if (existingSession && existingSession.token) {
       setLocalSession(existingSession);
-      // Re-verify who this token actually belongs to, straight from the DB —
-      // this overwrites anything edited in localStorage/devtools with the
-      // real username, and logs the session out entirely if the token turns
-      // out to be invalid/expired.
-      fetchMe(existingSession.token).then((realUsername) => {
-        if (!realUsername) {
+      // Re-verify who this token actually belongs to — AND whether it's an
+      // admin account — straight from the DB, every time. This overwrites
+      // anything edited in localStorage/devtools with the real username,
+      // logs the session out entirely if the token turns out to be
+      // invalid/expired, and means isAdmin is never trusted from whatever
+      // was cached locally — a revoked admin flag stops showing the admin
+      // button the very next load, not whenever localStorage happens to
+      // get cleared.
+      fetchMeFull(existingSession.token).then((me) => {
+        if (!me) {
           clearSession();
           setLocalSession(null);
           return;
         }
-        if (realUsername !== existingSession.username) {
-          const corrected = { ...existingSession, username: realUsername };
+        if (me.username !== existingSession.username || me.isAdmin !== !!existingSession.isAdmin) {
+          const corrected = { ...existingSession, username: me.username, isAdmin: me.isAdmin };
           persistSession(corrected);
           setLocalSession(corrected);
         }
@@ -173,6 +182,29 @@ export default function Page() {
     return stop;
   }, []);
 
+  // Claims any coins an admin queued for this account via Give Coins. Runs
+  // once as soon as a session becomes available (covers both "already
+  // logged in on page load" and "just logged in this visit"), then on a
+  // light recurring poll so a grant sent mid-session shows up on its own
+  // rather than requiring a reload. claimPendingCoins clears it server-side
+  // as it's read, so a grant is only ever applied once.
+  useEffect(() => {
+    if (!session || !session.token) return;
+    let cancelled = false;
+    function claim() {
+      claimPendingCoins(session.token).then((amount) => {
+        if (cancelled || !amount) return;
+        setState((prev) => (prev ? { ...prev, coins: prev.coins + amount } : prev));
+      });
+    }
+    claim();
+    const t = setInterval(claim, 25000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, [session]);
+
   // Clean up any pending "open the next auto batch" timer on unmount.
   useEffect(() => {
     return () => {
@@ -218,7 +250,24 @@ export default function Page() {
     }
     const batch = multiOpenCount(state.upgrades ? state.upgrades.multiOpen : 0);
     const openCount = Math.min(batch, owned);
-    const results = openPacks(pack, openCount);
+
+    // Fetched fresh right at open time rather than from a background poll,
+    // so the odds always reflect whatever's actually active right now (a
+    // luck event starting/ending mid-session, or an admin queuing a forced
+    // pull moments ago) instead of a stale cached value. fetchLuckMultiplier
+    // works with no token too, so guests still get site-wide luck events;
+    // consumeForcedPull is skipped for guests since a forced pull only ever
+    // targets a specific logged-in account.
+    const [forced, luckMultiplier] = await Promise.all([
+      session && session.token ? consumeForcedPull(session.token) : Promise.resolve(null),
+      fetchLuckMultiplier(session ? session.token : null),
+    ]);
+
+    let results = openPacks(pack, openCount, luckMultiplier);
+    // Swaps one random slot for the admin-forced card so it still shows up
+    // inside a normal-looking pack open instead of a suspicious standalone
+    // popup — see injectForcedCard in lib/engine.js.
+    if (forced) results = injectForcedCard(results, forced);
 
     // Register every pulled card, in exact pull order, with the server —
     // it hands back each one's up-to-date global exist count. For a
@@ -338,9 +387,18 @@ export default function Page() {
   }
 
   function handleAuthed({ token, username, state: cloudState }) {
-    const nextSession = { token, username };
+    const nextSession = { token, username, isAdmin: false };
     persistSession(nextSession);
     setLocalSession(nextSession);
+    // login()/signup() don't return isAdmin, so fetch it separately right
+    // after — same server-verified path the mount-time check uses, just
+    // triggered immediately instead of waiting for the next page load.
+    fetchMeFull(token).then((me) => {
+      if (!me) return;
+      const withAdmin = { ...nextSession, isAdmin: me.isAdmin };
+      persistSession(withAdmin);
+      setLocalSession(withAdmin);
+    });
     // Login replaces local play with that account's saved progress; signup
     // just echoes back what we already had, so this is a no-op there.
     if (cloudState) {
@@ -366,6 +424,8 @@ export default function Page() {
         authedUsername={session ? session.username : null}
         onOpenAuth={() => setAuthModalOpen(true)}
         onLogout={handleLogout}
+        isAdmin={!!(session && session.isAdmin)}
+        onOpenAdmin={() => setAdminModalOpen(true)}
       />
 
       <div className="page-nav">
@@ -428,6 +488,10 @@ export default function Page() {
           onClose={() => setAuthModalOpen(false)}
           onAuthed={handleAuthed}
         />
+      )}
+
+      {adminModalOpen && session && session.token && (
+        <AdminPanel token={session.token} onClose={() => setAdminModalOpen(false)} />
       )}
 
       {/* Stays reachable no matter which tab is on screen, and even while

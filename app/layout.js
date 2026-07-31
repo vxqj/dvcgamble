@@ -1,5 +1,6 @@
 import "./globals.css";
 import StatusBanner from "../components/StatusBanner";
+import AnnouncementBanner from "../components/AnnouncementBanner";
 import PatchNotesModal from "../components/PatchNotesModal";
 
 export const metadata = {
@@ -20,6 +21,10 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <StatusBanner />
+        {/* Site-wide, above the centered .wrap content, same as
+            StatusBanner — an admin announcement is a heads-up for
+            everyone currently on the site, not scoped to any one page. */}
+        <AnnouncementBanner />
         {children}
         <PatchNotesModal />
       </body>
