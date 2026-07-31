@@ -66,9 +66,9 @@ function AnnouncementStyles() {
     <style>{`
       .ann-stack {
         position: fixed;
-        top: 50%;
+        top: 24px;
         left: 50%;
-        transform: translate(-50%, -50%);
+        transform: translateX(-50%);
         z-index: 6600;
         display: flex;
         flex-direction: column;
