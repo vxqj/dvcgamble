@@ -10,7 +10,7 @@ export async function GET() {
     // Cheap, no-auth-required cleanup — anyone loading the Auction tab
     // helps flush any auctions whose timer already ran out, so payouts
     // don't wait on a separate cron job to exist.
-    await db.rpc("settle_expired_auctions");
+    // await db.rpc("settle_expired_auctions");
 
     const { data: auctions, error } = await db
       .from("auctions")
