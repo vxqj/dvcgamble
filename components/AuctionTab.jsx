@@ -122,7 +122,11 @@ export default function AuctionTab({
       // than subtracting locally — this is what actually fixes the
       // deposit-doesn't-remove-coins bug, since a stale autosave landing
       // around the same time can no longer win with a guessed number.
-      if (res && res.coins != null) onCoinsSynced(res.coins);
+      // Guarded because a missing/undefined onCoinsSynced prop should
+      // degrade to "coins just won't sync instantly" rather than a hard
+      // crash that blanks the whole tab — that's exactly what happened
+      // when this prop briefly got dropped from page.js.
+      if (res && res.coins != null && typeof onCoinsSynced === "function") onCoinsSynced(res.coins);
     } catch (e) {
       setWalletError(e.message || "Deposit failed");
     } finally {
@@ -139,7 +143,7 @@ export default function AuctionTab({
       const res = await withdrawFromWallet(session.token, amt);
       setDepositAmount("");
       onWalletChange();
-      if (res && res.coins != null) onCoinsSynced(res.coins);
+      if (res && res.coins != null && typeof onCoinsSynced === "function") onCoinsSynced(res.coins);
     } catch (e) {
       setWalletError(e.message || "Withdraw failed");
     } finally {

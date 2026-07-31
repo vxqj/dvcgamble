@@ -407,6 +407,29 @@ export default function Page() {
     });
   }
 
+  // Adopts the server's authoritative post-deposit/withdraw coins figure
+  // (see lib/authClient.js depositToWallet/withdrawFromWallet, which now
+  // return { wallet, coins } thanks to the updated deposit_to_wallet /
+  // withdraw_from_wallet SQL) instead of computing a local guess. Also
+  // immediately pushes this exact number to the cloud, bypassing the
+  // normal CLOUD_SAVE_MIN_INTERVAL_MS throttle — that's the piece that
+  // actually fixes "deposit doesn't remove coins": without it, an
+  // autosave already in flight with the OLD (pre-deposit) coins number
+  // could still land after this and silently overwrite the correct value.
+  // Firing our own save immediately, right after, guarantees the correct
+  // number is the last thing written.
+  function handleCoinsSynced(newCoins) {
+    setState((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, coins: newCoins };
+      if (session && session.token) {
+        lastCloudSaveRef.current = Date.now();
+        saveStateToCloud(session.token, next);
+      }
+      return next;
+    });
+  }
+
   function handleCollect(results) {
     const openedPack = modal ? modal.pack : null;
     const wasAuto = modal ? modal.auto : false;
@@ -552,6 +575,7 @@ export default function Page() {
           session={session}
           wallet={auctionWallet}
           onWalletChange={refreshWallet}
+          onCoinsSynced={handleCoinsSynced}
           coins={state.coins}
           cards={state.cards}
           cardSerials={state.cardSerials}
