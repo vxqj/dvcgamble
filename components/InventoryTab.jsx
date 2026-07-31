@@ -15,7 +15,7 @@ import { fetchCardCounts, getCachedCount } from "../lib/cardStats";
 import { TrashIcon, PackIcon } from "./Icons";
 
 export default function InventoryTab({
-  packsOwned, cards, cardSerials, upgrades, onOpenPack, onSellCards,
+  packsOwned, cards, cardSerials, discoveredCards, upgrades, onOpenPack, onSellCards,
   autoOpenPackKey, onAutoOpenPack, onCancelAutoOpen,
 }) {
   const [sub, setSub] = useState("packs");
@@ -100,7 +100,7 @@ export default function InventoryTab({
         <CardsView byRarity={byRarity} cards={cards} cardSerials={cardSerials} cardNames={cardNames} onSellCards={onSellCards} />
       )}
 
-      {sub === "collection" && <CollectionView cards={cards} />}
+      {sub === "collection" && <CollectionView cards={cards} discoveredCards={discoveredCards} />}
 
       {sub === "odds" && <OddsTable />}
     </div>
@@ -301,10 +301,16 @@ function InventoryCardItem({ name, ownedCount, rarity, serials }) {
    Owned cards show their name, count, and rarity color; anything you
    haven't pulled yet shows as "???" so it stays a chase, not a spoiler.
    -------------------------------------------------------------------------- */
-function CollectionView({ cards }) {
+function CollectionView({ cards, discoveredCards }) {
+  // Fall back to owned-count if discoveredCards hasn't been wired up yet
+  // upstream (e.g. mid-deploy, or an old save that predates the field) —
+  // this keeps the tab from breaking, it just reverts to the old (buggy)
+  // behavior until the caller passes discoveredCards through.
+  const discovered = discoveredCards || cards;
+
   const totalCards = RARITIES.reduce((sum, r) => sum + (CARDS[r.key] || []).length, 0);
   const totalOwned = RARITIES.reduce(
-    (sum, r) => sum + (CARDS[r.key] || []).filter((n) => (cards[n] || 0) > 0).length,
+    (sum, r) => sum + (CARDS[r.key] || []).filter((n) => !!discovered[n]).length,
     0
   );
   const pct = totalCards === 0 ? 0 : (totalOwned / totalCards) * 100;
@@ -321,7 +327,7 @@ function CollectionView({ cards }) {
       {RARITIES.map((r) => {
         const list = CARDS[r.key] || [];
         if (list.length === 0) return null;
-        const owned = list.filter((n) => (cards[n] || 0) > 0).length;
+        const owned = list.filter((n) => !!discovered[n]).length;
         const titleStyle = r.gradient ? { "--rarity-gradient": r.gradient } : { color: r.color };
         return (
           <div className="inv-group" key={r.key}>
@@ -330,11 +336,15 @@ function CollectionView({ cards }) {
             </div>
             <div className="dex-grid">
               {list.map((name) => {
-                const have = (cards[name] || 0) > 0;
+                const have = !!discovered[name];
                 const itemStyle = have && r.gradient
                   ? { "--rarity-border-gradient": r.gradient }
                   : have ? { borderColor: r.color } : undefined;
                 const nameStyle = have && r.gradient ? { "--rarity-gradient": r.gradient } : undefined;
+                // Current owned count (0 if sold off) — shown only when
+                // still owned; a discovered-but-sold card shows its name
+                // with no count, rather than reverting to "???".
+                const ownedCount = cards[name] || 0;
                 return (
                   <div
                     className={`dex-item${have ? " have" : ""}${have && r.gradient ? " prismatic-border" : ""}`}
@@ -344,7 +354,7 @@ function CollectionView({ cards }) {
                     <div className={`dex-item-name${have && r.gradient ? " gradient-text" : ""}`} style={nameStyle}>
                       {have ? name : "???"}
                     </div>
-                    {have && <div className="dex-item-count">x{cards[name]}</div>}
+                    {have && ownedCount > 0 && <div className="dex-item-count">x{ownedCount}</div>}
                   </div>
                 );
               })}
