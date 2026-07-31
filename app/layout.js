@@ -1,5 +1,6 @@
 import "./globals.css";
 import StatusBanner from "../components/StatusBanner";
+import PatchNotesModal from "../components/PatchNotesModal";
 
 export const metadata = {
   title: "DVC GAMBLE — Card Unbox",
@@ -20,6 +21,7 @@ export default function RootLayout({ children }) {
       <body>
         <StatusBanner />
         {children}
+        <PatchNotesModal />
       </body>
     </html>
   );
