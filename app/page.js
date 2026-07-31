@@ -41,6 +41,27 @@ const TABS = [
 const BASE_AUTO_NEXT_DELAY_MS = 250;
 const MIN_AUTO_NEXT_DELAY_MS = 60;
 
+// PERF: `state` changes on every passive coin tick (COIN_INTERVAL_MS,
+// default every 2s) because the coin-income effect below writes a new
+// coins/lastCoinTs into state on every tick. The persist effect used to
+// fire a cloud save (saveStateToCloud -> Supabase upsert, plus 2 auth
+// lookups) every time `state` changed — so every logged-in player was
+// hitting the DB roughly every ~2.3 seconds for their *entire* session,
+// just from sitting there earning passive coins. With 60 concurrent
+// players that's ~90 queries/sec of pure autosave traffic, which is what
+// was actually saturating Supabase and making everything feel slow.
+//
+// Fix: keep the localStorage save on every change (free, local, no
+// network) but throttle the *cloud* save to at most once every
+// CLOUD_SAVE_MIN_INTERVAL_MS, no matter how often state changes in
+// between. Meaningful actions (buying, opening packs, upgrades, selling)
+// still get persisted quickly since they also trigger this same effect —
+// they just won't necessarily hit the network the instant they happen if
+// a cloud save already went out very recently. Tab close / hide is still
+// covered separately by beaconSave below, which is NOT throttled, so
+// nothing is lost when someone actually leaves.
+const CLOUD_SAVE_MIN_INTERVAL_MS = 20_000;
+
 export default function Page() {
   const [state, setState] = useState(null);
   const [tab, setTab] = useState("shop");
@@ -53,6 +74,7 @@ export default function Page() {
   const readyRef = useRef(false);
   const modalSeqRef = useRef(0);
   const autoTimerRef = useRef(null);
+  const lastCloudSaveRef = useRef(0);
 
   // Load + hydrate on mount. If there's an existing login session, the
   // player's cloud save is the source of truth; otherwise fall back to
@@ -107,19 +129,28 @@ export default function Page() {
   }, [!!state]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persist on change (debounced) — always to localStorage, and also to the
-  // cloud whenever a session is active.
+  // cloud whenever a session is active, throttled to CLOUD_SAVE_MIN_INTERVAL_MS
+  // (see the big comment above) so passive coin ticks don't hammer Supabase.
   useEffect(() => {
     if (!state || !readyRef.current) return;
     const t = setTimeout(() => {
       saveState(state);
-      if (session && session.token) saveStateToCloud(session.token, state);
+      if (session && session.token) {
+        const now = Date.now();
+        if (now - lastCloudSaveRef.current >= CLOUD_SAVE_MIN_INTERVAL_MS) {
+          lastCloudSaveRef.current = now;
+          saveStateToCloud(session.token, state);
+        }
+      }
     }, 300);
     return () => clearTimeout(t);
   }, [state, session]);
 
-  // Save on tab close / hide, since the debounced save above can get cut
-  // off if the tab closes mid-timer. sendBeacon fires reliably even as the
-  // page is unloading.
+  // Save on tab close / hide, since the throttled/debounced save above can
+  // get cut off (or simply be waiting out its throttle window) if the tab
+  // closes mid-timer. sendBeacon fires reliably even as the page is
+  // unloading, and intentionally ignores the cloud-save throttle above —
+  // this is the "don't lose progress" guarantee, so it always fires.
   useEffect(() => {
     function saveNow() {
       if (session && session.token && state) beaconSave(session.token, state);

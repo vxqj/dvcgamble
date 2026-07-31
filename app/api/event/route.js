@@ -4,10 +4,29 @@ import { EVENT_CONFIG, RARITIES } from "../../../lib/config";
 
 const LEADERBOARD_SIZE = 50;
 
+// PERF: EventTab.jsx polls this route every 15s, per open tab. With ~60
+// players that's up to ~240 requests/min, and each one used to pull up to
+// 2000 rows from event_entries and re-sort them in JS from scratch, with
+// caching fully disabled (force-dynamic + no-store). That's a lot of
+// avoidable DB + CPU load piling up exactly when the site is busiest.
+//
+// Fix: keep computing the leaderboard the same correct way (see the big
+// comment further down on liveRarityIndex — that logic is unchanged and
+// still matters), but only actually hit Supabase + re-sort once every
+// CACHE_MS, and serve every request in between from an in-memory copy.
+// Worst case, the leaderboard is up to CACHE_MS stale, which is fine for
+// a "who's winning right now" board. This turns "up to 240 heavy
+// queries/min" into "at most 1 heavy query every 10 seconds," no matter
+// how many players/tabs are polling.
+const CACHE_MS = 10_000;
+let cachedPayload = null;
+let cachedAt = 0;
+
 // Without this, Next.js treats this GET route as static (since it never
 // touches cookies/headers) and caches the response indefinitely at build
 // time — meaning new pulls would never show up until the next deploy. This
-// forces it to actually hit Supabase fresh on every request.
+// forces it to actually hit Supabase fresh on every request (subject to
+// our own short-lived cache above, not Next's build-time cache).
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -34,45 +53,59 @@ function liveRarityIndex(rarityKey) {
   return idx < 0 ? RARITIES.length - 1 : idx;
 }
 
+async function buildLeaderboard() {
+  const db = supabaseAdmin();
+  // No longer ORDER BY the (unreliable) stored rarity_index column — pull
+  // everything reasonable and sort it ourselves off live indices below.
+  const { data, error } = await db
+    .from("event_entries")
+    .select("username, rarity_key, rarity_label, card_name, pulled_at, player_id")
+    .limit(2000);
+
+  if (error) throw error;
+
+  const sorted = (data || [])
+    .map((row) => ({ ...row, liveIndex: liveRarityIndex(row.rarity_key) }))
+    .sort((a, b) => {
+      if (a.liveIndex !== b.liveIndex) return a.liveIndex - b.liveIndex;
+      return new Date(a.pulled_at).getTime() - new Date(b.pulled_at).getTime();
+    });
+
+  // Only each player's single best (now correctly-ranked) pull can place
+  // — de-dupe to one entry per player, keeping the first (= best) one
+  // seen in the freshly-sorted order.
+  const seenPlayers = new Set();
+  const leaderboard = [];
+  for (const row of sorted) {
+    if (seenPlayers.has(row.player_id)) continue;
+    seenPlayers.add(row.player_id);
+    leaderboard.push(row);
+    if (leaderboard.length === LEADERBOARD_SIZE) break;
+  }
+  return leaderboard;
+}
+
 export async function GET() {
   try {
-    const db = supabaseAdmin();
-    // No longer ORDER BY the (unreliable) stored rarity_index column — pull
-    // everything reasonable and sort it ourselves off live indices below.
-    const { data, error } = await db
-      .from("event_entries")
-      .select("username, rarity_key, rarity_label, card_name, pulled_at, player_id")
-      .limit(2000);
-
-    if (error) throw error;
-
-    const sorted = (data || [])
-      .map((row) => ({ ...row, liveIndex: liveRarityIndex(row.rarity_key) }))
-      .sort((a, b) => {
-        if (a.liveIndex !== b.liveIndex) return a.liveIndex - b.liveIndex;
-        return new Date(a.pulled_at).getTime() - new Date(b.pulled_at).getTime();
-      });
-
-    // Only each player's single best (now correctly-ranked) pull can place
-    // — de-dupe to one entry per player, keeping the first (= best) one
-    // seen in the freshly-sorted order.
-    const seenPlayers = new Set();
-    const leaderboard = [];
-    for (const row of sorted) {
-      if (seenPlayers.has(row.player_id)) continue;
-      seenPlayers.add(row.player_id);
-      leaderboard.push(row);
-      if (leaderboard.length === LEADERBOARD_SIZE) break;
+    if (cachedPayload && Date.now() - cachedAt < CACHE_MS) {
+      return NextResponse.json(cachedPayload, { headers: { "Cache-Control": "no-store, max-age=0" } });
     }
 
-    return NextResponse.json(
-      { endsAt: EVENT_CONFIG.endsAt, enabled: EVENT_CONFIG.enabled, leaderboard },
-      { headers: { "Cache-Control": "no-store, max-age=0" } }
-    );
+    const leaderboard = await buildLeaderboard();
+    cachedPayload = { endsAt: EVENT_CONFIG.endsAt, enabled: EVENT_CONFIG.enabled, leaderboard };
+    cachedAt = Date.now();
+
+    return NextResponse.json(cachedPayload, { headers: { "Cache-Control": "no-store, max-age=0" } });
   } catch (e) {
     console.error("EVENT FETCH ERROR:", e);
+    // Fall back to whatever we last had cached (even if stale) rather than
+    // an empty board, so a transient DB hiccup doesn't blank the podium.
     return NextResponse.json(
-      { endsAt: EVENT_CONFIG.endsAt, enabled: EVENT_CONFIG.enabled, leaderboard: [] },
+      {
+        endsAt: EVENT_CONFIG.endsAt,
+        enabled: EVENT_CONFIG.enabled,
+        leaderboard: cachedPayload ? cachedPayload.leaderboard : [],
+      },
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   }
