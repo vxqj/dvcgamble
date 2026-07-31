@@ -23,11 +23,6 @@ export default function CreateAuctionModal({ cards, cardSerials, onClose, onCrea
       .sort((a, b) => RARITIES.indexOf(a.rarity) - RARITIES.indexOf(b.rarity));
   }, [cards, nameToRarity]);
 
-  const options = eligibleByName
-    .map((name) => ({ name, rarity: nameToRarity[name] }))
-    .filter((o) => o.rarity && isAuctionEligible(o.rarity.key))
-    .sort((a, b) => RARITIES.indexOf(a.rarity) - RARITIES.indexOf(b.rarity));
-
   const [selectedName, setSelectedName] = useState(options[0] ? options[0].name : "");
   const [selectedSerial, setSelectedSerial] = useState(null);
   const [startingPrice, setStartingPrice] = useState("0");
