@@ -77,6 +77,18 @@ export function TrophyIcon(props) {
   );
 }
 
+export function GavelIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="m14.5 4.5-6 6" />
+      <path d="m17.5 7.5-6 6" />
+      <path d="m11.5 9.5-6 6 3 3 6-6" />
+      <path d="M2 22l5-5" />
+      <path d="m18 2 4 4-2.5 2.5-4-4Z" />
+    </svg>
+  );
+}
+
 /* --------------------------------------------------------------------------
    PACK ART ICONS
    One illustrated icon per pack "tier" (see PACKS[].icon in lib/config.js),

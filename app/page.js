@@ -7,10 +7,11 @@ import InventoryTab from "../components/InventoryTab";
 import FeedTab from "../components/FeedTab";
 import UpgradesTab from "../components/UpgradesTab";
 import EventTab from "../components/EventTab";
+import AuctionTab from "../components/AuctionTab";
 import PackOpenModal from "../components/PackOpenModal";
 import AuthModal from "../components/AuthModal";
 import AdminPanel from "../components/AdminPanel";
-import { ShopIcon, InventoryIcon, FeedIcon, UpgradeIcon, TrophyIcon } from "../components/Icons";
+import { ShopIcon, InventoryIcon, FeedIcon, UpgradeIcon, TrophyIcon, GavelIcon } from "../components/Icons";
 import { loadState, saveState, defaultState, applyOfflineCoins } from "../lib/storage";
 import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary, unpackSpeedMultiplier, injectForcedCard } from "../lib/engine";
 import { broadcastPull } from "../lib/feed";
@@ -28,6 +29,8 @@ import {
   fetchLuckMultiplier,
   consumeForcedPull,
   claimPendingCoins,
+  fetchAuctionWallet,
+  claimAuctionCards,
 } from "../lib/authClient";
 import { COIN_INTERVAL_MS, PACKS } from "../lib/config";
 
@@ -36,6 +39,7 @@ const TABS = [
   { key: "inventory", label: "Inventory", Icon: InventoryIcon },
   { key: "upgrades", label: "Upgrades", Icon: UpgradeIcon },
   { key: "feed", label: "Feed", Icon: FeedIcon },
+  { key: "auction", label: "Auction", Icon: GavelIcon },
   { key: "event", label: "Event", Icon: TrophyIcon },
 ];
 
@@ -76,6 +80,7 @@ export default function Page() {
   const [session, setLocalSession] = useState(null); // { token, username, isAdmin } | null
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
+  const [auctionWallet, setAuctionWallet] = useState(0);
   const readyRef = useRef(false);
   const modalSeqRef = useRef(0);
   const autoTimerRef = useRef(null);
@@ -205,6 +210,61 @@ export default function Page() {
     };
   }, [session]);
 
+  // Keeps the displayed auction wallet balance current. Refreshed on
+  // session change, on the same poll cadence as pending coins, and
+  // on-demand via refreshWallet (passed to AuctionTab) right after a
+  // deposit/withdraw/bid so the UI doesn't wait out the poll to update.
+  function refreshWallet() {
+    if (!session || !session.token) {
+      setAuctionWallet(0);
+      return;
+    }
+    fetchAuctionWallet(session.token).then(setAuctionWallet);
+  }
+  useEffect(() => {
+    refreshWallet();
+    if (!session || !session.token) return;
+    const t = setInterval(refreshWallet, 25000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
+
+  // Merges in any cards this player won (or reclaimed from an unsold
+  // auction of their own) since the last check. This can't be applied
+  // directly server-side into player_state — see the note in
+  // auction_schema_part3.sql — so instead it's queued server-side and
+  // picked up here, on the same poll cadence as pending coin grants, then
+  // folded into local state exactly like a normal pack pull would be.
+  useEffect(() => {
+    if (!session || !session.token) return;
+    let cancelled = false;
+    function claimCards() {
+      claimAuctionCards(session.token).then((won) => {
+        if (cancelled || !won || won.length === 0) return;
+        setState((prev) => {
+          if (!prev) return prev;
+          const cards = { ...prev.cards };
+          const cardSerials = { ...prev.cardSerials };
+          const discoveredCards = { ...prev.discoveredCards };
+          won.forEach(({ cardName, serial }) => {
+            cards[cardName] = (cards[cardName] || 0) + 1;
+            discoveredCards[cardName] = discoveredCards[cardName] || Date.now();
+            if (serial != null) {
+              cardSerials[cardName] = [...(cardSerials[cardName] || []), serial];
+            }
+          });
+          return { ...prev, cards, cardSerials, discoveredCards };
+        });
+      });
+    }
+    claimCards();
+    const t = setInterval(claimCards, 25000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, [session]);
+
   // Clean up any pending "open the next auto batch" timer on unmount.
   useEffect(() => {
     return () => {
@@ -322,6 +382,28 @@ export default function Page() {
       const { coins, remainingCards } = computeSellSummary(prev.cards, rarityKeys);
       if (coins <= 0) return prev;
       return { ...prev, coins: prev.coins + coins, cards: remainingCards };
+    });
+  }
+
+  // Mirrors what create_auction already did server-side (removed exactly
+  // one copy of this card, and its serial if applicable) into local
+  // state. Without this, the next routine autosave would push the
+  // client's stale (still-owning-it) count back up and silently undo the
+  // removal, letting the card exist both in the live auction AND back in
+  // the seller's own inventory.
+  function handleAuctionCreated({ cardName, serial }) {
+    setState((prev) => {
+      if (!prev) return prev;
+      const cards = { ...prev.cards };
+      cards[cardName] = Math.max(0, (cards[cardName] || 0) - 1);
+      let cardSerials = prev.cardSerials;
+      if (serial != null && prev.cardSerials && prev.cardSerials[cardName]) {
+        cardSerials = {
+          ...prev.cardSerials,
+          [cardName]: prev.cardSerials[cardName].filter((s) => s !== serial),
+        };
+      }
+      return { ...prev, cards, cardSerials };
     });
   }
 
@@ -465,6 +547,17 @@ export default function Page() {
         <UpgradesTab coins={state.coins} upgrades={state.upgrades} onBuy={handleBuyUpgrade} />
       )}
       {tab === "feed" && <FeedTab localFeedCache={[]} />}
+      {tab === "auction" && (
+        <AuctionTab
+          session={session}
+          wallet={auctionWallet}
+          onWalletChange={refreshWallet}
+          coins={state.coins}
+          cards={state.cards}
+          cardSerials={state.cardSerials}
+          onAuctionCreated={handleAuctionCreated}
+        />
+      )}
       {tab === "event" && <EventTab loggedIn={!!session} />}
 
       <footer className="app-footer">DVC Gamble</footer>
