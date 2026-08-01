@@ -443,7 +443,7 @@ a { color: inherit; }
   position: fixed; inset: 0; z-index: 5000;
   background: radial-gradient(circle at 50% 40%, rgba(18,18,25,0.9), rgba(4,4,7,0.97));
   display: flex; align-items: center; justify-content: flex-start; flex-direction: column;
-  padding: 60px 20px 20px;
+  padding: 30px 20px 20px;
   overflow-y: auto;
   animation: backdropIn 0.25s ease;
 }
@@ -544,27 +544,27 @@ a { color: inherit; }
    them down in two steps so a big batch still reads as one grid and fits
    the screen instead of overflowing it. Still noticeably card-sized, not
    tiny chips. */
-.reveal-grid.compact { grid-template-columns: repeat(auto-fill, 100px); gap: 10px; max-width: 700px; }
-.reveal-grid.compact .flip-card { width: 100px !important; height: 134px !important; }
-.reveal-grid.compact .flip-front .flip-logo { width: 32px; height: 32px; font-size: 10px; border-radius: 8px; }
-.reveal-grid.compact .fb-ribbon { padding: 5px 7px 4px; }
-.reveal-grid.compact .fb-rarity { font-size: 8.5px; }
-.reveal-grid.compact .fb-emblem { width: 27px; height: 27px; font-size: 12px; }
-.reveal-grid.compact .fb-name { font-size: 10.5px; padding: 4px 6px 7px; -webkit-line-clamp: 2; }
+.reveal-grid.compact { grid-template-columns: repeat(auto-fill, 82px); gap: 8px; max-width: 640px; }
+.reveal-grid.compact .flip-card { width: 82px !important; height: 110px !important; }
+.reveal-grid.compact .flip-front .flip-logo { width: 27px; height: 27px; font-size: 8.5px; border-radius: 7px; }
+.reveal-grid.compact .fb-ribbon { padding: 4px 6px 3px; }
+.reveal-grid.compact .fb-rarity { font-size: 7.5px; }
+.reveal-grid.compact .fb-emblem { width: 23px; height: 23px; font-size: 10.5px; }
+.reveal-grid.compact .fb-name { font-size: 9px; padding: 3px 5px 6px; -webkit-line-clamp: 2; }
 
-.reveal-grid.ultra { grid-template-columns: repeat(auto-fill, 82px); gap: 9px; max-width: 760px; }
-.reveal-grid.ultra .flip-card { width: 82px !important; height: 110px !important; }
-.reveal-grid.ultra .flip-front .flip-logo { width: 26px; height: 26px; font-size: 8px; border-radius: 7px; }
-.reveal-grid.ultra .flip-face { border-radius: 11px; }
+.reveal-grid.ultra { grid-template-columns: repeat(auto-fill, 64px); gap: 7px; max-width: 680px; }
+.reveal-grid.ultra .flip-card { width: 64px !important; height: 88px !important; }
+.reveal-grid.ultra .flip-front .flip-logo { width: 21px; height: 21px; font-size: 6.5px; border-radius: 6px; }
+.reveal-grid.ultra .flip-face { border-radius: 10px; }
 /* Room enough at this size for the full ribbon+emblem+name treatment now
    that ultra cards are bigger, so it no longer needs the stripped-down
    "thin bar" fallback — it gets the same card look as compact, just a
    little smaller. */
-.reveal-grid.ultra .fb-ribbon { padding: 4px 6px 3px; }
-.reveal-grid.ultra .fb-rarity { font-size: 7.5px; }
-.reveal-grid.ultra .fb-emblem { width: 22px; height: 22px; font-size: 10px; }
+.reveal-grid.ultra .fb-ribbon { padding: 3px 5px 2px; }
+.reveal-grid.ultra .fb-rarity { font-size: 6.5px; }
+.reveal-grid.ultra .fb-emblem { width: 18px; height: 18px; font-size: 8.5px; }
 .reveal-grid.ultra .fb-name {
-  font-size: 9px; padding: 3px 5px 6px; -webkit-line-clamp: 2;
+  font-size: 8px; padding: 3px 4px 5px; -webkit-line-clamp: 2;
 }
 
 /* Sticky so Collect/Cancel are always reachable without hunting for them
