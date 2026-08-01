@@ -272,14 +272,27 @@ a { color: inherit; }
   display: flex; align-items: center; gap: 8px;
 }
 .inv-group-count { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted-2); font-weight: 400; }
-.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+/* Fixed-width columns + a fixed card box (same pattern as .reveal-grid /
+   .flip-card in the pack-open modal) — every card is the exact same
+   rectangle regardless of name length, instead of a min-height box that
+   grows/shrinks per item and never lines up into real rows. */
+.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, 108px); justify-content: center; gap: 10px; }
 .inv-item {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
-  padding: 10px 8px; text-align: center; display: flex; flex-direction: column; gap: 4px;
-  align-items: center; justify-content: center; min-height: 58px;
+  width: 108px; height: 144px;
+  background: linear-gradient(165deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 9px 10px; text-align: center; display: flex; flex-direction: column; gap: 6px;
+  align-items: center; justify-content: center;
+  box-shadow: 0 0 0 1px var(--rarity-glow, transparent), 0 0 16px -6px var(--rarity-glow, transparent);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-.inv-item-name { font-size: 11px; font-weight: 600; line-height: 1.2; word-break: break-word; }
-.inv-item-count { font-family: var(--font-mono); font-size: 10px; color: var(--gold-dim); }
+.inv-item[role="button"]:hover { transform: translateY(-3px); }
+.inv-item-name {
+  font-size: 11.5px; font-weight: 700; line-height: 1.25; color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+  overflow: hidden; text-overflow: ellipsis; word-break: break-word;
+}
+.inv-item-count { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; color: var(--gold-dim); flex-shrink: 0; }
 
 /* ---------- Inventory: sell mode ---------- */
 .inv-toolbar { display: flex; justify-content: flex-end; margin-bottom: 14px; }
@@ -367,28 +380,38 @@ a { color: inherit; }
   transition: width 0.4s ease; box-shadow: 0 0 10px rgba(242,193,78,0.4);
 }
 
-.dex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+/* Same fixed-card fix as .inv-grid/.inv-item above. */
+.dex-grid { display: grid; grid-template-columns: repeat(auto-fill, 108px); justify-content: center; gap: 10px; }
 .dex-item {
-  background: var(--surface); border: 1px dashed var(--border-soft); border-radius: 10px;
-  padding: 10px 8px; text-align: center; display: flex; flex-direction: column; gap: 4px;
-  align-items: center; justify-content: center; min-height: 58px; opacity: 0.4;
-  transition: opacity 0.15s ease;
+  width: 108px; height: 144px;
+  background: linear-gradient(165deg, var(--surface-2), var(--surface));
+  border: 1px dashed var(--border-soft); border-radius: 12px;
+  padding: 12px 9px 10px; text-align: center; display: flex; flex-direction: column; gap: 6px;
+  align-items: center; justify-content: center; opacity: 0.4;
+  transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 .dex-item.have {
   border-style: solid; opacity: 1;
-  box-shadow: 0 0 0 1px var(--border-soft);
+  border-color: var(--rarity-glow, var(--border-soft));
+  background: linear-gradient(165deg, color-mix(in srgb, var(--rarity-glow, var(--border-soft)) 16%, var(--surface-2)), var(--surface));
+  box-shadow: 0 0 0 1px var(--rarity-glow, var(--border-soft)), 0 0 20px -6px var(--rarity-glow, transparent);
 }
+.dex-item.have:hover { transform: translateY(-3px); }
 /* Gradient rarities can't use a plain border-color, so this double-layer
    background trick paints a gradient "border" instead. The gradient itself
    comes in via the --rarity-border-gradient custom property. */
 .dex-item.have.prismatic-border {
   border: 1.5px solid transparent;
   background:
-    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(165deg, var(--surface-2), var(--surface)) padding-box,
     var(--rarity-border-gradient, linear-gradient(90deg, #fff, #fff)) border-box;
 }
-.dex-item-name { font-size: 11px; font-weight: 600; line-height: 1.2; word-break: break-word; }
-.dex-item-count { font-family: var(--font-mono); font-size: 10px; color: var(--gold-dim); }
+.dex-item-name {
+  font-size: 11.5px; font-weight: 700; line-height: 1.25; color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+  overflow: hidden; text-overflow: ellipsis; word-break: break-word;
+}
+.dex-item-count { font-family: var(--font-mono); font-size: 10.5px; font-weight: 700; color: var(--gold-dim); flex-shrink: 0; }
 
 /* ---------- Odds table ---------- */
 .rarity-list { display: flex; flex-direction: column; gap: 8px; }
@@ -818,6 +841,10 @@ footer.app-footer {
      118px while the cards shrink to 96px and everything drifts out of
      alignment on small screens. */
   .reveal-grid { grid-template-columns: repeat(auto-fill, 96px); gap: 10px; }
+  /* Same column-width-must-match-card-width rule as .reveal-grid above,
+     applied to the Cards/Collection grids. */
+  .inv-grid, .dex-grid { grid-template-columns: repeat(auto-fill, 92px); gap: 8px; }
+  .inv-item, .dex-item { width: 92px; height: 124px; }
   .coin-pill { padding: 8px 12px; }
 }
 /* ==========================================================================

@@ -266,6 +266,7 @@ function CardsView({ byRarity, cards, cardSerials, cardNames, discoveredCards, o
 function InventoryCardItem({ name, ownedCount, rarity, serials, onClick }) {
   const [hover, setHover] = useState(false);
   const [count, setCount] = useState(() => getCachedCount(name));
+  const glowStyle = { "--rarity-glow": rarity.color };
 
   useEffect(() => {
     if (!hover || count != null) return;
@@ -283,7 +284,7 @@ function InventoryCardItem({ name, ownedCount, rarity, serials, onClick }) {
   return (
     <div
       className="inv-item"
-      style={{ position: "relative", cursor: onClick ? "pointer" : undefined }}
+      style={{ ...glowStyle, position: "relative", cursor: onClick ? "pointer" : undefined }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onClick={onClick}
@@ -397,8 +398,8 @@ function CollectionView({ cards, cardSerials, discoveredCards, onOpenDetail }) {
               {list.map((name) => {
                 const have = !!discovered[name];
                 const itemStyle = have && r.gradient
-                  ? { "--rarity-border-gradient": r.gradient }
-                  : have ? { borderColor: r.color } : undefined;
+                  ? { "--rarity-border-gradient": r.gradient, "--rarity-glow": r.color }
+                  : have ? { "--rarity-glow": r.color } : undefined;
                 const nameStyle = have && r.gradient ? { "--rarity-gradient": r.gradient } : undefined;
                 // Current owned count (0 if sold off) — shown only when
                 // still owned; a discovered-but-sold card shows its name
