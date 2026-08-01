@@ -2,6 +2,7 @@ import "./globals.css";
 import StatusBanner from "../components/StatusBanner";
 import AnnouncementBanner from "../components/AnnouncementBanner";
 import PatchNotesModal from "../components/PatchNotesModal";
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata = {
   title: "DVC GAMBLE — Card Unbox",
