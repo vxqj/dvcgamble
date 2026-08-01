@@ -56,6 +56,15 @@ function hexToRgba(hex, alpha) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+// A single letter stand-in for per-card artwork — pulled from the card
+// name so every card gets its own emblem without needing an actual image
+// asset per card. Falls back to the rarity's own initial for the rare
+// edge case of an empty/whitespace name.
+function monogramFor(name, rarity) {
+  const source = (name || rarity.label || "?").trim();
+  return source.charAt(0).toUpperCase();
+}
+
 export default function PackOpenModal({
   pack, results, accent, openCount, soundEnabled, onCollect,
   isAuto, autoStart, onCancelAuto, onHide, speedMultiplier = 1,
@@ -236,32 +245,42 @@ export default function PackOpenModal({
   );
 }
 
+// A card revealed rainbow uses this instead of the app's rarity glow for
+// its border/emblem — RAINBOW_CONFIG in lib/config.js rolls this
+// independently of rarity, so it's layered on top of whatever fx/prismatic
+// treatment the rarity already has rather than replacing it.
+const RAINBOW_GRADIENT = "conic-gradient(from 0deg, #ff5f6d, #ffc371, #f9f871, #6dffb0, #4facfe, #a18cd1, #ff5f6d)";
+
 function FlipCard({ result, flipped }) {
-  const { rarity, name, count } = result;
+  const { rarity, name, count, isRainbow } = result;
   const prismatic = isPrismatic(rarity);
-  const fxClass = prismatic ? " is-prismatic" : rarity.fx >= 1 ? ` is-rare-fx${rarity.fx}` : "";
+  const fxBase = prismatic ? " is-prismatic" : rarity.fx >= 1 ? ` is-rare-fx${rarity.fx}` : "";
+  const fxClass = fxBase + (isRainbow ? " is-rainbow" : "");
   const displayName = rarity.hidden && !flipped ? "???" : name;
   const innerClass = `flip-card-inner${flipped ? " flipped" : ""}${flipped && prismatic ? " prismatic-flip" : ""}`;
   const labelStyle = rarity.gradient ? { "--rarity-gradient": rarity.gradient } : { color: rarity.color };
   // position: relative added so the serial badge below can anchor to this
-  // face specifically, without needing a globals.css change. background
-  // gives every card a soft tint of its own rarity color instead of the
-  // flat grey every rarity used to share, so the reveal grid reads as a
-  // set of distinct cards rather than identical boxes with different text.
-  const backStyle = {
-    color: rarity.color,
-    borderColor: rarity.color,
-    position: "relative",
-    background: `linear-gradient(165deg, ${hexToRgba(rarity.color, 0.22)} 0%, var(--surface) 60%)`,
-    ...pulseVars(rarity),
-  };
+  // face specifically. When rainbow, the border/background is fully owned
+  // by the .is-rainbow CSS class (animated conic-gradient border) instead
+  // of the normal per-rarity color tint, so those two properties are left
+  // out of the inline style entirely rather than fighting the CSS class.
+  const backStyle = isRainbow
+    ? { position: "relative", ...pulseVars(rarity) }
+    : {
+        color: rarity.color,
+        borderColor: rarity.color,
+        position: "relative",
+        background: `linear-gradient(165deg, ${hexToRgba(rarity.color, 0.22)} 0%, var(--surface) 60%)`,
+        ...pulseVars(rarity),
+      };
   const showSerial = flipped && rarity.serialsEnabled && count != null;
+  const monogram = monogramFor(displayName, rarity);
 
   return (
     <div className="flip-card">
       <div className={innerClass}>
         <div className="flip-face flip-front">
-          <div className="flip-logo" />
+          <div className="flip-logo">DVC</div>
         </div>
         <div className={`flip-face flip-back${fxClass}`} style={backStyle}>
           {showSerial && (
@@ -279,15 +298,33 @@ function FlipCard({ result, flipped }) {
                 borderRadius: 6,
                 padding: "2px 6px",
                 lineHeight: 1.2,
+                zIndex: 2,
               }}
             >
               #{count}
             </div>
           )}
-          <div className="fb-swatch" style={{ background: rarity.gradient || rarity.color }} />
-          <div className={`fb-rarity${rarity.gradient ? " gradient-text" : ""}`} style={labelStyle}>
-            {rarity.hidden ? "???" : rarity.label}
+
+          {/* Header ribbon — a proper title bar for the card instead of an
+              inline label floating in the middle of a flat color box. */}
+          <div className="fb-ribbon">
+            <div className={`fb-rarity${rarity.gradient ? " gradient-text" : ""}`} style={labelStyle}>
+              {rarity.hidden ? "???" : rarity.label}
+            </div>
+            {isRainbow && <div className="fb-rainbow-tag">✦ RAINBOW ✦</div>}
           </div>
+
+          {/* Emblem zone — a monogram badge on a faint diagonal-hairline
+              texture stands in for per-card artwork the game doesn't have,
+              so a revealed card reads as an actual illustrated card rather
+              than a color swatch. */}
+          <div className="fb-emblem-wrap">
+            <div className="fb-pattern" />
+            <div className="fb-emblem" style={{ background: isRainbow ? RAINBOW_GRADIENT : rarity.gradient || rarity.color }}>
+              {monogram}
+            </div>
+          </div>
+
           <div className="fb-name">{displayName}</div>
         </div>
       </div>
