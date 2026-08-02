@@ -6,7 +6,7 @@ import { fmtNum } from "../lib/engine";
 import { PeopleIcon } from "./Icons";
 
 export default function TopBar({
-  coins, onlineCount, coinsPerTick, authedUsername, onOpenAuth, onLogout,
+  coins, onlineCount, coinsPerTick, authedUsername, equippedTitle, onOpenAuth, onLogout,
   isAdmin, onOpenAdmin,
 }) {
   const [tick, setTick] = useState(false);
@@ -66,7 +66,7 @@ export default function TopBar({
         )}
         {authedUsername ? (
           <button className="auth-btn logged-in" onClick={onLogout} title="Log out">
-            {authedUsername}
+            {equippedTitle && <span className="topbar-title-tag">[{equippedTitle}]</span>} {authedUsername}
           </button>
         ) : (
           <button className="auth-btn" onClick={onOpenAuth}>

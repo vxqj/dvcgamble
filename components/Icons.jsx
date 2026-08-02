@@ -77,6 +77,15 @@ export function TrophyIcon(props) {
   );
 }
 
+export function TitleIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M12 2 3 6.5V12c0 5 3.8 8.4 9 10 5.2-1.6 9-5 9-10V6.5L12 2Z" />
+      <path d="m9 12 2 2 4-4.5" />
+    </svg>
+  );
+}
+
 export function GavelIcon(props) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>

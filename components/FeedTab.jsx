@@ -35,7 +35,13 @@ export default function FeedTab({ localFeedCache }) {
         <div className="feed-list">
           {sorted.map((p) => (
             <div className="feed-item" key={p.id}>
-              <span className="feed-tag">Someone</span>
+              {p.username ? (
+                <span className="feed-tag feed-identity">
+                  {p.titleKey && <span className="feed-title-tag">[{p.titleKey}]</span>} {p.username}
+                </span>
+              ) : (
+                <span className="feed-tag">Someone</span>
+              )}
               <span>pulled</span>
               <span className="feed-rarity" style={{ color: p.color }}>{p.rarityLabel}</span>
               {p.packLabel && <span style={{ color: "var(--muted-2)" }}>from {p.packLabel}</span>}

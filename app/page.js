@@ -7,12 +7,13 @@ import InventoryTab from "../components/InventoryTab";
 import FeedTab from "../components/FeedTab";
 import UpgradesTab from "../components/UpgradesTab";
 import EventTab from "../components/EventTab";
+import TitlesTab from "../components/TitlesTab";
 import PackOpenModal from "../components/PackOpenModal";
 import AuthModal from "../components/AuthModal";
 import AdminPanel from "../components/AdminPanel";
-import { ShopIcon, InventoryIcon, FeedIcon, UpgradeIcon, TrophyIcon } from "../components/Icons";
+import { ShopIcon, InventoryIcon, FeedIcon, UpgradeIcon, TrophyIcon, TitleIcon } from "../components/Icons";
 import { loadState, saveState, defaultState, applyOfflineCoins } from "../lib/storage";
-import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary, unpackSpeedMultiplier, injectForcedCard } from "../lib/engine";
+import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary, unpackSpeedMultiplier, injectForcedCard, isTitleUnlocked } from "../lib/engine";
 import { broadcastPull } from "../lib/feed";
 import { startPresence } from "../lib/presence";
 import { recordCardPulls } from "../lib/cardStats";
@@ -35,6 +36,7 @@ const TABS = [
   { key: "shop", label: "Shop", Icon: ShopIcon },
   { key: "inventory", label: "Inventory", Icon: InventoryIcon },
   { key: "upgrades", label: "Upgrades", Icon: UpgradeIcon },
+  { key: "titles", label: "Titles", Icon: TitleIcon },
   { key: "feed", label: "Feed", Icon: FeedIcon },
   { key: "event", label: "Event", Icon: TrophyIcon },
 ];
@@ -325,6 +327,17 @@ export default function Page() {
     });
   }
 
+  // titleKey is null to unequip. Re-checked against discoveredCards here
+  // (not just trusted from the click) so an unlock that somehow got
+  // reverted (e.g. a very old save without this feature) can never result
+  // in wearing a title that was never actually earned.
+  function handleEquipTitle(titleKey) {
+    setState((prev) => {
+      if (titleKey && !isTitleUnlocked(titleKey, prev.discoveredCards)) return prev;
+      return { ...prev, equippedTitle: titleKey || null };
+    });
+  }
+
   function handleCollect(results) {
     const openedPack = modal ? modal.pack : null;
     const wasAuto = modal ? modal.auto : false;
@@ -354,6 +367,11 @@ export default function Page() {
         color: rarity.color,
         name,
         packLabel: openedPack ? openedPack.label : undefined,
+        // Guests still broadcast anonymously (no session = no username to
+        // show) — only a logged-in player's real username + whatever
+        // title they currently have equipped go out here.
+        username: session ? session.username : undefined,
+        titleKey: session ? state.equippedTitle : undefined,
       });
       // Event entries are only meaningful for logged-in players — there's
       // no identity to put on the podium otherwise. The server always
@@ -427,6 +445,7 @@ export default function Page() {
         onlineCount={onlineCount}
         coinsPerTick={effectiveCoinPerTick(state.upgrades ? state.upgrades.coinBoost : 0)}
         authedUsername={session ? session.username : null}
+        equippedTitle={state.equippedTitle}
         onOpenAuth={() => setAuthModalOpen(true)}
         onLogout={handleLogout}
         isAdmin={!!(session && session.isAdmin)}
@@ -463,6 +482,13 @@ export default function Page() {
       )}
       {tab === "upgrades" && (
         <UpgradesTab coins={state.coins} upgrades={state.upgrades} onBuy={handleBuyUpgrade} />
+      )}
+      {tab === "titles" && (
+        <TitlesTab
+          discoveredCards={state.discoveredCards}
+          equippedTitle={state.equippedTitle}
+          onEquip={handleEquipTitle}
+        />
       )}
       {tab === "feed" && <FeedTab localFeedCache={[]} />}
       {tab === "event" && <EventTab loggedIn={!!session} />}
