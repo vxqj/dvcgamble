@@ -5,15 +5,16 @@ import { TITLES } from "../lib/config";
 import { unlockedTitleKeys, titleDisplay } from "../lib/engine";
 
 // `discoveredCards` and `equippedTitle` come straight from game state.
-// `isAdmin` is the server-verified flag from fetchMeFull (see page.js) —
-// required for adminOnly titles to ever show as unlocked, same trust rule
-// as every other admin-gated thing in the app (never a client-side guess).
+// `isAdmin`/`username` are the server-verified values from fetchMeFull
+// (see page.js) — required for adminOnly/allowedUsernames titles to ever
+// show as unlocked, same trust rule as every other identity-gated thing
+// in the app (never a client-side guess).
 // `onEquip(titleKey | null)` writes the choice back into state — passing
 // null unequips whatever's currently worn.
-export default function TitlesTab({ discoveredCards, equippedTitle, isAdmin, onEquip }) {
+export default function TitlesTab({ discoveredCards, equippedTitle, isAdmin, username, onEquip }) {
   const [sub, setSub] = useState("all"); // "all" | "owned"
 
-  const unlocked = new Set(unlockedTitleKeys(discoveredCards, isAdmin));
+  const unlocked = new Set(unlockedTitleKeys(discoveredCards, isAdmin, username));
   const list = sub === "owned" ? TITLES.filter((t) => unlocked.has(t.key)) : TITLES;
 
   return (

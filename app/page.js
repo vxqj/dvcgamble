@@ -335,13 +335,14 @@ export default function Page() {
 
   // titleKey is null to unequip. Re-checked here (not just trusted from
   // the click) so a title can never end up equipped without actually
-  // being unlocked — including adminOnly titles, which depend on the
-  // server-verified session.isAdmin flag, not anything the client could
+  // being unlocked — including adminOnly/allowedUsernames titles, which
+  // depend on the server-verified session, not anything the client could
   // fake by clicking the button.
   function handleEquipTitle(titleKey) {
     const isAdmin = !!(session && session.isAdmin);
+    const username = session ? session.username : null;
     setState((prev) => {
-      if (titleKey && !isTitleUnlocked(titleKey, prev.discoveredCards, isAdmin)) return prev;
+      if (titleKey && !isTitleUnlocked(titleKey, prev.discoveredCards, isAdmin, username)) return prev;
       return { ...prev, equippedTitle: titleKey || null };
     });
   }
@@ -496,6 +497,7 @@ export default function Page() {
           discoveredCards={state.discoveredCards}
           equippedTitle={state.equippedTitle}
           isAdmin={!!(session && session.isAdmin)}
+          username={session ? session.username : null}
           onEquip={handleEquipTitle}
         />
       )}
