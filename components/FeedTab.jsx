@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { subscribeFeed, fetchFeedHistory } from "../lib/feed";
-import { titleByKey, rarityByKey } from "../lib/engine";
+import { titleByKey, titleDisplay } from "../lib/engine";
 
 export default function FeedTab({ localFeedCache }) {
   const [items, setItems] = useState(localFeedCache || []);
@@ -64,11 +64,11 @@ export default function FeedTab({ localFeedCache }) {
 // app already gets.
 function TitleTag({ titleKey }) {
   const title = titleByKey(titleKey);
-  if (!title) return null;
-  const rarity = rarityByKey(title.rarityKey);
-  const style = rarity.gradient ? { "--rarity-gradient": rarity.gradient } : { color: rarity.color };
+  const display = titleDisplay(title);
+  if (!display) return null;
+  const style = display.gradient ? { "--rarity-gradient": display.gradient } : { color: display.color };
   return (
-    <span className={`feed-title-tag${rarity.gradient ? " gradient-text" : ""}`} style={style}>
+    <span className={`feed-title-tag${display.gradient ? " gradient-text" : ""}`} style={style}>
       [{titleKey}]
     </span>
   );

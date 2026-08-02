@@ -1,20 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { TITLES, RARITIES } from "../lib/config";
-import { unlockedTitleKeys } from "../lib/engine";
-
-function rarityFor(rarityKey) {
-  return RARITIES.find((r) => r.key === rarityKey);
-}
+import { TITLES } from "../lib/config";
+import { unlockedTitleKeys, titleDisplay } from "../lib/engine";
 
 // `discoveredCards` and `equippedTitle` come straight from game state.
+// `isAdmin` is the server-verified flag from fetchMeFull (see page.js) —
+// required for adminOnly titles to ever show as unlocked, same trust rule
+// as every other admin-gated thing in the app (never a client-side guess).
 // `onEquip(titleKey | null)` writes the choice back into state — passing
 // null unequips whatever's currently worn.
-export default function TitlesTab({ discoveredCards, equippedTitle, onEquip }) {
+export default function TitlesTab({ discoveredCards, equippedTitle, isAdmin, onEquip }) {
   const [sub, setSub] = useState("all"); // "all" | "owned"
 
-  const unlocked = new Set(unlockedTitleKeys(discoveredCards));
+  const unlocked = new Set(unlockedTitleKeys(discoveredCards, isAdmin));
   const list = sub === "owned" ? TITLES.filter((t) => unlocked.has(t.key)) : TITLES;
 
   return (
@@ -37,28 +36,28 @@ export default function TitlesTab({ discoveredCards, equippedTitle, onEquip }) {
       ) : (
         <div className="title-grid">
           {list.map((t) => {
-            const rarity = rarityFor(t.rarityKey);
-            if (!rarity) return null;
+            const display = titleDisplay(t);
+            if (!display) return null;
             const have = unlocked.has(t.key);
             const isEquipped = equippedTitle === t.key;
-            const cardStyle = have && rarity.gradient
-              ? { "--rarity-border-gradient": rarity.gradient }
+            const cardStyle = have && display.gradient
+              ? { "--rarity-border-gradient": display.gradient }
               : have
-              ? { "--rarity-glow": rarity.color }
+              ? { "--rarity-glow": display.color }
               : undefined;
-            const tagStyle = rarity.gradient ? { "--rarity-gradient": rarity.gradient } : { color: rarity.color };
+            const tagStyle = display.gradient ? { "--rarity-gradient": display.gradient } : { color: display.color };
 
             return (
               <div
                 key={t.key}
-                className={`title-card${have ? " have" : ""}${have && rarity.gradient ? " prismatic-border" : ""}`}
+                className={`title-card${have ? " have" : ""}${have && display.gradient ? " prismatic-border" : ""}`}
                 style={cardStyle}
               >
-                <div className={`title-tag${rarity.gradient ? " gradient-text" : ""}`} style={tagStyle}>
+                <div className={`title-tag${display.gradient ? " gradient-text" : ""}`} style={tagStyle}>
                   [{t.key}]
                 </div>
-                <div className="title-name">{rarity.label}</div>
-                <div className="title-desc">Hatch a {rarity.label} card to unlock.</div>
+                <div className="title-name">{display.label}</div>
+                <div className="title-desc">{display.description}</div>
                 {have ? (
                   <button
                     className={`title-equip-btn${isEquipped ? " equipped" : ""}`}

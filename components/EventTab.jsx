@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchEvent } from "../lib/authClient";
 import { RARITIES } from "../lib/config";
-import { titleByKey, rarityByKey } from "../lib/engine";
+import { titleByKey, titleDisplay } from "../lib/engine";
 
 function timeLeft(endsAt) {
   const diff = new Date(endsAt).getTime() - Date.now();
@@ -36,11 +36,11 @@ const PLACE_THEME = {
 // instead of a flat generic color.
 function TitleTag({ titleKey }) {
   const title = titleByKey(titleKey);
-  if (!title) return null;
-  const rarity = rarityByKey(title.rarityKey);
-  const style = rarity.gradient ? { "--rarity-gradient": rarity.gradient } : { color: rarity.color };
+  const display = titleDisplay(title);
+  if (!display) return null;
+  const style = display.gradient ? { "--rarity-gradient": display.gradient } : { color: display.color };
   return (
-    <span className={`feed-title-tag${rarity.gradient ? " gradient-text" : ""}`} style={style}>
+    <span className={`feed-title-tag${display.gradient ? " gradient-text" : ""}`} style={style}>
       [{titleKey}]
     </span>
   );

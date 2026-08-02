@@ -333,13 +333,15 @@ export default function Page() {
     });
   }
 
-  // titleKey is null to unequip. Re-checked against discoveredCards here
-  // (not just trusted from the click) so an unlock that somehow got
-  // reverted (e.g. a very old save without this feature) can never result
-  // in wearing a title that was never actually earned.
+  // titleKey is null to unequip. Re-checked here (not just trusted from
+  // the click) so a title can never end up equipped without actually
+  // being unlocked — including adminOnly titles, which depend on the
+  // server-verified session.isAdmin flag, not anything the client could
+  // fake by clicking the button.
   function handleEquipTitle(titleKey) {
+    const isAdmin = !!(session && session.isAdmin);
     setState((prev) => {
-      if (titleKey && !isTitleUnlocked(titleKey, prev.discoveredCards)) return prev;
+      if (titleKey && !isTitleUnlocked(titleKey, prev.discoveredCards, isAdmin)) return prev;
       return { ...prev, equippedTitle: titleKey || null };
     });
   }
@@ -493,6 +495,7 @@ export default function Page() {
         <TitlesTab
           discoveredCards={state.discoveredCards}
           equippedTitle={state.equippedTitle}
+          isAdmin={!!(session && session.isAdmin)}
           onEquip={handleEquipTitle}
         />
       )}
