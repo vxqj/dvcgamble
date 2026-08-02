@@ -23,7 +23,7 @@ export async function GET() {
     const db = supabaseAdmin();
     const { data, error } = await db
       .from("feed_events")
-      .select("id, rarity_key, rarity_label, color, card_name, pack_label, created_at")
+      .select("id, rarity_key, rarity_label, color, card_name, pack_label, username, title_key, created_at")
       .order("created_at", { ascending: false })
       .limit(LIMIT);
     if (error) throw error;
@@ -35,6 +35,8 @@ export async function GET() {
       color: row.color,
       name: row.card_name,
       packLabel: row.pack_label || undefined,
+      username: row.username || undefined,
+      titleKey: row.title_key || undefined,
       ts: new Date(row.created_at).getTime(),
     }));
 
