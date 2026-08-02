@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { PACKS, RARITIES, CARDS } from "../lib/config";
 import {
-  fmtChance,
+  fmtOdds,
   fmtNum,
   totalEffectiveWeight,
   effectiveWeightFor,
@@ -458,7 +458,7 @@ function OddsTable() {
             <div className="rbar">
               <div className="rbar-fill" style={{ width: `${Math.max(0.4, (w / total) * 100)}%`, background: r.gradient || r.color }} />
             </div>
-            <div className="rchance">{fmtChance(w, total)}</div>
+            <div className="rchance">{fmtOdds(w, total)}</div>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted-2)", width: 70, textAlign: "right" }}>
               {count} card{count === 1 ? "" : "s"}
             </div>
