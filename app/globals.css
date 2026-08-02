@@ -443,7 +443,7 @@ a { color: inherit; }
   position: fixed; inset: 0; z-index: 5000;
   background: radial-gradient(circle at 50% 40%, rgba(18,18,25,0.9), rgba(4,4,7,0.97));
   display: flex; align-items: center; justify-content: flex-start; flex-direction: column;
-  padding: 30px 20px 20px;
+  padding: 30px 20px 100px;
   overflow-y: auto;
   animation: backdropIn 0.25s ease;
 }
@@ -451,7 +451,7 @@ a { color: inherit; }
 
 .pack-open-stage {
   display: flex; flex-direction: column; align-items: center; gap: 26px;
-  width: 100%; max-width: 720px; margin: auto 0;
+  width: 100%; max-width: 1000px; margin: auto 0;
 }
 
 .modal-close-btn {
@@ -537,21 +537,21 @@ a { color: inherit; }
   grid-template-columns: repeat(auto-fill, 118px);
   justify-content: center;
   gap: 14px;
-  max-width: 640px;
+  max-width: 760px;
 }
 
 /* Multi Open can reveal up to 45 cards at once (9 packs x 5 cards) — shrink
    them down in two steps so a big batch still reads as one grid and fits
    the screen instead of overflowing it. Still noticeably card-sized, not
    tiny chips. */
-.reveal-grid.compact { grid-template-columns: repeat(auto-fill, 82px); gap: 8px; max-width: 640px; }
+.reveal-grid.compact { grid-template-columns: repeat(auto-fill, 82px); gap: 8px; max-width: 860px; }
 .reveal-grid.compact .flip-card { width: 82px !important; height: 110px !important; }
 .reveal-grid.compact .flip-front .flip-logo { width: 27px; height: 27px; font-size: 8.5px; border-radius: 7px; }
 .reveal-grid.compact .flip-back { padding: 8px; gap: 4px; }
 .reveal-grid.compact .fb-rarity { font-size: 7.5px; }
 .reveal-grid.compact .fb-name { font-size: 10.5px; }
 
-.reveal-grid.ultra { grid-template-columns: repeat(auto-fill, 64px); gap: 7px; max-width: 680px; }
+.reveal-grid.ultra { grid-template-columns: repeat(auto-fill, 64px); gap: 7px; max-width: 980px; }
 .reveal-grid.ultra .flip-card { width: 64px !important; height: 88px !important; }
 .reveal-grid.ultra .flip-front .flip-logo { width: 21px; height: 21px; font-size: 6.5px; border-radius: 6px; }
 .reveal-grid.ultra .flip-face { border-radius: 10px; }
