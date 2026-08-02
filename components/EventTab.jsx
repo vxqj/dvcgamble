@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fetchEvent } from "../lib/authClient";
 import { RARITIES } from "../lib/config";
+import { titleByKey, rarityByKey } from "../lib/engine";
 
 function timeLeft(endsAt) {
   const diff = new Date(endsAt).getTime() - Date.now();
@@ -29,6 +30,21 @@ const PLACE_THEME = {
   2: { grad: "linear-gradient(160deg, #f2f4f7 0%, #c3c9d1 45%, #8b929c 100%)", ring: "#c3c9d1" },
   3: { grad: "linear-gradient(160deg, #f0b088 0%, #cd7f4a 45%, #8a5127 100%)", ring: "#cd7f4a" },
 };
+
+// Same treatment as FeedTab.jsx's TitleTag — looks the title's linked
+// rarity back up so [KEY] renders in that rarity's actual color/gradient
+// instead of a flat generic color.
+function TitleTag({ titleKey }) {
+  const title = titleByKey(titleKey);
+  if (!title) return null;
+  const rarity = rarityByKey(title.rarityKey);
+  const style = rarity.gradient ? { "--rarity-gradient": rarity.gradient } : { color: rarity.color };
+  return (
+    <span className={`feed-title-tag${rarity.gradient ? " gradient-text" : ""}`} style={style}>
+      [{titleKey}]
+    </span>
+  );
+}
 
 export default function EventTab({ loggedIn }) {
   const [event, setEvent] = useState(null);
@@ -154,7 +170,9 @@ function PodiumSpot({ place, entry, height }) {
       >
         {entry ? (
           <>
-            <div className="evt-username">{entry.username}</div>
+            <div className="evt-username">
+              {entry.title_key && <TitleTag titleKey={entry.title_key} />} {entry.username}
+            </div>
             <div className={`evt-rarity${rarity && rarity.gradient ? " gradient-text" : ""}`} style={rarityTextStyle}>
               {entry.rarity_label}
             </div>
@@ -179,7 +197,9 @@ function LeaderboardRow({ rank, entry }) {
   return (
     <div className="evt-row" style={{ "--evt-accent": accent }}>
       <div className="evt-rank-chip">{rank}</div>
-      <div className="evt-row-name">{entry.username}</div>
+      <div className="evt-row-name">
+        {entry.title_key && <TitleTag titleKey={entry.title_key} />} {entry.username}
+      </div>
       <div className={`evt-row-rarity${rarity && rarity.gradient ? " gradient-text" : ""}`} style={rarityStyle}>
         {entry.rarity_label}
       </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { subscribeFeed, fetchFeedHistory } from "../lib/feed";
+import { titleByKey, rarityByKey } from "../lib/engine";
 
 export default function FeedTab({ localFeedCache }) {
   const [items, setItems] = useState(localFeedCache || []);
@@ -37,7 +38,7 @@ export default function FeedTab({ localFeedCache }) {
             <div className="feed-item" key={p.id}>
               {p.username ? (
                 <span className="feed-tag feed-identity">
-                  {p.titleKey && <span className="feed-title-tag">[{p.titleKey}]</span>} {p.username}
+                  {p.titleKey && <TitleTag titleKey={p.titleKey} />} {p.username}
                 </span>
               ) : (
                 <span className="feed-tag">Someone</span>
@@ -53,6 +54,23 @@ export default function FeedTab({ localFeedCache }) {
         </div>
       )}
     </div>
+  );
+}
+
+// Titles are cosmetic tags earned by hatching a card of the linked rarity
+// (see lib/config.js's TITLES) — this looks that rarity back up so the
+// [KEY] tag renders in that rarity's actual color/gradient instead of a
+// flat generic color, same treatment every other rarity display in the
+// app already gets.
+function TitleTag({ titleKey }) {
+  const title = titleByKey(titleKey);
+  if (!title) return null;
+  const rarity = rarityByKey(title.rarityKey);
+  const style = rarity.gradient ? { "--rarity-gradient": rarity.gradient } : { color: rarity.color };
+  return (
+    <span className={`feed-title-tag${rarity.gradient ? " gradient-text" : ""}`} style={style}>
+      [{titleKey}]
+    </span>
   );
 }
 

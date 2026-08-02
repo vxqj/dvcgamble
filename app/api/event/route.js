@@ -82,6 +82,31 @@ async function buildLeaderboard() {
     leaderboard.push(row);
     if (leaderboard.length === LEADERBOARD_SIZE) break;
   }
+
+  // Equipped titles, resolved fresh every time rather than stored on the
+  // event_entries row — titles live in player_state.state.equippedTitle
+  // (see storage.js / TitlesTab.jsx), which a player can change any time
+  // by equipping something else. Reading it live here means the
+  // leaderboard always shows whatever title someone has equipped RIGHT
+  // NOW, same "read-time, not write-time" fix as liveRarityIndex above —
+  // an old event_entries row never goes stale just because someone
+  // re-equips later.
+  if (leaderboard.length > 0) {
+    const playerIds = leaderboard.map((r) => r.player_id);
+    const { data: stateRows } = await db
+      .from("player_state")
+      .select("player_id, state")
+      .in("player_id", playerIds);
+    const titleByPlayer = {};
+    (stateRows || []).forEach((row) => {
+      const key = row.state && row.state.equippedTitle;
+      if (key) titleByPlayer[row.player_id] = key;
+    });
+    leaderboard.forEach((row) => {
+      row.title_key = titleByPlayer[row.player_id] || null;
+    });
+  }
+
   return leaderboard;
 }
 
