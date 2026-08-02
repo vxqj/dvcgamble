@@ -1,6 +1,7 @@
 import "./globals.css";
 import StatusBanner from "../components/StatusBanner";
 import AnnouncementBanner from "../components/AnnouncementBanner";
+import RarePullToast from "../components/RarePullToast";
 import PatchNotesModal from "../components/PatchNotesModal";
 import { Analytics } from "@vercel/analytics/next"
 
@@ -26,6 +27,12 @@ export default function RootLayout({ children }) {
             StatusBanner — an admin announcement is a heads-up for
             everyone currently on the site, not scoped to any one page. */}
         <AnnouncementBanner />
+        {/* Same top-center overlay slot as AnnouncementBanner, sitting
+            just below it in z-index — flashes for anyone currently on the
+            site the moment someone unboxes a card rarer than Ascended,
+            built on top of the same feed broadcast stream FeedTab already
+            reads from. */}
+        <RarePullToast />
         {children}
         <PatchNotesModal />
       </body>
