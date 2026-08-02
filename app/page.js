@@ -13,7 +13,7 @@ import AuthModal from "../components/AuthModal";
 import AdminPanel from "../components/AdminPanel";
 import { ShopIcon, InventoryIcon, FeedIcon, UpgradeIcon, TrophyIcon, TitleIcon } from "../components/Icons";
 import { loadState, saveState, defaultState, applyOfflineCoins } from "../lib/storage";
-import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary, unpackSpeedMultiplier, injectForcedCard, isTitleUnlocked } from "../lib/engine";
+import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary, unpackSpeedMultiplier, personalLuckMultiplier, injectForcedCard, isTitleUnlocked } from "../lib/engine";
 import { broadcastPull } from "../lib/feed";
 import { startPresence } from "../lib/presence";
 import { recordCardPulls } from "../lib/cardStats";
@@ -260,10 +260,16 @@ export default function Page() {
     // works with no token too, so guests still get site-wide luck events;
     // consumeForcedPull is skipped for guests since a forced pull only ever
     // targets a specific logged-in account.
-    const [forced, luckMultiplier] = await Promise.all([
+    const [forced, serverLuckMultiplier] = await Promise.all([
       session && session.token ? consumeForcedPull(session.token) : Promise.resolve(null),
       fetchLuckMultiplier(session ? session.token : null),
     ]);
+    // Server-granted luck (admin events, temporary) and the player's own
+    // Luck upgrade (permanent, bought with coins) stack multiplicatively —
+    // two independent sources of the same effect, combined into one
+    // multiplier before it ever reaches the roll math.
+    const personalLuck = personalLuckMultiplier(state.upgrades ? state.upgrades.luck : 0);
+    const luckMultiplier = serverLuckMultiplier * personalLuck;
 
     let results = openPacks(pack, openCount, luckMultiplier);
     // Swaps one random slot for the admin-forced card so it still shows up
