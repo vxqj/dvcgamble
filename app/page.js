@@ -13,7 +13,7 @@ import AuthModal from "../components/AuthModal";
 import AdminPanel from "../components/AdminPanel";
 import { ShopIcon, InventoryIcon, FeedIcon, UpgradeIcon, TrophyIcon, TitleIcon } from "../components/Icons";
 import { loadState, saveState, defaultState, applyOfflineCoins } from "../lib/storage";
-import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary, unpackSpeedMultiplier, personalLuckMultiplier, injectForcedCard, isTitleUnlocked } from "../lib/engine";
+import { openPacks, isRarePull, multiOpenCount, upgradeCost, upgradeMaxed, effectiveCoinPerTick, computeSellSummary, computePackSellSummary, unpackSpeedMultiplier, personalLuckMultiplier, injectForcedCard, isTitleUnlocked } from "../lib/engine";
 import { broadcastPull } from "../lib/feed";
 import { startPresence } from "../lib/presence";
 import { recordCardPulls } from "../lib/cardStats";
@@ -333,6 +333,22 @@ export default function Page() {
     });
   }
 
+  // Sells ALL owned copies of each selected pack type, unopened, for a
+  // flat refund (see PACK_SELL_REFUND_RATE / packSellValueFor in
+  // lib/engine.js). Same shape as handleSellCards above — refuses to
+  // start an auto-open run mid-sell isn't needed here since selling
+  // doesn't touch autoOpenPackKey, but if a pack type being sold is
+  // currently mid auto-open, computePackSellSummary will still zero out
+  // whatever's left in state.packs, which correctly ends that run on its
+  // own the next time handleOpenPack checks `owned <= 0`.
+  function handleSellPacks(packKeys) {
+    setState((prev) => {
+      const { coins, remainingPacks } = computePackSellSummary(prev.packs, packKeys);
+      if (coins <= 0) return prev;
+      return { ...prev, coins: prev.coins + coins, packs: remainingPacks };
+    });
+  }
+
   // titleKey is null to unequip. Re-checked here (not just trusted from
   // the click) so a title can never end up equipped without actually
   // being unlocked — including adminOnly/allowedUsernames titles, which
@@ -484,6 +500,7 @@ export default function Page() {
           upgrades={state.upgrades}
           onOpenPack={handleOpenPack}
           onSellCards={handleSellCards}
+          onSellPacks={handleSellPacks}
           autoOpenPackKey={autoOpenPackKey}
           onAutoOpenPack={handleAutoOpenPack}
           onCancelAutoOpen={stopAutoOpen}
