@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
-import { EVENT_CONFIG, RARITIES } from "../../../lib/config";
+import { EVENT_CONFIG, RARITIES, OVERCLOCKED_CONFIG } from "../../../lib/config";
 
 const LEADERBOARD_SIZE = 75;
 
@@ -59,15 +59,24 @@ async function buildLeaderboard() {
   // everything reasonable and sort it ourselves off live indices below.
   const { data, error } = await db
     .from("event_entries")
-    .select("username, rarity_key, rarity_label, card_name, pulled_at, player_id")
+    .select("username, rarity_key, rarity_label, card_name, pulled_at, player_id, is_overclocked")
     .limit(2000);
 
   if (error) throw error;
+
+  const tiebreakEnabled = !!(OVERCLOCKED_CONFIG && OVERCLOCKED_CONFIG.eventTiebreak);
 
   const sorted = (data || [])
     .map((row) => ({ ...row, liveIndex: liveRarityIndex(row.rarity_key) }))
     .sort((a, b) => {
       if (a.liveIndex !== b.liveIndex) return a.liveIndex - b.liveIndex;
+      // Same rarity — an Overclocked pull outranks a non-Overclocked one
+      // (see OVERCLOCKED_CONFIG.eventTiebreak in config.js). A Common
+      // Overclocked still can never reach this comparison against a
+      // Sovereign, since the liveIndex check above already separated them.
+      if (tiebreakEnabled && !!a.is_overclocked !== !!b.is_overclocked) {
+        return a.is_overclocked ? -1 : 1;
+      }
       return new Date(a.pulled_at).getTime() - new Date(b.pulled_at).getTime();
     });
 

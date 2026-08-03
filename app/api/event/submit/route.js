@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../lib/supabase";
 import { getPlayerFromToken, tokenFromRequest } from "../../../../lib/session";
 import { RARITIES, EVENT_CONFIG } from "../../../../lib/config";
+import { eventPullBeats } from "../../../../lib/engine";
 
 function rarityInfo(key) {
   const idx = RARITIES.findIndex((r) => r.key === key);
@@ -20,10 +21,11 @@ export async function POST(request) {
     const player = await getPlayerFromToken(token);
     if (!player) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-    const { rarityKey, cardName } = await request.json().catch(() => ({}));
+    const { rarityKey, cardName, isOverclocked } = await request.json().catch(() => ({}));
     if (!rarityKey || !cardName) {
       return NextResponse.json({ error: "Missing pull details" }, { status: 400 });
     }
+    const overclocked = !!isOverclocked;
 
     // player.username comes from the DB lookup in getPlayerFromToken, not
     // from the request — so nothing the client sends (or edits in devtools)
@@ -51,16 +53,26 @@ export async function POST(request) {
     // player_id) — it just can't ever hard-fail this way again.
     const { data: existingRows, error: fetchErr } = await db
       .from("event_entries")
-      .select("id, rarity_key")
+      .select("id, rarity_key, is_overclocked")
       .eq("player_id", player.id)
       .order("rarity_index", { ascending: true })
       .limit(1);
     if (fetchErr) throw fetchErr;
     const existing = existingRows && existingRows.length > 0 ? existingRows[0] : null;
 
+    // eventPullBeats (lib/engine.js) handles the "is this an improvement?"
+    // decision: strictly rarer always wins, and within the SAME rarity an
+    // Overclocked pull beats a non-Overclocked one (see
+    // OVERCLOCKED_CONFIG.eventTiebreak in config.js). A Common Overclocked
+    // still can never beat a plain Sovereign — rarity is always checked
+    // first.
+    const beats = eventPullBeats(
+      { rarityKey, isOverclocked: overclocked },
+      existing ? { rarityKey: existing.rarity_key, isOverclocked: existing.is_overclocked } : null
+    );
+
     if (existing) {
-      const existingIndex = rarityInfo(existing.rarity_key).index;
-      if (index >= existingIndex) {
+      if (!beats) {
         // Not an improvement over their current best — leave it alone.
         return NextResponse.json({ ok: true, improved: false });
       }
@@ -71,6 +83,7 @@ export async function POST(request) {
           rarity_label: label,
           rarity_index: index,
           card_name: cardName,
+          is_overclocked: overclocked,
           pulled_at: new Date().toISOString(),
         })
         .eq("id", existing.id);
@@ -83,11 +96,12 @@ export async function POST(request) {
         rarity_label: label,
         rarity_index: index,
         card_name: cardName,
+        is_overclocked: overclocked,
       });
       if (insertErr) throw insertErr;
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, improved: true });
   } catch (e) {
     return NextResponse.json({ error: "Submit failed" }, { status: 500 });
   }
