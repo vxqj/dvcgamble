@@ -9,6 +9,8 @@ import {
   effectiveWeightFor,
   multiOpenCount,
   computeSellSummary,
+  computePackSellSummary,
+  packSellValueFor,
   isSerializedRarity,
 } from "../lib/engine";
 import { fetchCardCounts, getCachedCount } from "../lib/cardStats";
@@ -16,7 +18,7 @@ import { TrashIcon, PackIcon } from "./Icons";
 import CardDetailModal from "./CardDetailModal";
 
 export default function InventoryTab({
-  packsOwned, cards, cardSerials, discoveredCards, upgrades, onOpenPack, onSellCards,
+  packsOwned, cards, cardSerials, discoveredCards, upgrades, onOpenPack, onSellCards, onSellPacks,
   autoOpenPackKey, onAutoOpenPack, onCancelAutoOpen,
 }) {
   const [sub, setSub] = useState("packs");
@@ -27,7 +29,6 @@ export default function InventoryTab({
   const [detailCard, setDetailCard] = useState(null);
   const openBatch = multiOpenCount(upgrades ? upgrades.multiOpen : 0);
 
-  const ownedPackEntries = PACKS.filter((p) => (packsOwned[p.key] || 0) > 0);
   const cardNames = Object.keys(cards).filter((n) => cards[n] > 0);
 
   const nameToRarity = {};
@@ -62,44 +63,15 @@ export default function InventoryTab({
       </div>
 
       {sub === "packs" && (
-        ownedPackEntries.length === 0 ? (
-          <div className="inv-empty">No packs yet — head to the Shop and buy one.</div>
-        ) : (
-          <div className="owned-pack-grid">
-            {ownedPackEntries.map((pack) => {
-              const owned = packsOwned[pack.key] || 0;
-              const openCount = Math.min(openBatch, owned);
-              const isAutoActive = autoOpenPackKey === pack.key;
-              // Only one open flow (manual or auto) runs at a time — lock
-              // every other pack's buttons while a different one is auto-opening.
-              const lockedByOtherAuto = !!autoOpenPackKey && !isAutoActive;
-              return (
-                <div className="owned-pack" key={pack.key} style={{ "--accent": pack.accent }}>
-                  <div className="pack-art" style={{ height: 84, width: "100%" }}>
-                    <PackIcon icon={pack.icon} className="pack-icon-svg small" />
-                  </div>
-                  <div className="pack-title" style={{ fontSize: 14 }}>{pack.label}</div>
-                  <div className="count-badge">x{owned}</div>
-                  <div className="pack-actions">
-                    <button className="open-btn" onClick={() => onOpenPack(pack)} disabled={isAutoActive || lockedByOtherAuto}>
-                      {openCount > 1 ? `Open x${openCount}` : "Open"}
-                    </button>
-                    {onAutoOpenPack && (
-                      <button
-                        className={`auto-open-btn${isAutoActive ? " active" : ""}`}
-                        disabled={lockedByOtherAuto}
-                        onClick={() => (isAutoActive ? onCancelAutoOpen() : onAutoOpenPack(pack))}
-                      >
-                        {isAutoActive && <span className="auto-open-dot" />}
-                        {isAutoActive ? "Stop Auto" : "Auto Open"}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )
+        <PacksView
+          packsOwned={packsOwned}
+          openBatch={openBatch}
+          autoOpenPackKey={autoOpenPackKey}
+          onOpenPack={onOpenPack}
+          onAutoOpenPack={onAutoOpenPack}
+          onCancelAutoOpen={onCancelAutoOpen}
+          onSellPacks={onSellPacks}
+        />
       )}
 
       {sub === "cards" && (
@@ -136,6 +108,129 @@ export default function InventoryTab({
           onClose={() => setDetailCard(null)}
         />
       )}
+    </div>
+  );
+}
+
+/* --------------------------------------------------------------------------
+   PACKS VIEW — owned unopened packs, plus sell mode.
+   Same pattern as CardsView's sell mode below: tap "Sell" to enter select
+   mode, check a pack type to stage ALL owned copies of it, confirm to cash
+   them all in at once via the same sliding sell bar.
+   -------------------------------------------------------------------------- */
+function PacksView({ packsOwned, openBatch, autoOpenPackKey, onOpenPack, onAutoOpenPack, onCancelAutoOpen, onSellPacks }) {
+  const [sellMode, setSellMode] = useState(false);
+  const [selected, setSelected] = useState(new Set());
+
+  const ownedPackEntries = PACKS.filter((p) => (packsOwned[p.key] || 0) > 0);
+  const { coins: sellCoins, count: sellCount } = computePackSellSummary(packsOwned, Array.from(selected));
+  const barOpen = sellMode && selected.size > 0;
+
+  function toggleSellMode() {
+    setSellMode((v) => !v);
+    setSelected(new Set());
+  }
+
+  function toggleSelected(key) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  function handleConfirmSell() {
+    if (sellCount === 0 || !onSellPacks) return;
+    onSellPacks(Array.from(selected));
+    setSelected(new Set());
+  }
+
+  if (ownedPackEntries.length === 0) {
+    return <div className="inv-empty">No packs yet — head to the Shop and buy one.</div>;
+  }
+
+  return (
+    <div>
+      <div className="inv-toolbar">
+        <button
+          className={`sell-toggle-btn${sellMode ? " active" : ""}`}
+          onClick={toggleSellMode}
+          disabled={!onSellPacks}
+        >
+          <TrashIcon className="sell-toggle-icon" />
+          {sellMode ? "Cancel" : "Sell"}
+        </button>
+      </div>
+
+      <div className="owned-pack-grid">
+        {ownedPackEntries.map((pack) => {
+          const owned = packsOwned[pack.key] || 0;
+          const openCount = Math.min(openBatch, owned);
+          const isAutoActive = autoOpenPackKey === pack.key;
+          // Only one open flow (manual or auto) runs at a time — lock every
+          // other pack's buttons while a different one is auto-opening.
+          const lockedByOtherAuto = !!autoOpenPackKey && !isAutoActive;
+          const isSelected = selected.has(pack.key);
+          const unitRefund = packSellValueFor(pack);
+
+          return (
+            <div
+              className={`owned-pack${isSelected ? " sell-selected" : ""}`}
+              key={pack.key}
+              style={{ "--accent": pack.accent, position: "relative" }}
+            >
+              {sellMode && (
+                <input
+                  type="checkbox"
+                  className="sell-checkbox"
+                  checked={isSelected}
+                  onChange={() => toggleSelected(pack.key)}
+                  aria-label={`Select all ${pack.label} to sell`}
+                  style={{ position: "absolute", top: 10, left: 10, zIndex: 2 }}
+                />
+              )}
+              <div className="pack-art" style={{ height: 84, width: "100%" }}>
+                <PackIcon icon={pack.icon} className="pack-icon-svg small" />
+              </div>
+              <div className="pack-title" style={{ fontSize: 14 }}>{pack.label}</div>
+              <div className="count-badge">x{owned}</div>
+              {sellMode ? (
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted-2)", marginTop: 4 }}>
+                  <span>🪙</span> {fmtNum(unitRefund)} each
+                </div>
+              ) : (
+                <div className="pack-actions">
+                  <button className="open-btn" onClick={() => onOpenPack(pack)} disabled={isAutoActive || lockedByOtherAuto}>
+                    {openCount > 1 ? `Open x${openCount}` : "Open"}
+                  </button>
+                  {onAutoOpenPack && (
+                    <button
+                      className={`auto-open-btn${isAutoActive ? " active" : ""}`}
+                      disabled={lockedByOtherAuto}
+                      onClick={() => (isAutoActive ? onCancelAutoOpen() : onAutoOpenPack(pack))}
+                    >
+                      {isAutoActive && <span className="auto-open-dot" />}
+                      {isAutoActive ? "Stop Auto" : "Auto Open"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className={`sell-bar${barOpen ? " show" : ""}`}>
+        <div className="sell-bar-info">
+          <div className="sell-bar-count">{fmtNum(sellCount)} pack{sellCount === 1 ? "" : "s"}</div>
+          <div className="sell-bar-coins"><span>🪙</span>{fmtNum(sellCoins)}</div>
+        </div>
+        <div className="sell-bar-actions">
+          <button className="sell-bar-cancel" onClick={() => setSelected(new Set())}>Clear</button>
+          <button className="sell-bar-confirm" onClick={handleConfirmSell}>Sell</button>
+        </div>
+      </div>
     </div>
   );
 }
