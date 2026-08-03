@@ -8,7 +8,7 @@ import { rarityIndex, rarityByKey, titleByKey, titleDisplay } from "../lib/engin
 // current RARITIES order) — everything Ascended-or-more-common stays out
 // of everyone's face, the Global Feed already logs Legendary+ for anyone
 // who wants to see those. Change this to any RARITIES key to move the bar.
-const THRESHOLD_RARITY_KEY = "Sovereign";
+const THRESHOLD_RARITY_KEY = "Sacred";
 
 // How long a toast stays up before it starts fading out, and how long the
 // fade itself takes — EXIT_MS must match the .rpt-leaving animation
