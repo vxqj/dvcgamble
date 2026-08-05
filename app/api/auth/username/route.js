@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { generateUsername } from "../../../../lib/usernames";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const username = await generateUsername();

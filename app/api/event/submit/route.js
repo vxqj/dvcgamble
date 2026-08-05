@@ -4,6 +4,8 @@ import { getPlayerFromToken, tokenFromRequest } from "../../../../lib/session";
 import { RARITIES, EVENT_CONFIG } from "../../../../lib/config";
 import { eventPullBeats } from "../../../../lib/engine";
 
+export const dynamic = "force-dynamic";
+
 function rarityInfo(key) {
   const idx = RARITIES.findIndex((r) => r.key === key);
   const r = RARITIES[idx] || RARITIES[RARITIES.length - 1];

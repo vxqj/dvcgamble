@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../lib/supabase";
 import { getPlayerFromToken } from "../../../../lib/session";
 
+export const dynamic = "force-dynamic";
+
 // sendBeacon can't set an Authorization header, so this route accepts the
 // token in the request body instead. Only used for the "tab is
 // closing/hiding" save — the normal path is POST /api/game/state with a

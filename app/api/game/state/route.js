@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../lib/supabase";
 import { getPlayerFromToken, tokenFromRequest } from "../../../../lib/session";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request) {
   const token = tokenFromRequest(request);
   const player = await getPlayerFromToken(token);

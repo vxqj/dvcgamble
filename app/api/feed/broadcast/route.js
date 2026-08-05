@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../lib/supabase";
 
+export const dynamic = "force-dynamic";
+
 // No auth required — same as before, anyone playing (including guests)
 // can broadcast a rare pull. username/titleKey are optional: page.js only
 // ever sends them when the player is actually logged in (see handleCollect

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../lib/supabase";
 import { PRESENCE_CONFIG } from "../../../../lib/config";
 
+export const dynamic = "force-dynamic";
+
 // No auth required — presence is anonymous and identity-free, same as
 // before. This replaces posting a heartbeat to ntfy.sh, which was the
 // actual problem: ntfy rate-limits by IP, and that bucket is SHARED by

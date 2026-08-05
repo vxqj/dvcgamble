@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../lib/supabase";
 import { getPlayerFromToken, tokenFromRequest } from "../../../../lib/session";
 
+export const dynamic = "force-dynamic";
+
 // Admin's "give coins" only ever increments pending_coin_delta on the
 // players row — it never writes to player_state directly, because the
 // player's own browser autosaves its in-memory state every few seconds

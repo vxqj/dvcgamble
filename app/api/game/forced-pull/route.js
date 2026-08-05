@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../../lib/supabase";
 import { getPlayerFromToken, tokenFromRequest } from "../../../../lib/session";
 
+export const dynamic = "force-dynamic";
+
 // Called by the client right before it opens a pack. Atomically reads AND
 // clears pending_forced_pull in one round trip (fetch then null it out) so
 // the same forced card can never accidentally get applied to two pack
