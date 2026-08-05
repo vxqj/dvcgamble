@@ -87,7 +87,7 @@ export default function EventTab({ loggedIn }) {
       <EventStyles />
 
       <div className="section-title">
-        RAREST PULL EVENT <div className="line" />
+        EVENT ENDED, NEW ONE IN 2 DAYS. <div className="line" />
       </div>
 
       <div className="evt-timer">
@@ -104,9 +104,7 @@ export default function EventTab({ loggedIn }) {
       </div>
 
       <p style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted-2)", margin: "14px 0 28px" }}>
-        Whoever pulls the rarest card before the timer hits zero takes 1st
-        place — and something from the canteen. Only your single rarest pull
-        counts.
+        event has ended. new one soon.
       </p>
 
       {!loggedIn && <div className="evt-login-hint">Sign up or log in to enter the event.</div>}

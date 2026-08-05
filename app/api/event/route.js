@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "../../../lib/supabase";
 import { EVENT_CONFIG, RARITIES, OVERCLOCKED_CONFIG } from "../../../lib/config";
 
-const LEADERBOARD_SIZE = 75;
+const LEADERBOARD_SIZE = 100;
 
 // PERF: EventTab.jsx polls this route every 15s, per open tab. With ~60
 // players that's up to ~240 requests/min, and each one used to pull up to
