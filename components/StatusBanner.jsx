@@ -6,7 +6,7 @@ import { useState } from "react";
 // issue" banner style. Toggle SHOW_BANNER below to turn it on/off without
 // deleting anything — flip it back to false once things are stable and the
 // banner disappears everywhere with no other changes needed.
-const SHOW_BANNER = false;
+const SHOW_BANNER = true;
 const MESSAGE = "We're aware some players may be experiencing slowness right now — working on it.";
 
 export default function StatusBanner() {
